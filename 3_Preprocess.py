@@ -2,6 +2,7 @@
 
 import glob
 import nibabel as nib
+import pandas as pd
 import numpy as np
 import os
 import h5py
@@ -13,11 +14,19 @@ subs = glob.glob('%ssub*.html'%(fmripreppath))
 subs = [s.replace('.html', '') for s in subs]
 subs = [s.replace(fmripreppath, '') for s in subs]
 
+Phenodf = pd.concat((pd.read_csv(f) for f in glob.glob(phenopath+'HBN_R*Pheno.csv')),ignore_index=True)
+
 for sub in subs:
-  print('Processing subject ', sub)
-  for task in ['DM','TP']:
-    D = dict()
-    print('movie ', task)
+    print('Processing subject ', sub)
+    Demo = {'Age': Phenodf['Age'][Phenodf['EID'] == sub[4:]].iloc[0],
+           'Sex': Phenodf['Sex'][Phenodf['EID'] == sub[4:]].iloc[0]}
+    with h5py.File(os.path.join(fmripreppath + 'PythonData/' + sub + '.h5')) as hf:
+        grp = hf.create_group('Pheno')
+        for k,v in Demo.items():
+            grp.create_dataset(k,data=v)
+    for task in ['DM','TP']:
+        D = dict()
+        print('movie ', task)
     for hem in ['L', 'R']:
         fname = os.path.join(fmripreppath + sub + '/func/' + \
           sub + '_task-movie' + task + '_bold_space-fsaverage6.' + hem + '.func.gii')
