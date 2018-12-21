@@ -50,6 +50,7 @@ for sub in ps:
 			sp.run(["rm","-r",path+sub_temp]) # removing folder
 
 # Need to add fMRI file names to "IntendedFor" field of fmap json's
+# Remove irrelevent BOLD files
 for sub in glob.glob(path+'sub*'):
 	replacement_text = '[\"'+'\",\"'.join([t.replace(sub+'/','') for t in glob.glob(sub+'/func/*.nii.gz')])+'\"]'
 	for f in glob.glob(sub+'/fmap/'+'*fMRI_epi.json'):

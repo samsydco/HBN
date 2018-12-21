@@ -20,56 +20,56 @@ for sub in subs:
     print('Processing subject ', sub)
     Demo = {'Age': Phenodf['Age'][Phenodf['EID'] == sub[4:]].iloc[0],
            'Sex': Phenodf['Sex'][Phenodf['EID'] == sub[4:]].iloc[0]}
-    with h5py.File(os.path.join(fmripreppath + 'PythonData/' + sub + '.h5')) as hf:
+    with h5py.File(os.path.join(h5path + sub + '.h5')) as hf:
         grp = hf.create_group('Pheno')
         for k,v in Demo.items():
             grp.create_dataset(k,data=v)
     for task in ['DM','TP']:
         D = dict()
         print('movie ', task)
-    for hem in ['L', 'R']:
-        fname = os.path.join(fmripreppath + sub + '/func/' + \
+        for hem in ['L', 'R']:
+            fname = os.path.join(fmripreppath + sub + '/func/' + \
           sub + '_task-movie' + task + '_bold_space-fsaverage6.' + hem + '.func.gii')
-        print('      Loading ', fname)
-        gi = nib.load(fname)
-        D[hem] = np.column_stack([gi.darrays[t].data for t in range(len(gi.darrays))])
+            print('      Loading ', fname)
+            gi = nib.load(fname)
+            D[hem] = np.column_stack([gi.darrays[t].data for t in range(len(gi.darrays))])
         
-    # Use regressors for:
-    # -CSF
-    # -WhiteMatter
-    # -FramewiseDisplacement
-    # -All cosine bases for drift (0.008 Hz = 125s)
-    # -X, Y, Z and derivatives
-    # -RotX, RotY, RotZ and derivatives
+        # Use regressors for:
+        # -CSF
+        # -WhiteMatter
+        # -FramewiseDisplacement
+        # -All cosine bases for drift (0.008 Hz = 125s)
+        # -X, Y, Z and derivatives
+        # -RotX, RotY, RotZ and derivatives
     
-    conf = np.genfromtxt(os.path.join(fmripreppath + sub + '/func/' + \
-      sub + '_task-movie' + task + '_bold_confounds.tsv'), names=True)
-    motion = np.column_stack((conf['X'],
+        conf = np.genfromtxt(os.path.join(fmripreppath + sub + '/func/' + \
+                  sub + '_task-movie' + task + '_bold_confounds.tsv'), names=True)
+        motion = np.column_stack((conf['X'],
                               conf['Y'],
                               conf['Z'],
                               conf['RotX'],
                               conf['RotY'],
                               conf['RotZ']))
 
-    reg = np.column_stack((conf['CSF'],
+        reg = np.column_stack((conf['CSF'],
                            conf['WhiteMatter'],
                            np.nan_to_num(conf['FramewiseDisplacement']),
                            np.column_stack([conf[k] for k in conf.dtype.names if 'Cosine' in k]),
                            motion,
                            np.vstack((np.zeros((1,motion.shape[1])), np.diff(motion, axis=0)))))
                            
-    print('      Cleaning and zscoring')
-    for hem in ['L', 'R']:
-        regr = linear_model.LinearRegression()
-        regr.fit(reg, D[hem].T)
-        D[hem] = D[hem] - np.dot(regr.coef_, reg.T) - regr.intercept_[:, np.newaxis]
-
-        D[hem] = stats.zscore(D[hem], axis=1)
-    with h5py.File(os.path.join(fmripreppath + 'PythonData/' + sub + '.h5')) as hf:
-        grp = hf.create_group(task)
-        grp.create_dataset('L', data=D['L'])
-        grp.create_dataset('R', data=D['R'])
-        grp.create_dataset('reg',data=reg)
+        print('      Cleaning and zscoring')
+        for hem in ['L', 'R']:
+            regr = linear_model.LinearRegression()
+            regr.fit(reg, D[hem].T)
+            D[hem] = D[hem] - np.dot(regr.coef_, reg.T) - regr.intercept_[:, np.newaxis]
+            # Note 8% of values on cortical surface are NaNs, and the following will therefore throw an error
+            D[hem] = stats.zscore(D[hem], axis=1)
+        with h5py.File(os.path.join(h5path + sub + '.h5')) as hf:
+            grp = hf.create_group(task)
+            grp.create_dataset('L', data=D['L'])
+            grp.create_dataset('R', data=D['R'])
+            grp.create_dataset('reg',data=reg)
 
 
     
