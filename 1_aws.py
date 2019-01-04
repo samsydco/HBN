@@ -55,7 +55,12 @@ for sub in glob.glob(path+'sub*'):
 	replacement_text = '[\"'+'\",\"'.join([t.replace(sub+'/','') for t in glob.glob(sub+'/func/*.nii.gz')])+'\"]'
 	for f in glob.glob(sub+'/fmap/'+'*fMRI_epi.json'):
 		with fileinput.FileInput(f,inplace=True,backup='.bak') as file:
-			for line in file:
-				print(line.replace('\"fMRI\"',replacement_text),end='')
-
-
+			if '\"fMRI\"' in open(f).read():
+				for line in file:
+					print(line.replace('\"fMRI\"',replacement_text),end='')
+			if '\"IntendedFor\":' not in open(f).read():
+				for line in file:
+					print(line.replace('\"PatientPosition\": \"HFS\"','\"PatientPosition\": \"HFS\",\n    \"IntendedFor\": '+replacement_text),end='')
+                    
+                    
+ 
