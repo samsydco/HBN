@@ -31,7 +31,8 @@ for sub in glob.glob('%ssub*'%(path)):
 	# ADD CONDITIONAL FOR IF .HTML EXISTS and change paricipant parameter
 	# Note that label of HTML files might change once running sub's in batches
 	if (T1dict[sub_temp] != "n" and
-		not os.path.exists(fmripreppath+sub_temp+'.html')):
+		#not os.path.exists(fmripreppath+sub_temp+'.html')):
+        len(glob.glob(fmripreppath+sub_temp+'/figures/*sdc*'))!=2):
 		plist.append(sub_temp)
 
 password = input('Type the password for scohen@sophon.columbia.edu:')

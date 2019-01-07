@@ -13,7 +13,9 @@ from settings import *
 subs = glob.glob('%ssub*.html'%(fmripreppath))
 subs = [s.replace('.html', '') for s in subs]
 subs = [s.replace(fmripreppath, '') for s in subs]
-subs = [sub for sub in subs if os.path.isfile(h5path + sub + '.h5')]
+subs = [sub for sub in subs if not os.path.isfile(h5path + sub + '.h5')]
+# Check if fmap has been processed
+subs = [sub for sub in subs if len(glob.glob(fmripreppath+sub+'/figures/*sdc*'))==2]
 
 Phenodf = pd.concat((pd.read_csv(f) for f in glob.glob(phenopath+'HBN_R*Pheno.csv')),ignore_index=True)
 
