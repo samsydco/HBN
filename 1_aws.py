@@ -12,7 +12,7 @@ ps = sp.check_output(["aws","s3","ls","s3://fcp-indi/data/Archives/HBN/MRI/Site-
 ps = [x.decode("utf-8") for x in ps] # convert from bytes to strings
 ps = [s for s in ps if "sub" in s]
 ps = [s[31:] for s in ps] # cutting out everything except sub*.tar.gz
-ps = ps [0:5] # arbitrarily downloading 100 subj (Many will have missing data)
+#ps = ps [0:5] # arbitrarily downloading 5 subj (Many will have missing data)
 
 # If Missingcsv exists, import info, if not, create it
 MissingDict = {}
