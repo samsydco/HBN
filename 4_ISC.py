@@ -10,7 +10,7 @@ from scipy.spatial.distance import squareform
 from settings import *
 
 from brainiak import isfc
-ISCf = 'ISCtest2.h5'
+ISCf = 'ISCtest.h5'
 
 subord = glob.glob(h5path+'sub*.h5')
 #subord = subord[0:5]
@@ -22,7 +22,8 @@ if (os.path.exists(h5path+ISCf) and "/WronglenDF" in h5path+ISCf):
         df = hf["WronglenDF"][:]
 else:
     df = pd.DataFrame(columns=["Subject","DM","TP"])
-
+# Remove sub from dataset if wrong number of TRs
+# 
 for idx, task in enumerate(['DM','TP']):
     data = []
     badsubs = []
@@ -59,6 +60,7 @@ for idx, task in enumerate(['DM','TP']):
         grp.create_dataset('ISC', data=ISC)
         grp.create_dataset('ISC_persubj', data=ISC_persubj)
         grp.create_dataset('isc_pairs',data=iscs)
+    
     df[task] = df[task].astype(int)
 df.to_hdf(h5path+ISCf, "WronglenDF", table=True, mode='a')
 with h5py.File(h5path+ISCf) as hf:

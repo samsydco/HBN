@@ -26,7 +26,7 @@ else:
 	with open(Missingcsv,'w') as f:
 		w = csv.writer(f)
 		w.writerow(["Subject","T1","DM","TP","fmap_AP","fmap_PA"])
-
+# Check if dim4 = 750 for DM, and 250 for TP
 for sub in ps:
 	sub_temp = sub[0:16] # cutting out .tar.gz part of file name
 	# check if sub exists in dir or Missingcsv
