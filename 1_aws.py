@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import subprocess as sp 
+import numpy as np
 import os
 import csv
 import glob
@@ -25,10 +26,10 @@ if os.path.exists(Missingcsv):
 else:
 	with open(Missingcsv,'w') as f:
 		w = csv.writer(f)
-		w.writerow(["Subject","T1","DM","TP","fmap_AP","fmap_PA"])
+		w.writerow(["Subject","T1","DM","TP","fmap_AP","fmap_PA","DM len","TP len"])
 # Check if dim4 = 750 for DM, and 250 for TP
 for sub in ps:
-	sub_temp = sub[0:16] # cutting out .tar.gz part of file name
+	sub_temp = sub[:-len('.tar.gz')] # cutting out .tar.gz part of file name
 	# check if sub exists in dir or Missingcsv
 	if (sub_temp not in [i.replace(path,"") for i in glob.glob(path + 'sub*')] and
 	sub_temp not in list(MissingDict.keys())):
@@ -42,12 +43,35 @@ for sub in ps:
 		os.path.exists(path+sub_temp+'/func/'+sub_temp+'_task-movieTP_bold.nii.gz'),\
 		os.path.exists(path+sub_temp+'/fmap/'+sub_temp+'_dir-AP_acq-fMRI_epi.json'), \
 		os.path.exists(path+sub_temp+'/fmap/'+sub_temp+'_dir-PA_acq-fMRI_epi.json')]
+        conds.extend([np.nan,np.nan])
+        if conds[1]:
+            conds[5] = 750 == int(sp.check_output(('fslhd '+path+sub_temp+'/func/'+sub_temp+'_task-movieDM_bold.nii.gz').split()).split(b'dim4',1)[1].split()[0].decode("utf-8"))
+        if conds[2]:
+            conds[6] = 250 == int(sp.check_output(('fslhd '+path+sub_temp+'/func/'+sub_temp+'_task-movieTP_bold.nii.gz').split()).split(b'dim4',1)[1].split()[0].decode("utf-8"))
 		if any(elem is False for elem in conds):
 			MissingDict[sub_temp] = conds
 			with open(Missingcsv,'a') as f:
 				w = csv.writer(f)
 				w.writerow([sub_temp]+[str(i) for i in conds])
 			sp.run(["rm","-r",path+sub_temp]) # removing folder
+'''
+import pandas as pd
+df = pd.read_csv(Missingcsv)
+nFalse = 0
+for sub in glob.glob(path+'sub*'):
+    sub_temp = sub[16:]
+    conds = [True]*5
+    conds.append(750 == int(sp.check_output(('fslhd '+path+sub_temp+'/func/'+sub_temp+'_task-movieDM_bold.nii.gz').split()).split(b'dim4',1)[1].split()[0].decode("utf-8")))
+    conds.append(250 == int(sp.check_output(('fslhd '+path+sub_temp+'/func/'+sub_temp+'_task-movieTP_bold.nii.gz').split()).split(b'dim4',1)[1].split()[0].decode("utf-8")))
+    if not all(i for i in conds):
+        df.loc[df.shape[0]] = [sub_temp]+conds
+        sp.run(('mv '+path+sub_temp+'/ '+path+'bad_subs/').split())
+        nFalse = nFalse + 1
+        print(sub_temp,NFalse,conds) 
+df['DM len'] = df['DM len'].map({np.nan: np.nan, 1: True, 0: False})
+df['TP len'] = df['TP len'].map({np.nan: np.nan, 1: True, 0: False})
+df.to_csv(Missingcsv, index=False)
+'''         
 
 # Need to add fMRI file names to "IntendedFor" field of fmap json's
 # Remove irrelevent BOLD files

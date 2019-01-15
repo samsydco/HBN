@@ -15,7 +15,6 @@ ISCf = 'ISCtest.h5'
 subord = glob.glob(h5path+'sub*.h5')
 #subord = subord[0:5]
 
-exp_len = [750,250]
 # If Wronglencsv exists, import info, if not, create it
 if (os.path.exists(h5path+ISCf) and "/WronglenDF" in h5path+ISCf):
     with h5py.File(h5path+ISCf) as hf:
