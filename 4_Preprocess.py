@@ -10,10 +10,13 @@ from sklearn import linear_model
 from scipy import stats
 from settings import *
 
+# bad subjects for very unique reasons:
+bad_sub_dict = {'sub-NDARHR140GMB':'TP BOLD scan is cut off, no motion params'}
+
 subs = glob.glob('%ssub*.html'%(fmripreppath))
 subs = [s.replace('.html', '') for s in subs]
 subs = [s.replace(fmripreppath, '') for s in subs]
-#subs = [sub for sub in subs if not os.path.isfile(h5path + sub + '.h5')]
+subs = [sub for sub in subs if not os.path.isfile(prepath + sub + '.h5') and sub not in bad_sub_dict]
 # Check if fmap has been processed
 # subs = [sub for sub in subs if len(glob.glob(fmripreppath+sub+'/figures/*sdc*'))==2]
 
@@ -23,7 +26,7 @@ for sub in subs:
     print('Processing subject ', sub)
     Demo = {'Age': Phenodf['Age'][Phenodf['EID'] == sub[4:]].iloc[0],
            'Sex': Phenodf['Sex'][Phenodf['EID'] == sub[4:]].iloc[0]}
-    with h5py.File(os.path.join(h5path + sub + '.h5')) as hf:
+    with h5py.File(os.path.join(prepath + sub + '.h5')) as hf:
         grp = hf.create_group('Pheno')
         for k,v in Demo.items():
             grp.create_dataset(k,data=v)
@@ -68,7 +71,7 @@ for sub in subs:
             D[hem] = D[hem] - np.dot(regr.coef_, reg.T) - regr.intercept_[:, np.newaxis]
             # Note 8% of values on cortical surface are NaNs, and the following will therefore throw an error
             D[hem] = stats.zscore(D[hem], axis=1)
-        with h5py.File(os.path.join(h5path + sub + '.h5')) as hf:
+        with h5py.File(os.path.join(prepath + sub + '.h5')) as hf:
             grp = hf.create_group(task)
             grp.create_dataset('L', data=D['L'])
             grp.create_dataset('R', data=D['R'])

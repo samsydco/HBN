@@ -5,36 +5,52 @@ import time
 import h5py
 import glob
 import numpy as np
+import deepdish as dd
 from scipy import stats
 from sklearn.cluster import AgglomerativeClustering
 from settings import *
 
-subs = glob.glob(h5path+'sub*.h5')
+subs = glob.glob(prepath+'sub*.h5')
 #subs=['/data/HBN/test2/fmriprep_output/fmriprep/PythonData/sub-NDARAW179AYF_copy.h5']
 
 hemis = ['lh','rh']
-HEMIS = ['L','R']
-cnum = [0,1] # cluster number associated with RSC for 5 cluster parcel
 froi = h5py.File('/data/Schema/intact/Yeo17net.h5', 'r')
 f6 = h5py.File('/data/Schema/intact/fsaverage6_adj.h5', 'r')
 roi = 16
 RSCroi ={}
-for hidx,hemi in enumerate(hemis):
-    rois = np.nan_to_num(froi[hemi][:][0])
-    dispcoords = f6[hemi+'inflatedcoords'][:]
-    tt = [np.zeros(coord.shape) if rois[idx]!=roi else coord for idx,coord in enumerate(np.transpose(dispcoords))]
-    clustering = AgglomerativeClustering(n_clusters=5).fit(tt)
-    RSCroi[hemi] = clustering.labels_==cnum[hidx]
+for hemi in hemis:
+	cnum = 0 if hemi == 'lh' else 1 # cluster number associated with RSC for 5 cluster parcel
+	rois = np.nan_to_num(froi[hemi][:][0])
+	dispcoords = f6[hemi+'inflatedcoords'][:]
+	tt = [np.zeros(coord.shape) if rois[idx]!=roi else coord for idx,coord in enumerate(np.transpose(dispcoords))]
+	clustering = AgglomerativeClustering(n_clusters=5).fit(tt)
+	RSCroi[hemi] = clustering.labels_==cnum
+dd.io.save(ISCpath+'RSC.h5',RSCroi)
+RSCroi = dd.io.load(ISCpath+'RSC.h5')
+
+ISCclust = dd.io.load(ISCpath+'ISCclusters_5.h5')
+
 for sub in subs:
     with h5py.File(sub) as f:
-        for task in ['DM','TP']:
-            del f[task]['RSC']
-            data = []
-            for hidx,hemi in enumerate(hemis):
-                temp = f[task][HEMIS[hidx]][RSCroi[hemi],:]
-                data.append(np.delete(temp,list(set([i[0] for i in np.argwhere(np.isnan(temp))])),axis=0))
-                #data.append(f[task][HEMIS[hidx]][~np.isnan(f[task][HEMIS[hidx]][RSCroi[hemi],0]),:])
-            f[task].create_dataset('RSC', data=np.concatenate(data))
+		for task in ['DM','TP']:
+			if 'RSC' in list(f[task].keys()): del f[task]['RSC']
+			rscdata = []
+			for hemi in hemis:
+				hem = 'L' if hemi == 'lh' else 'R'
+				temp = f[task][hem][RSCroi[hemi],:]
+				rscdata.append(np.delete(temp,np.unique([i[0] for i in np.argwhere(np.isnan(temp))]),axis=0))
+				if 'ISC_'+hem in list(f[task].keys()): del f[task]['ISC_'+hem]
+				grp = f[task].create_group('ISC_'+hem)
+				isctask = 'TP' if task == 'DM' else 'DM'
+				for i,r in enumerate(ISCclust['clusters'][isctask][hemi]):
+					grp.create_dataset(str(i), data=f[task][hem][[i for i,x in enumerate(r) if x==1],:])
+			f[task].create_dataset('RSC', data=np.concatenate(rscdata))
+			
+			
+				
+
+
+
 
 
 ''' 

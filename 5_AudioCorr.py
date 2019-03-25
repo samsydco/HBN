@@ -18,7 +18,7 @@ hrf = np.power(dt / (p * q), p) * np.exp(p - dt / q)
 # ensure that the story has actually started being spoken
 ignore_TRs = 10
 
-subs = glob.glob(h5path+'sub*.h5')
+subs = glob.glob(prepath+'sub*.h5')
 videonames = ['descme_10min_frame_samecodec.mp4','the_present_nocredits.mp4']
 group_corr = []
 for idx,task in enumerate(['DM','TP']):
@@ -62,9 +62,9 @@ for idx,task in enumerate(['DM','TP']):
 
 A1corr = np.mean(np.stack(group_corr),axis=0)
 
-with h5py.File(h5path+'A1.h5') as hf:
+with h5py.File(ISCpath+'A1.h5') as hf:
     hf.create_dataset('A1corr', data=A1corr)
-f = h5py.File(h5path+'A1.h5')
+f = h5py.File(ISCpath+'A1.h5')
 A1roi={}
 ROI = np.nan_to_num(f['A1corr'][:])>0.26
 A1roi['L'] = ROI[:len(ROI)//2]

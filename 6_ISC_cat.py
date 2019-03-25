@@ -11,11 +11,11 @@ from settings import *
 from brainiak import isfc
 
 ISCf = 'ISC_cat.h5'
-if os.path.exists(h5path+ISCf):
-    os.remove(h5path+ISCf)
+if os.path.exists(ISCpath+ISCf):
+    os.remove(ISCpath+ISCf)
 
-subord = glob.glob(h5path+'sub*.h5')
-subord = subord[0:5] # for testing!
+subord = glob.glob(prepath+'sub*.h5')
+#subord = subord[0:5] # for testing!
 ROIs = ['RSC','A1']
 TRs = [750,250]
 datacat = []
@@ -42,7 +42,7 @@ for roi in ROIs:
 
 ISC_persubj = isfc.isc(data,collapse_subj=False)
     
-with h5py.File(h5path+ISCf) as hf:
+with h5py.File(ISCpath+ISCf) as hf:
     hf.create_dataset('ISC_persubj', data=ISC_persubj)
     isc_pairs = hf.create_group('isc_pairs')
     for roi in ROIs:

@@ -7,9 +7,11 @@ outputdr = path + 'fmriprep_output/'
 Missingcsv = path + codedr + 'Missing.csv'
 T1file = path + codedr + 'T1.csv'
 fmripreppath = outputdr + 'fmriprep/'
-h5path = fmripreppath + 'PythonData/'
+prepath = path + 'Preprocessed/'
+ISCpath = path + 'ISCh5/'
 phenopath = path + 'pheno_data/'
 videopath = path+codedr+'HBN_fmriprep_code/videos/'
+figurepath = path+'Figures/'
 
 def yesnofun(sub):
     while True:

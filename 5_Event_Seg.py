@@ -10,7 +10,7 @@ from settings import *
 from brainiak import isfc
 EventSegf = 'EventSeg.h5'
 
-subord = glob.glob(h5path+'sub*.h5')
+subord = glob.glob(prepath+'sub*.h5')
 subord = subord[0:5] # for testing!
 ROIs = ['RSC','A1']
 for task in ['DM','TP']:

@@ -5,7 +5,9 @@ import glob
 import pandas as pd
 import numpy as np
 import os
+from tqdm import tqdm
 import datetime
+
 from settings import *
 
 compcsv = TRratingdr+'compT1.csv'
@@ -24,7 +26,7 @@ nchunk = 4 # number of items per chunk (maybe use 10?)
 pchunk = [plist[x:x+nchunk] for x in range(0,len(plist),nchunk)]
 
 # Delete extra BOLD stuff
-for chunk in pchunk:
+for chunk in tqdm(pchunk):
     pstr = ' '.join(chunk)
     for task in ['DM','TP']:
         date = str(datetime.datetime.now())[0:19].replace(' ','_')

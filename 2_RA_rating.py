@@ -6,8 +6,15 @@ import csv
 import os
 from settings import *
 
-initials = input("Please type your initials - should be same two letters every time you come to lab.")
-T1file = path+codedr+'T1_rating/'+initials+"_T1.csv"
+# Right now all RAs should have already entered their information:
+while True:
+	initials = input("Please type your initials - should be same two letters every time you come to lab.")
+	T1file = path+codedr+'T1_rating/'+initials+"_T1.csv"
+	if not os.path.exists(T1file):
+		print("You used different initials last time!")
+		continue
+	else:
+		break
 # If T1file exists, import info, if not, create it
 if os.path.exists(T1file):
 	with open(T1file,'r') as f:
@@ -16,27 +23,15 @@ if os.path.exists(T1file):
 else:
 	T1dict = {}
 
-for sub in glob.glob('%ssub*'%(path)):
+subs = glob.glob('%ssub*'%(path))
+print('You have %s scans left.'%(len(subs) - len(T1dict)))
+for sub in subs:
 	sub_temp = sub.replace(path,"")
 	if sub_temp not in T1dict:
 		# Look at T1's in fsleyes pause, do fmriprep if ok
 		sp.run(["fsleyes","%s/anat/%s_acq-HCP_T1w.nii.gz"%(sub,sub_temp)])
-		while True:
-			try:
-				yesno = input("%s: Type \"y\" for \"yes\", \"n\" for \"no\", and \
-					\"m\" for \"maybe\". (Type \"break\" if you need a break)."%(sub_temp))
-			except ValueError:
-				print("Sorry, I didn't understand that.")
-				continue
-
-			if yesno not in ['y','n','m','break']:
-				print("Sorry, your response must be \"y\", \"n\", or \"m\".")
-				continue
-			elif yesno=="break":
-				break
-			else:
-				#Answer is good.
-				break
+		yesno = yesnofun(sub)
+		
 		if yesno in ['y','n','m']:
 			T1dict[sub_temp] = yesno
 		else:

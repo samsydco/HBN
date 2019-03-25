@@ -4,16 +4,17 @@ import h5py
 import os
 import glob
 import numpy as np
+import deepdish as dd
 from scipy.stats import zscore
 from scipy.spatial.distance import squareform
 from settings import *
 
 from brainiak import isfc
 ISCf = 'ISC.h5'
-if os.path.exists(h5path+ISCf):
-    os.remove(h5path+ISCf)
+if os.path.exists(ISCpath+ISCf):
+    os.remove(ISCpath+ISCf)
 
-subord = glob.glob(h5path+'sub*.h5')
+subord = glob.glob(prepath+'sub*.h5')
 #subord = subord[0:5] # for testing!
 ROIs = ['RSC','A1']
 for task in ['DM','TP']:
@@ -36,7 +37,7 @@ for task in ['DM','TP']:
     # ISC = isfc.isc(data,return_p=False,collapse_subj=True)
     ISC_persubj = isfc.isc(data,collapse_subj=False)
     
-    with h5py.File(h5path+ISCf) as hf:
+    with h5py.File(ISCpath+ISCf) as hf:
         grp = hf.create_group(task)
         #grp.create_dataset('ISC', data=ISC)
         grp.create_dataset('ISC_persubj', data=ISC_persubj)
@@ -44,7 +45,7 @@ for task in ['DM','TP']:
         for roi in ROIs:
             isc_pairs.create_dataset(roi,data=ROIiscs[roi])
     
-with h5py.File(h5path+ISCf) as hf:
+with h5py.File(ISCpath+ISCf) as hf:
     string_dt = h5py.special_dtype(vlen=str)
     hf.create_dataset("subord",data=np.array(subord).astype('|S71'),dtype=string_dt)
 
