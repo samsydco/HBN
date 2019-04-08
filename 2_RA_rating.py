@@ -6,11 +6,14 @@ import csv
 import os
 from settings import *
 
+site = 'Site-CBIC'
+#site = 'Site-RU'
+
 # Right now all RAs should have already entered their information:
 while True:
 	initials = input("Please type your initials - should be same two letters every time you come to lab.")
-	T1file = path+codedr+'T1_rating/'+initials+"_T1.csv"
-	if not os.path.exists(T1file):
+	T1file = path+codedr+'T1_rating/'+initials+'_'+site+"_T1.csv"
+	if not glob.glob(path+codedr+'T1_rating/'+initials+'_*'):
 		print("You used different initials last time!")
 		continue
 	else:
@@ -22,6 +25,9 @@ if os.path.exists(T1file):
 		T1dict = {rows[0]:rows[1] for rows in r}
 else:
 	T1dict = {}
+
+if site == 'Site-CBIC':
+	path = path + site + '/'	
 
 subs = glob.glob('%ssub*'%(path))
 print('You have %s scans left.'%(len(subs) - len(T1dict)))

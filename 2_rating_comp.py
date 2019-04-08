@@ -8,19 +8,25 @@ import subprocess as sp
 import datetime
 from settings import *
 
+site = 'Site-CBIC'
+#site = 'Site-RU'
+
 GTdf = pd.read_csv(T1file, header=None)
-compcsv = TRratingdr+'compT1.csv'
+compcsv = TRratingdr+'compT1_'+site+'.csv'
 if os.path.exists(compcsv):
 	compdf = pd.read_csv(compcsv)
 else:
-    compdf = GTdf.copy()
-    compdf.columns = ['sub','GT']
+	if site == 'Site-RU':
+		compdf = GTdf.copy()
+		compdf.columns = ['sub','GT']
+	else:
+		compdf = pd.DataFrame(columns={'sub'})
 
 if 'final' not in compdf.columns:
     compdf['final'] = [np.nan for _ in range(len(compdf))] 
 
-for RAcsv in glob.glob(TRratingdr+'*_T1.csv'):
-    RA = RAcsv.replace(TRratingdr,"").replace('_T1.csv',"")
+for RAcsv in glob.glob(TRratingdr+'*'+site+'_T1.csv'):
+    RA = RAcsv.replace(TRratingdr,"").replace('_'+site+'_T1.csv',"")
     if RA not in compdf.columns:
         compdf[RA] = [np.nan for _ in range(len(compdf))]
     RAdf = pd.read_csv(RAcsv, header=None)
