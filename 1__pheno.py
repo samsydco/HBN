@@ -18,18 +18,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 from settings import *
 
+#site = 'Site-CBIC'
+site = 'Site-RU'
+
 goodsubs = [] # subjects in pipeline 
 
 # number available at Site-RU: 922
-totaws = len(sp.check_output(["aws","s3","ls","s3://fcp-indi/data/Archives/HBN/MRI/Site-RU/","--no-sign-request"]\
+totaws = len(sp.check_output(["aws","s3","ls","s3://fcp-indi/data/Archives/HBN/MRI/"+site+"/","--no-sign-request"]\
 	).splitlines()) - 2 # subtract 'derivatives/' and 'participants.tsv'
 # number rejected due to missing data: 455
-awsdf = pd.read_csv(Missingcsv+'_Site-RU.csv')
+awsdf = pd.read_csv(Missingcsv+'_'+site+'.csv')
 badaws = len(awsdf) # from AWS QA
 badsubs = [i.split('.')[0] for i in awsdf['Subject'].tolist()] # subjects rejected (without '.')
 
 # number rejected due to bad T1: 146
-compdf = pd.read_csv(TRratingdr+'compT1.csv')
+compdf = pd.read_csv(TRratingdr+'compT1_'+site+'.csv')
 badT1 = sum(compdf['final'].isna()) + compdf['final'].value_counts()['n']
 for index, row in compdf.iterrows():
 	if (str(row['final']) != "n" and str(row['final'])!='nan'):

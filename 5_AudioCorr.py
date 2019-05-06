@@ -64,6 +64,9 @@ A1corr = np.mean(np.stack(group_corr),axis=0)
 
 with h5py.File(ISCpath+'A1.h5') as hf:
     hf.create_dataset('A1corr', data=A1corr)
+
+# moved code to 5_ROI.y: 4/19/19
+'''
 f = h5py.File(ISCpath+'A1.h5')
 A1roi={}
 ROI = np.nan_to_num(f['A1corr'][:])>0.26
@@ -77,4 +80,5 @@ for sub in subs:
             for hemi in ['L','R']:
                 data.append(f[task][hemi][A1roi[hemi],:])
             f[task].create_dataset('A1', data=np.concatenate(data))
+'''
             #f[task].create_dataset('A1', data=zscore(np.mean(np.concatenate(data),axis=0),ddof=1))

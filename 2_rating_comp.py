@@ -37,21 +37,24 @@ for RAcsv in glob.glob(TRratingdr+'*'+site+'_T1.csv'):
             compdf.loc[np.where(compdf['sub'].str.match(sub).values)[0][0],RA] = yesno
         else:
             compdf = compdf.append(pd.Series(), ignore_index=True)
-            compdf.at[compdf.index[-1], 'sub'] = sub
-            compdf.at[compdf.index[-1], RA] = yesno        
-
+            compdf.loc[compdf.index[-1], 'sub'] = sub
+            compdf.loc[compdf.index[-1], RA] = yesno
             
             
 # make a tally:
-total = sum(all(str(ii) != 'nan' for ii in [i[ii] for ii in [3,4,5]]) for i in compdf.values.tolist())
+if site == 'Site-RU':
+	idx = [3,4,5]
+else:
+	idx = [2,3,4]
+total = sum(all(str(ii) != 'nan' for ii in [i[ii] for ii in idx]) for i in compdf.values.tolist())
 
-total_no_n = sum(all(ii != 'n' and str(ii) != 'nan' for ii in [i[ii] for ii in [3,4,5]]) and not os.path.exists(fmripreppath+i[0]+'.html') for i in compdf.values.tolist())
+total_no_n = sum(all(ii != 'n' and str(ii) != 'nan' for ii in [i[ii] for ii in idx]) and not os.path.exists(fmripreppath+i[0]+'.html') for i in compdf.values.tolist())
 
-total_ms = sum(all(str(ii) != 'nan' for ii in [i[ii] for ii in [3,4,5]]) and sum(ii=='m' for ii in [i[ii] for ii in [3,4,5]])>2 and not os.path.exists(fmripreppath+i[0]+'.html') for i in compdf.values.tolist())
+total_ms = sum(all(str(ii) != 'nan' for ii in [i[ii] for ii in idx]) and sum(ii=='m' for ii in [i[ii] for ii in idx])>2 and not os.path.exists(fmripreppath+i[0]+'.html') for i in compdf.values.tolist())
 
-total_yn = sum(all(str(ii) != 'nan' for ii in [i[ii] for ii in [3,4,5]]) and 'n' in [i[ii] for ii in [3,4,5]] and 'y' in [i[ii] for ii in [3,4,5]] and not os.path.exists(fmripreppath+i[0]+'.html') for i in compdf.values.tolist())
+total_yn = sum(all(str(ii) != 'nan' for ii in [i[ii] for ii in idx]) and 'n' in [i[ii] for ii in idx] and 'y' in [i[ii] for ii in idx] and not os.path.exists(fmripreppath+i[0]+'.html') for i in compdf.values.tolist())
 
-total_potential = sum(all(str(ii) != 'nan' for ii in [i[ii] for ii in [3,4,5]]) and not os.path.exists(fmripreppath+i[0]+'.html') for i in compdf.values.tolist())
+total_potential = sum(all(str(ii) != 'nan' for ii in [i[ii] for ii in idx]) and not os.path.exists(fmripreppath+i[0]+'.html') for i in compdf.values.tolist())
 
 print('total number of potential files: %s, total without no: %s, total with mostly maybe: %s, total with yes and no: %s'%(total_potential,total_no_n,total_ms,total_yn))
 
