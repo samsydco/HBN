@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 
-# replace text in columns using dictionary set in settings.py
+# replace text in columns using dictionary set in defmod
 def replacetext(df,ColumnName,dictname):
 	df[ColumnName][1:][df[ColumnName][1:].notnull()] = [{key.lower() if type(key) == str else key: value for key, value in dictname.items()}[item] for item in [item.lower() for item in df[ColumnName][1:][df[ColumnName][1:].notnull()]]] 
 	return df
@@ -26,7 +26,7 @@ def dfmod(p,df,non_incl_cols):
 
 	country = {'usa':1,'united states':1,'us':1}
 
-	Time = {'None': 1, 'Never': 1, 'No': 1, 'Does not': 1, 'not yet': 1, '1x/ every 6 months': 1, '1x/every 2 weeks':1,'Rarely or never': 1, 'No playdates': 1, 'Rarely': 1, 'Rarely or never (summertime)': 1, 'DK': 1, '0': 1, '0 hours': 1, '1x/month': 2, '2x/month': 2, 'Less than 1 hr/wk': 2, '2-3x/month': 2, 'Less than 1 hour/week': 2, 'Less than 1 hr/wk Recorder': 2, '1/wk': 2, '2/week': 2, '1-3 hrs/wk': 3, '1x/week': 3, '1-3 hrs/wk Plays drums': 3, '1-3 hours/week': 3, '2/week': 3, '1x/week': 3, '2x/week': 3, '3/week': 3, '4-7 hrs/wk': 4, '6/week': 4, '5/week': 4, '8 hrs/wk': 4, '<1hr/day': 4, 'Less than 1 hr/day': 4, 'f': 4, '5-8 hrs/wk': 4, '2-3x/week':4, '4-7 hrs/wk*': 4, '10hrs/wk': 4, 'does mostly in afterschool program': 4, '1-3 hrs/day*': 5, '1-3 hrs/day; piano': 5, '1-3 hours': 5, '1-3 hrs/day ': 5, '3 hrs/day': 5, '10-12hrs/wk': 5, '1-3 hrs/day *': 5, '1-3 hrs/day': 5, '6-8 hrs/wk': 5, '20/week': 5, '10 hrs/wk': 5, '3x/wk': 5, '3x/week': 5, '11 hrs/wk': 5, '8-10 hrs/wk': 5, '12 hrs/wk': 5, '10/week': 5, '25-30hrs/wk': 6, '1-6 hrs/day': 6, '3-5x/week': 6, '3-6 hrs/day': 6, '3-6 hrs/day*': 6, '4x/week': 6, '6x/week': 6, '5x/week': 6, '7x/week': 6, '4-5 hours': 6, 'More than 6 hrs/day': 6, 'constant': 6, '15 hrs/wk': 6,'6-8 hrs/day': 6,'Daily': 6}
+	Time = {'None': 1, 'Never': 1, 'No': 1, 'Does not': 1, 'not yet': 1, 'unsure': 1, '1x/ every 6 months': 1, '1x/every 2 weeks':1,'Rarely or never': 1, 'No playdates': 1, 'Rarely': 1, 'Rarely or never (summertime)': 1, 'DK': 1, '0': 1, '0 hours': 1, '1x/month': 2, '2x/month': 2, 'Less than 1 hr/wk': 2, '2-3x/month': 2, 'less than 1 hr/wk (in school, violin)': 2, 'Less than 1 hour/week': 2, 'Less than 1 hr/wk Recorder': 2, '1/wk': 2, '2/week': 2, '1-3 hrs/wk': 3, '1x/week': 3, '1-3 hrs/wk Plays drums': 3, '1-3 hrs/wk (guitar)': 3, '1-3 hours/week': 3, '1-3 hrs/day wknds': 3, '1-3 hrs/wk wknds': 3, '2/week': 3, '1x/week': 3, '2x/week': 3, '3/week': 3, '4-7 hrs/wk': 4, '6/week': 4, '5/week': 4, '8 hrs/wk': 4, '9 hrs/week': 4, '<1hr/day': 4, 'Less than 1 hr/day': 4, 'f': 4, '5-8 hrs/wk': 4, '2-3x/week':4, '4-7 hrs/wk*': 4, '10hrs/wk': 4, 'does mostly in afterschool program': 4, '1-3 hrs/day*': 5, '1-3 hrs/day; piano': 5, '1-3 hrs/day. wknds': 5, '1-3 hours': 5, '1-3 hrs/day ': 5, '3 hrs/day': 5, '10-12hrs/wk': 5, '1-3 hrs/day *': 5, '1-3 hrs/day': 5, '6-8 hrs/wk': 5, '20/week': 5, '10 hrs/wk': 5, '3x/wk': 5, '3x/week': 5, '11 hrs/wk': 5, '8-10 hrs/wk': 5, '12 hrs/wk': 5, '10/week': 5, '25-30hrs/wk': 6, '1-6 hrs/day': 6, '3-5x/week': 6, '3-6 hrs/day': 6, '3-6 hrs/day*': 6, '4x/week': 6, '6x/week': 6, '5x/week': 6, '7x/week': 6, '4-5 hours': 6, 'More than 6 hrs/day': 6, 'constant': 6, '15 hrs/wk': 6,'6-8 hrs/day': 6,'Daily': 6}
 
 	nodict = {'no':1,'no ':1}
 	hand = {'Right': 1, 'Left': 2, 'Ambidexterous': 3}
@@ -50,6 +50,8 @@ def dfmod(p,df,non_incl_cols):
  'Autism Spectrum Disorder':4,}
 	dx01co = {'F90.2':1,'F90.0':2,'No Diagnosis Given: Incomplete Eval':3,'No Diagnosis Given':3,'F84.0':4,'F81.0':5,'F41.1':6,'F90.8':7,'F90.1':8,'F40.10':9,'F80.9':10}
 	dxlist = [dx01ca,dx01s,dx01,dx01co]
+	
+	hxlist = [['adhd'],['autis','asd','asperge'],['depres','mdd'],['anxiety','gad'],['learning','dyslexia','ld']]
 
 	_ddict = {'extremely low':1,'very low':2,'low':3,'low average':4,'below aver':4,'below avg':4,'below avg.':4,'average':5,'high average':6,'high':7,'above aver':7,'very high':8,'extremely high':9}	
 
@@ -78,6 +80,18 @@ def dfmod(p,df,non_incl_cols):
 					df[d][df[cr].str.match(d).values == True] = 1
 					df[d][df[cr].isin([k for k in df[cr].value_counts().index.tolist() if any(x in k for x in [dd for dd in list(dxlist[i].keys()) if dd!=d])]) & df[d].isna()] = 0
 				df = df.drop(columns = cr)
+	if 'TxHx' in p:
+		for c in ['pmed__name','pmed__dose','omed__name','omed__dose']:
+			for num in ['01','02','03','04','05','06','07','08','09','10']:
+				cr = c[:5] + num + c[5:]
+				df = df.drop(columns = cr)
+		for d in hxlist:
+			df[' '.join(d)] = [np.nan for _ in range(len(df))] 
+		for num in ['1','2','3']:
+			cr = 'Past_DX' + num
+			for d in hxlist:
+				df[' '.join(d)].iloc[[idx for idx,item in enumerate([item.lower() for item in df[cr][1:][df[cr][1:].notnull()]]) if any(x in item for x in d)]] = 1
+			df = df.drop(columns = cr)
 	if 'PPS' in p:
 		for g in ['M','F']:
 			df['PPS_'+g+'_Score'] = df['PPS_'+g+'_Score'].iloc[1:].astype(float) / np.nanmax(df['PPS_'+g+'_Score'].iloc[1:].astype(float))
@@ -111,7 +125,7 @@ def dfmod(p,df,non_incl_cols):
 		for c in [c for c in list(df) if 'age' in c]:
 			df[c][df[c].isin([k for k in df[c].value_counts().index.tolist() if any(x in k for x in ['+','m','^','?','y'])])] = np.nan
 	if 'DevHx' in p:
-		df['hospital_dur'][df['hospital_dur'].isin([k for k in df['hospital_dur'].value_counts().index.tolist() if any(x in k for x in ['F','d','?','+','*'])])] = np.nan
+		df['hospital_dur'][df['hospital_dur'].isin([k for k in df['hospital_dur'].value_counts().index.tolist() if any(x in k for x in ['F','d','h','w','?','+','*','-'])])] = np.nan
 	return df
 
 

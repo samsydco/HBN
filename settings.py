@@ -11,6 +11,7 @@ fmripreppath = outputdr + 'fmriprep/'
 prepath = path + 'Preprocessed/'
 ISCpath = path + 'ISCh5/'
 phenopath = path + 'pheno_data/'
+assesspath = path + 'assessment_data/rel_6/'
 metaphenopath = path + 'pheno_meta_data/'
 videopath = path+codedr+'HBN_fmriprep_code/videos/'
 figurepath = path+'Figures/'
@@ -34,5 +35,6 @@ def yesnofun(sub):
             break
     return yesno
 
-
+import glob
+subord = glob.glob(prepath+'sub*.h5')
 

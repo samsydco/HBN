@@ -46,6 +46,7 @@ if site == 'Site-RU':
 	idx = [3,4,5]
 else:
 	idx = [2,3,4]
+	path = path+'Site-CBIC/'
 total = sum(all(str(ii) != 'nan' for ii in [i[ii] for ii in idx]) for i in compdf.values.tolist())
 
 total_no_n = sum(all(ii != 'n' and str(ii) != 'nan' for ii in [i[ii] for ii in idx]) and not os.path.exists(fmripreppath+i[0]+'.html') for i in compdf.values.tolist())

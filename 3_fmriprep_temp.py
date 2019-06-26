@@ -9,12 +9,12 @@ import numpy as np
 import datetime
 from settings import *
 
-#site = 'Site-CBIC'
-site = 'Site-RU'
+site = 'Site-CBIC'
+#site = 'Site-RU'
 
+'''
 compcsv = TRratingdr+'compT1_'+site+'.csv'
 compdf = pd.read_csv(compcsv)
-
 fl = [item for sublist in [f.split('.txt')[0].split('_sub-NDAR')[1:] for f in glob.glob(path+'fmriprep_cmdoutput/'+'*sub*.txt')] for item in sublist]
 plist = []
 for i,v in {i:fl.count(i) for i in fl}.items():
@@ -27,7 +27,8 @@ for i,v in {i:fl.count(i) for i in fl}.items():
         f = outputdr+'fmriprep/'+'sub-NDAR'+i+'.html'
         if not os.path.isfile(f) and all(i in ''.join(lines) for i in ['"j"','"j-"']):
             plist.append('sub-NDAR'+i)
-#plist = ['sub-NDARHA387FPM']
+'''
+plist = ['sub-NDARXZ902NFM']
 
 password = input('Type the password for scohen@sophon.columbia.edu:')
 # Run participants in batches of nchunk - check what is max?:
@@ -36,15 +37,18 @@ pchunk = [plist[x:x+nchunk] for x in range(0,len(plist),nchunk)]
 
 # Delete extra BOLD stuff
 for chunk in pchunk:
-    pstr = ' '.join(chunk)
-    for task in ['DM']:#,'TP']:
-        date = str(datetime.datetime.now())[0:19].replace(' ','_')
-        f = open("%sfmriprep_cmdoutput/%s_%s_%s.txt"%(path,task,date,pstr.replace(" ","_")), "w")
-        # "-t" in docker instead of "-it" :)
-        command = ('docker run --rm -t -u 14128:13110 -v                         /usr/local/freesurfer/license.txt:/opt/freesurfer/license.txt:ro -v '+path+':/data:ro -v '+outputdr+':/out -v /tmp/scohen5:/scratch poldracklab/fmriprep:1.1.4 /data /out participant --ignore=slicetiming --output-space fsaverage6 --participant_label '+pstr+' -t movie'+task+' -w /scratch').split()
-        p = sp.Popen(['sudo', '-S'] + command, stdin=sp.PIPE, stderr=sp.PIPE,
+	pstr = ' '.join(chunk)
+	for task in ['TP']:#,'TP']:
+		date = str(datetime.datetime.now())[0:19].replace(' ','_')
+		f = open("%sfmriprep_cmdoutput/%s_%s_%s.txt"%(path,task,date,pstr.replace(" ","_")), "w")
+		# "-t" in docker instead of "-it" :)
+		if site =='Site-RU':
+			command = ('docker run --rm -t -u 14128:13110 -v                         /usr/local/freesurfer/license.txt:/opt/freesurfer/license.txt:ro -v '+path+':/data:ro -v '+outputdr+':/out -v '+tmpdr+':/scratch poldracklab/fmriprep:1.1.4 /data /out participant --ignore=slicetiming --output-space fsaverage6 --participant_label '+pstr+' -t movie'+task+' -w /scratch').split()
+		else:
+			command = ('docker run --rm -t -u 14128:13110 -v                         /usr/local/freesurfer/license.txt:/opt/freesurfer/license.txt:ro -v '+path+site+'/:/data:ro -v '+outputdr+':/out -v '+tmpdr+':/scratch poldracklab/fmriprep:1.1.4 /data /out participant --ignore=slicetiming --output-space fsaverage6 --participant_label '+pstr+' -t movie'+task+' -w /scratch').split()
+		p = sp.Popen(['sudo', '-S'] + command, stdin=sp.PIPE, stderr=sp.PIPE,
           universal_newlines=True,stdout=f)
-        p.communicate(password + '\n')[1]
+		p.communicate(password + '\n')[1]
 
 '''
 

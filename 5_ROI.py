@@ -92,11 +92,11 @@ for task in tqdm(['DM','TP']):
 	ROIs = []
 	for k in list(ff.keys()):
 		if type(ff[k]) == np.ndarray:
-			if ff[k].shape[0] < 20000:
+			if ff[k].shape[0] < 20000 and np.sum(~np.isnan(ff[k]))>100:
 				ROIs.append(k)
 		if type(ff[k]) == dict:
 			for kk in list(ff[k].keys()):
-				if ff[k][kk].shape[0] < 20000:
+				if ff[k][kk].shape[0] < 20000 and np.sum(~np.isnan(ff[k][kk]))>100:
 					ROIs.append(k+'.'+kk)
 	del ff
 	ROIs = [r for r in ROIs if not any(i == r for i in ['reg'])]

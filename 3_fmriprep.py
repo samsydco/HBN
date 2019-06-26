@@ -9,8 +9,8 @@ from tqdm import tqdm
 import datetime
 from settings import *
 
-#site = 'Site-CBIC'
-site = 'Site-RU'
+site = 'Site-CBIC'
+#site = 'Site-RU'
 
 compcsv = TRratingdr+'compT1_'+site+'.csv'
 compdf = pd.read_csv(compcsv)

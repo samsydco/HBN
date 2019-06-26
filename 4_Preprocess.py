@@ -11,7 +11,7 @@ from scipy import stats
 from settings import *
 
 # bad subjects for very unique reasons:
-bad_sub_dict = {'sub-NDARHR140GMB':'TP BOLD scan is cut off, no motion params'}
+bad_sub_dict = {'sub-NDARHR140GMB':'TP BOLD scan is cut off, no motion params','sub-NDARYD546HCB':'TP BOLD scan is cut off, no motion params','sub-NDARJF517HC8':'*VNav_T1w.nii.gz damaged'}
 
 subs = glob.glob('%ssub*.html'%(fmripreppath))
 subs = [s.replace('.html', '') for s in subs]

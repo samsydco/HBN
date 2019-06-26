@@ -5,6 +5,7 @@ import deepdish as dd
 import pandas as pd
 import os
 import glob
+import tqdm
 import numpy as np
 from tqdm import tqdm
 from scipy import stats
@@ -17,23 +18,6 @@ ROIf = 'ROIstack'
 if os.path.exists(ISCpath+ROIf+'.h5'):
 	os.remove(ISCpath+ROIf+'.h5')
 
-subord = glob.glob(prepath+'sub*.h5')
-#subord = subord[0:5] # for testing!
-
-# make a list of all subjects age/sex, do median split, put in dict
-datadf = pd.read_csv(metaphenopath+'data.csv')
-Phenodf = pd.concat((pd.read_csv(f) for f in glob.glob(phenopath+'HBN_R*Pheno.csv')),ignore_index=True)	
-agel = []
-sexidx = []
-for sub in subord:
-	subbool = Phenodf['EID'] == sub.split('sub-')[1].split('.h5')[0]
-	agel.append(Phenodf['Age'][subbool].iloc[0])
-	sexidx.append(Phenodf['Sex'][subbool].iloc[0])
-med = np.median(agel)
-ageidx = agel > med
-sexidx = [s == 1 for s in sexidx] #True is Female
-phenol = {'age':ageidx,'sex':sexidx}
-
 # simple, one roi isc function
 def isc(D):
 	n_subj = D.shape[0]
@@ -44,36 +28,43 @@ def isc(D):
 		ISC[loo_subj] = stats.pearsonr(group,subj)[0]
 	return ISC
 
+def isc_space(D):
+	n_subj,n_vox,n_time = D.shape
+	ISC = np.zeros((n_subj,n_time))
+	for loo_subj in range(n_subj):
+		group = stats.zscore(np.mean(D[np.arange(n_subj) != loo_subj, :,:], axis=0),axis=0)
+		subj = stats.zscore(D[loo_subj,:,:],axis=0)
+		ISC[loo_subj,:] = np.sum(np.multiply(group,subj),axis=0)/(n_vox-1)
+
 # create list of per-demo, per-ROI iscs, and compare with parametric t-test
 roiiscdict = {}
-for f in glob.glob(ISCpath+ROIf+'_*'):
+for f in tqdm(glob.glob(ISCpath+ROIf+'_*')):
 	roi = f.split('/')[-1].split(ROIf+'_')[-1].split('.h5')[0]
 	ROIdata = dd.io.load(f,['/'+roi[3:]])[0]
 	if np.sum(np.isnan(ROIdata))>0 and np.sum(np.isnan(ROIdata[:,0,0]))<len(subord):
 		# sub: sub-NDARAX283MAK, TP, and sub-NDARYY218LU2, TP, missing some values in files
 		# TP_ISC_L.3 and TP_ISC_R.2
 		ROIdata[np.where(np.isnan(ROIdata))] = 0
-	ROIdata = np.mean(stats.zscore(ROIdata,axis=2,ddof=1),axis=1)
+	ROIdata = stats.zscore(ROIdata,axis=2,ddof=1)
 	roiiscdict[roi] = {}
-	for roi in ROIs:
-        roiiscdict[roi]['xcorr'] = squareform(np.corrcoef(ROIdata), checks=False)
+	roiiscdict[roi]['xcorr'] = squareform(np.corrcoef(np.mean(ROIdata,axis=1)), checks=False)
 	for p, v in phenol.items():
-		roiiscdict[roi][p] = []
-		roiiscdict[roi][p].append(
-			#isfc.isc(ROIdata[[i == True for i in v],:,:]))
-				isc(ROIdata[[i == True for i in v],:]))
-		roiiscdict[roi][p].append(
-				isc(ROIdata[[i == False for i in v],:]))	
-		roiiscdict[roi][p].append(stats.ttest_ind(roiiscdict[roi][p][0],roiiscdict[roi][p][1]))
-		print(p,'\n',roi,'\n',roiiscdict[roi][p][-1])
-
+		roiiscdict[roi][p] = {}
+		roiiscdict[roi][p]['isc_true'] = isc(np.mean(ROIdata,axis=1)[[i == True for i in v],:])
+		roiiscdict[roi][p]['isc_false'] = isc(np.mean(ROIdata,axis=1)[[i == False for i in v],:])
+		roiiscdict[roi][p]['stats'] = stats.ttest_ind(roiiscdict[roi][p]['isc_true'],roiiscdict[roi][p]['isc_false'])
+		roiiscdict[roi][p]['patt_true'] = isc_space(ROIdata[[i == True for i in v],:,:])
+		roiiscdict[roi][p]['patt_false'] = isc_space(ROIdata[[i == False for i in v],:,:])
+		#print(p,'\n',roi,'\n',roiiscdict[roi][p]['stats'])
+'''
 for roi,vals in roiiscdict.items():
 	for dem in list(phenol.keys()):
 		if vals[dem][-1][-1] < 0.05:
-			mean1 = round(np.mean(vals[dem][0]),3)
-			mean2 = round(np.mean(vals[dem][1]),3)
-			p = vals[dem][-1][-1]
+			mean1 = round(np.mean(vals[dem]['isc_true']),3)
+			mean2 = round(np.mean(vals[dem]['isc_false']),3)
+			p = vals[dem]['stats'][-1]
 			print(roi,'\n',dem,'\n','mean1 = ',mean1,'mean2 = ',mean2,'\n',p)
+'''
 
 with h5py.File(ISCpath+ROIf+'.h5') as hf:
 	for p, v in roiiscdict.items():
