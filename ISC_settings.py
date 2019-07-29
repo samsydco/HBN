@@ -49,12 +49,19 @@ def even_out(demo1,demo2):
 			d2sum[tf2,tf1] = len(demo2idx[tf1][tf2])
 	subh = [[[], []] for i in range(2)]
 	for tf2 in [0,1]:
-		mins = (min(d2sum[tf2])).astype(int) if len(demo1idx[0])!=0 else (min(d2sum[:,1])).astype(int)
-		for tf1 in [0,1]:
-			subidx = np.random.choice(demo2idx[tf1][tf2],mins,replace=False) if len(demo1idx[0])!=0 else np.random.choice(demo2idx[1][tf2],mins,replace=False)
-			for h in [0,1]:
-				# subject indices for demo2=tf2, demo1=tf1,split=s
-				subh[tf1][h].extend(subidx[0+mins//2*h:mins//2+mins//2*h])
+		if len(demo1idx[0])!=0:
+			mins = (min(d2sum[tf2])).astype(int)
+			for tf1 in [0,1]:
+				subidx = np.random.choice(demo2idx[tf1][tf2],mins,replace=False)
+				for h in [0,1]:
+					# subject indices for demo2=tf2, demo1=tf1,split=s
+					subh[tf1][h].extend(subidx[0+mins//2*h:mins//2+mins//2*h])
+		else:
+			mins = (min(d2sum[:,1])).astype(int)
+			subidx = np.random.choice(demo2idx[1][tf2],mins,replace=False)
+			for tf1 in [0,1]:
+				for h in [0,1]:
+					subh[tf1][h].extend(subidx[0+mins//4*h+(mins//2)*tf1:mins//4+mins//4*h+(mins//2)*tf1])
 	return subh
 # Check for equivelent demo2 distribution in all 4 subh groups:
 '''
@@ -94,19 +101,56 @@ def split_subj(phenol):
 					subdist[k][kt][h][htmp] = [p for idx,p in enumerate(vt) if idx in splitidx[k][h][htmp]]
 					subsum[k][kt][h,htmp] = np.nansum(subdist[k][kt][h][htmp])
 	return splitidx,subdist,subsum
-	
+
+# max diff between old/young in hist bins of equal height:
+nsub = 15 # supposed number of subjects in each bin
+agespan = np.max(np.diff(np.interp(np.linspace(0, len(agel), len(agel)//nsub + 1),np.arange(len(agel)),np.sort(agel))))
+nbinseq = ((max(agel)-min(agel))//agespan).astype('int')
+eqbins = []
+for b in range(nbinseq+1):
+	eqbins.append(min(agel)+agespan*b)
 
 plot = 'off'
 nbins = 19
 bins = np.linspace(min(agel), max(agel), nbins+1)
 agedist = [None]*2
+# make equal width bins, w same # of ages, and consistent sex dist
+ageeq = [[[[] for _ in range(nbinseq)] for _ in range(2)] for _ in range(2)]
+lenageeq = [[] for _ in range(2)]
+minageeq = []
 # Are M and F evenly dist in age
 for i in np.unique(phenol['sex']):
 	ages = [a for idx,a in enumerate(agel) if phenol['sex'][idx]==i]
 	agedist[i] = [binned_statistic(ages,ages,statistic='count',bins=bins),[ [] for i in range(nbins) ]]
+	for b in range(nbinseq):
+		ageeq[i][0][b] = [idx for idx,a in enumerate(ages) 
+					   if a>=eqbins[b] and a<eqbins[b+1]]
+		lenageeq[i].append(len(ageeq[i][0][b]))
+	minageeq.append(min(lenageeq[i]))
 	for idx,sub in enumerate([s for idx,s in enumerate(subord) if phenol['sex'][idx]==i]):
 		agedist[i][1][agedist[i][0][2][idx]-1].append(sub)
+		if ages[idx] < eqbins[nbinseq]:
+			ageeq[i][1][[b for b in range(nbinseq) if idx in ageeq[i][0][b]][0]].append(sub)
+		
 nsubbin = [min([agedist[1][0][0][b],agedist[0][0][0][b]]).astype(int) for b in range(nbins)]
+
+def binagesubs(agel,phenol,eqbins,subord):
+	nbinseq = len(eqbins) - 1
+	ageeq = [[[[] for _ in range(nbinseq)] for _ in range(2)] for _ in range(2)]
+	lenageeq = [[] for _ in range(2)]
+	minageeq = []
+	for i in np.unique(phenol['sex']):
+		ages = [a for idx,a in enumerate(agel) if phenol['sex'][idx]==i]
+		for b in range(nbinseq):
+			ageeq[i][0][b] = [idx for idx,a in enumerate(ages) 
+						   if a>=eqbins[b] and a<eqbins[b+1]]
+			lenageeq[i].append(len(ageeq[i][0][b]))
+		minageeq.append(min(lenageeq[i]))
+		for idx,sub in enumerate([s for idx,s in enumerate(subord) if phenol['sex'][idx]==i]):
+			if ages[idx] < eqbins[nbinseq]:
+				ageeq[i][1][[b for b in range(nbinseq) if idx in ageeq[i][0][b]][0]].append(sub)
+	return ageeq,lenageeq,minageeq
+	
 
 if plot != 'off':
 	import matplotlib.pyplot as plt

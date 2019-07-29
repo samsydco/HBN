@@ -7,7 +7,11 @@ from settings import *
 
 fl = []
 fl2 = []
+fl3 = []
 for fold in glob.glob(tmpdr+'/f*/s*'):
+	if os.path.exists(fmripreppath + 'sub-' + fold.split('_')[-2] + '.html') and os.path.exists(prepath + 'sub-' + fold.split('_')[-2] + '.h5'):
+		fl3.append(fold)
+		#sp.Popen("rm -r "+fold, shell=True)
 	if os.path.exists(fmripreppath + 'sub-' + fold.split('_')[-2] + '.html') and not os.path.exists(fmripreppath + 'sub-' + fold.split('_')[-2] + '/log'):
 		fl.append(fold)
 		#print(fold)

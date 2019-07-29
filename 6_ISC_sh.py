@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 
-# Pairwise correlation with 50 subjs
-# 1a) Old vs Young, equal M and F in both
-# 1b) Old ~ Young, and Young ~ Old
-# 2a) M vs F, equal Old and Young in both
-# 2b) M ~ F, and F ~ M
-
 import os
 import h5py
 import tqdm
