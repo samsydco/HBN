@@ -14,13 +14,37 @@ import deepdish as dd
 from settings import *
 from ISC_settings import *
 agediffroidir = path+'ROIs/agediff/'
+smooth = True
+smoothtimes = 6
 
 # what voxels change in ISC with age, and in which direction?
-iscf = ISCpath + 'ISC_2019-07-01_age.h5'
-agediff_f = ISCpath + 'ISC_' + str(date.today())+'_agediff.h5'
+iscf = ISCpath + 'ISC_2019-08-13_age_2.h5'
+agediff_f = ISCpath + 'ISC_' + str(date.today())+'_agediff'
+agediff_f = agediff_f+'_2' if 'age_2' in iscf and not smooth else agediff_f+'_smooth_' if smooth else agediff_f
+agediff_f = agediff_f+'.h5'
 if os.path.exists(agediff_f):
     os.remove(agediff_f)
+	
+if smooth:
+	global cols
+	cols = {}
+	for hem in ['left','right']:
+		hemi = 'lh' if hem == 'left' else 'rh'
+		X = (dd.io.load('/data/Schema/intact/fsaverage6_adj.h5','/'+hem))
+		cols[hemi] = [None] * (len(X['jc'])-1)
+		for i in range(len(cols[hemi])):
+			cols[hemi][i] = X['ir'][X['jc'][i]:X['jc'][i+1]]
+	def smooth_fun(ISC):
+		ISC2 = np.zeros(ISC.shape)
+		for hemi in ['lh','rh']:
+			colh = cols[hemi]
+			idxs = 	np.arange(0,len(ISC)//2) if hemi == 'lh' else np.arange(len(ISC)//2,len(ISC))
+			for idx1,idx in enumerate(idxs):
+				ISC2[idx] = np.mean([ISC[idx],np.mean(ISC[colh[idx1]])])
+		return ISC2
 
+'''
+# which age bins are most different?
 import seaborn as sns
 import pandas as pd
 xticks = [round(e,2) for e in eqbins[:-1]+agespan/2]
@@ -39,18 +63,19 @@ for f in tqdm.tqdm(glob.glob(agediffroidir+'*v2*')):
 	
 	fdict = {'Age':[],'ISC':[],'vox':[],'corr':[]}
 	ISCs = np.zeros((nbinseq,len(vs)))
-	vadd = 0 if fbits[3] == 'lh' else 40962
-	for idx,v in enumerate(vs):
-		for b in range(nbinseq):
-			if fbits[2] == 'all':
-				for i in list(dd.io.load(iscf)['bin_0'][task].keys()):
-					ISCs[b,idx] += dd.io.load(iscf,
-					'/bin_'+str(b)+'/'+task+'/'+i)[v+vadd]
-				ISCs[b,idx] = ISCs[b,idx]/6
-				fdict['Age'].append(xticks[b])
-				fdict['ISC'].append(ISCs[b,idx])
-				fdict['vox'].append(v)
-		fdict['corr'] = fdict['corr'] + [np.corrcoef([e+agespan/2 for e in eqbins[:-1]],ISCs[:,idx])[0,1] for b in range(nbinseq)]
+	vadd = vs if fbits[3] == 'lh' else [v+40962 for v in vs]
+	for b in range(nbinseq):
+		if fbits[2] == 'all':
+			shl = list(dd.io.load(iscf)['shuff_0']['bin_0'][task].keys())
+			for i in shl:
+				ISCs[b] += dd.io.load(iscf,
+				'/shuff_0/bin_'+str(b)+'/'+task+'/'+i)[vadd]
+			ISCs[b] = ISCs[b]/len(shl)
+		fdict['Age'].extend(xticks[b]*np.ones(len(vs)))
+		fdict['ISC'].extend(ISCs[b])
+		fdict['vox'].extend(vadd)
+	for idx in range(len(vadd)):
+		fdict['corr'].extend([np.corrcoef([e+agespan/2 for e in eqbins[:-1]],ISCs[:,idx])[0,1] for b in range(nbinseq)])
 	
 	#ax = plt.errorbar(xticks, list(df.groupby('Age')['ISC'].mean()), yerr=list(df.groupby('Age')['ISC'].std()),ls='none', fmt='k+', markersize=25, capsize=5)
 	df = pd.DataFrame(data=fdict)
@@ -59,75 +84,80 @@ for f in tqdm.tqdm(glob.glob(agediffroidir+'*v2*')):
 	plt.show()
 	fig.figure.savefig(figurepath+'agediff/'+'_'.join(fbits)+'.png')
 	
-	'''
-	df = pd.DataFrame(data=fdict)
-	g = sns.FacetGrid(df, col="corr", col_wrap=len(vs)//20)
-	g = g.map(plt.plot, "Age", "ISC", marker=".")
-	g.savefig(figurepath+'agediff_'+'_'.join(fbits)+'.png')
-	'''
-	'''
-	ax = sns.swarmplot(x='Age',y='ISC',hue='vox',data=df,palette="Set1")
-	l = ax.legend()
-	l.remove()
-	'''
+	#df = pd.DataFrame(data=fdict)
+	#g = sns.FacetGrid(df, col="corr", col_wrap=len(vs)//20)
+	#g = g.map(plt.plot, "Age", "ISC", marker=".")
+	#g.savefig(figurepath+'agediff_'+'_'.join(fbits)+'.png')
+
+	#ax = sns.swarmplot(x='Age',y='ISC',hue='vox',data=df,palette="Set1")
+	#l = ax.legend()
+	#l.remove()
 	
 	#ax = plt.plot(np.matlib.repmat(xticks,len(vs),1).T,ISCs)
 	#ax = sns.swarmplot(data=ISCs)
+'''
 
 #with h5py.File(agediff_f) as hf:
+anall = ['corr','spearman','stddivmean','diffidx','diff']
 with h5py.File(agediff_f,'a') as hf:
 	for task in ['DM','TP']:
 		grp = hf.create_group(task)
-		for s in ['all']:#['0','1','all','err_diff','g_diff']:
-			print(task,s)
-			ISCr = np.zeros(81924)
-			ISCs = np.zeros(81924)
-			ISCstddivmean = np.zeros(81924)
-			ISCdiff = np.zeros(81924) # The interval between which two bins is greatest?
-			for v in tqdm.tqdm(range(81924)):
-				ISC = np.zeros(nbinseq)
+		for comp in ['all']:#['0','1','all','err_diff','g_diff']:
+			print(task,comp)
+			#verts = {key: np.zeros(81924) for key in anall}
+			for shuff in tqdm.tqdm(list(dd.io.load(iscf).keys())):
+				ISCs = {key: np.zeros((81924,smoothtimes)) for key in anall}
+				ISC = np.zeros((nbinseq,81924))
+				ISCsm = np.zeros((nbinseq,81924,smoothtimes))
 				for b in range(nbinseq):
-					if s in ['0','1']:
+					if comp != 'all' and 'age_2' in iscf:
+						print('Must do computation over "all" with this iscf')
+						break
+					elif comp == 'all' and 'age_2' in iscf:
 						ISC[b] = dd.io.load(iscf,
-						'/bin_'+str(b)+'/'+task+'/ISC_SH_w_'+s)[v]
-					if s == 'err_diff':
+								 '/'+shuff+'/bin_'+str(b)+'/'+task+'/ISC_SH')
+					elif comp in ['0','1'] and 'age_2' not in iscf:
 						ISC[b] = dd.io.load(iscf,
-						'/bin_'+str(b)+'/'+task+'/ISC_SH_w_1')[v] - \
+							'/'+shuff+'/bin_'+str(b)+'/'+task+'/ISC_SH_w_'+s)
+					elif comp == 'err_diff' and 'age_2' not in iscf:
+						ISC[b] = dd.io.load(iscf,
+						'/'+shuff+'/bin_'+str(b)+'/'+task+'/ISC_SH_w_1') - \
 						dd.io.load(iscf,
-						'/bin_'+str(b)+'/'+task+'/ISC_SH_w_0')[v]
-					if s == 'g_diff':
+						'/'+shuff+'/bin_'+str(b)+'/'+task+'/ISC_SH_w_0')
+					elif comp == 'g_diff' and 'age_2' not in iscf:
 						for i in ['ISC_SH_b_0_0', 'ISC_SH_b_0_1', 'ISC_SH_b_1_0', 'ISC_SH_b_1_1']:
 							ISC[b] += dd.io.load(iscf,
-							'/bin_'+str(b)+'/'+task+'/'+i)[v]
+							'/'+shuff+'/bin_'+str(b)+'/'+task+'/'+i)
 						ISC[b] = ISC[b]/4/ \
 						(np.sqrt(dd.io.load(iscf,
-						'/bin_'+str(b)+'/'+task+'/ISC_SH_w_1')[v])
+						'/'+shuff+'/bin_'+str(b)+'/'+task+'/ISC_SH_w_1'))
 						*np.sqrt(dd.io.load(iscf,
-						'/bin_'+str(b)+'/'+task+'/ISC_SH_w_0')[v]))
-					if s == 'all':
-						for i in list(dd.io.load(iscf)['bin_0'][task].keys()):
+						'/'+shuff+'/bin_'+str(b)+'/'+task+'/ISC_SH_w_0')))
+					elif comp == 'all' and 'age_2' not in iscf:
+						for i in list(dd.io.load(iscf)['shuff_0']['bin_0'][task].keys()):
 							ISC[b] += dd.io.load(iscf,
-							'/bin_'+str(b)+'/'+task+'/'+i)[v]
+							'/'+shuff+'/bin_'+str(b)+'/'+task+'/'+i)
 						ISC[b] = ISC[b]/6
-				ISCr[v] = np.corrcoef([e+agespan/2 for e in eqbins[:-1]],ISC)[0,1]
-				diffidx = np.argmax(abs(np.diff(ISC)))
-				if np.sum(np.isnan(ISC))<4:
-					ISCs[v] = spearmanr([e+agespan/2 for e in eqbins[:-1]],ISC)[0]
-					ISCdiff[v] = (diffidx+1)*np.sign(np.diff(ISC)[diffidx])
-				else:
-					ISCs[v] = np.nan
-					ISCdiff[v] = np.nan
-				ISCstddivmean[v] = np.std(ISC)/np.mean(ISC)
-			grp.create_dataset('diff_'+s,data=ISCdiff)
-			grp.create_dataset('spearman_'+s,data=ISCs)
-			grp.create_dataset('corr_'+s,data=ISCr)
-			grp.create_dataset('stddivmean_'+s,data=ISCstddivmean)
-			'''
-			hf.create_dataset(task+'/spearman_'+s,data=ISCs)
-			hf.create_dataset(task+'/corr_'+s,data=ISCr)
-			hf.create_dataset(task+'/stddivmean_'+s,data=ISCstddivmean)
-			'''
-					
+					for s in range(smoothtimes):
+						ISC[b] = smooth_fun(ISC[b])
+						ISCsm[b,:,s] = ISC[b]
+				for v in range(81924):
+					for s in range(smoothtimes):
+						ISCs['corr'][v,s] = np.corrcoef([e+agespan/2 for e in eqbins[:-1]],ISCsm[:,v,s])[0,1]
+						diffidx = np.argmax(abs(np.diff(ISCsm[:,v,s])))
+						if np.sum(np.isnan(ISCsm[:,v,s]))<4:
+							ISCs['spearman'][v,s] = spearmanr([e+agespan/2 for e in eqbins[:-1]],ISCsm[:,v,s])[0]
+							ISCs['diffidx'][v,s] = (diffidx+1)*np.sign(np.diff(ISCsm[:,v,s])[diffidx])
+							ISCs['diff'][v,s] = np.max(abs(np.diff(ISCsm[:,v,s])))*np.sign(np.diff(ISCsm[:,v,s])[diffidx])
+						else:
+							ISCs['spearman'][v,s] = np.nan
+							ISCs['diffidx'][v,s] = np.nan
+							ISCs['diff'][v,s] = np.nan
+						ISCs['stddivmean'][v,s] = np.std(ISCsm[:,v,s])/np.mean(ISCsm[:,v,s])
+				for k in ISCs.keys():
+					for s in range(smoothtimes):
+						grp.create_dataset('ISC_'+k+'_'+comp+'_sm'+str(s)+'_'+shuff,data=ISCs[k][:,s])
+						
 			
 					
 

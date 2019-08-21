@@ -134,19 +134,20 @@ for i in np.unique(phenol['sex']):
 		
 nsubbin = [min([agedist[1][0][0][b],agedist[0][0][0][b]]).astype(int) for b in range(nbins)]
 
-def binagesubs(agel,phenol,eqbins,subord):
+nshuff = 100 # for agediff analysis
+def binagesubs(agel,sexl,eqbins,subord):
 	nbinseq = len(eqbins) - 1
 	ageeq = [[[[] for _ in range(nbinseq)] for _ in range(2)] for _ in range(2)]
 	lenageeq = [[] for _ in range(2)]
 	minageeq = []
-	for i in np.unique(phenol['sex']):
-		ages = [a for idx,a in enumerate(agel) if phenol['sex'][idx]==i]
+	for i in np.unique(sexl):
+		ages = [a for idx,a in enumerate(agel) if sexl[idx]==i]
 		for b in range(nbinseq):
 			ageeq[i][0][b] = [idx for idx,a in enumerate(ages) 
 						   if a>=eqbins[b] and a<eqbins[b+1]]
 			lenageeq[i].append(len(ageeq[i][0][b]))
 		minageeq.append(min(lenageeq[i]))
-		for idx,sub in enumerate([s for idx,s in enumerate(subord) if phenol['sex'][idx]==i]):
+		for idx,sub in enumerate([s for idx,s in enumerate(subord) if sexl[idx]==i]):
 			if ages[idx] < eqbins[nbinseq]:
 				ageeq[i][1][[b for b in range(nbinseq) if idx in ageeq[i][0][b]][0]].append(sub)
 	return ageeq,lenageeq,minageeq

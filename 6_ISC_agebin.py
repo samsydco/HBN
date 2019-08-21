@@ -16,11 +16,10 @@ ISCf = 'ISC_'+str(date.today())+'_age.h5'
 if os.path.exists(ISCpath+ISCf):
     os.remove(ISCpath+ISCf)
 
-nshuff = 100
 for shuff in tqdm.tqdm(range(nshuff+1)):
 	with h5py.File(ISCpath+ISCf) as hf:
 		grps = hf.create_group('shuff_'+str(shuff))
-		ageeq,lenageeq,minageeq = binagesubs(agel,phenol,eqbins,subord)
+		ageeq,lenageeq,minageeq = binagesubs(agel,phenol['sex'],eqbins,subord)
 		for b in range(nbinseq):
 			subhtmp = even_out([True]*(lenageeq[0][b]+lenageeq[1][b]),[False]*minageeq[0]+[True]*minageeq[1])
 			subh = [[[], []] for i in range(2)]
@@ -32,7 +31,6 @@ for shuff in tqdm.tqdm(range(nshuff+1)):
 			grpb.create_dataset('subl', (len(subl),1),'S48', [n.encode("ascii", "ignore") for n in subl])
 			grpb.create_dataset('subh',data=subh)
 			for task in ['DM','TP']:
-				print(b,task,shuff)
 				grp = grpb.create_group(task)
 				sh = dd.io.load(subl[0],['/'+task+'/L'])[0].shape
 				D = np.empty((len(subl),sh[0]*2,sh[1]),dtype='float16')
@@ -60,7 +58,9 @@ for shuff in tqdm.tqdm(range(nshuff+1)):
 												groups[1,htmp2]),axis=1)/(n_time-1)) # correlate across groups
 										
 	# randomly shuffle ages:
-	np.random.shuffle(agel)
+	ageidx = np.random.permutation(len(agel))
+	agel = [agel[ageidx[idx]] for idx,age in enumerate(agel)]
+	phenol['sex'] = [phenol['sex'][ageidx[idx]] for idx,age in enumerate(phenol['sex'])]
 		
 		
 

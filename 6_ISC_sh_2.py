@@ -18,9 +18,9 @@ if os.path.exists(ISCpath+ISCf):
     os.remove(ISCpath+ISCf)
 dd.io.save(ISCpath+ISCf,{'subs':subord,'ages':agel,'phenodict':phenol,'pcs':pcl})
 nsh = 1 #5 split-half iterations
-nshuff = 100 # number of shuffles
+nshuff = 10000 # number of shuffles
 for s in range(nsh):
-	for task in ['TP']:#['DM','TP']:
+	for task in ['DM','TP']:
 		phenol = phenolperm
 		print('sh = ',s,task)
 		sh = dd.io.load(subord[0],['/'+task+'/L'])[0].shape
