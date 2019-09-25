@@ -18,32 +18,40 @@ import numpy as np
 import matplotlib.pyplot as plt
 from settings import *
 
-goodsubs = [] # subjects in pipeline 
-badsubs = []
+sites = ['Site-RU','Site-CBIC']
+SID = 343 # From staten Island (no movies)
+DR7 = 438 # Data release 7 is out!
+subs = {key: {key: [] for key in ['goodsubs','badsubs']} for key in sites} # subjects in pipeline 
 collist = ['sub','goodbad','site']
 df=pd.DataFrame(columns=collist) # all subjs with some MR data
+subtype = {key: [] for key in ['avail','missdata','badT1']}
 
-for site in ['Site-RU','Site-CBIC']:
+for si,site in enumerate(sites):
 	print(site+':')
 	# number available at Site-RU: 922
-	print('number available: '+str(len(sp.check_output(["aws","s3","ls","s3://fcp-indi/data/Archives/HBN/MRI/"+site+"/","--no-sign-request"]\
-	).splitlines()) - 2)) # subtract 'derivatives/' and 'participants.tsv'
+	subtype['avail'].append(len(sp.check_output(["aws","s3","ls","s3://fcp-indi/data/Archives/HBN/MRI/"+site+"/","--no-sign-request"]\
+	).splitlines()) - 2)
+	print('number available: '+str(subtype['avail'][-1])) # subtract 'derivatives/' and 'participants.tsv'
 	# number rejected due to missing data: 455
 	awsdf = pd.read_csv(Missingcsv+'_'+site+'.csv',usecols=['Subject'])
-	print('number rejected due to missing data: '+str(len(awsdf))) # from AWS QA
-	badsubs = badsubs+[i.split('.')[0] for i in awsdf.Subject.tolist()] # subjects rejected (without '.')
+	subtype['missdata'].append(len(awsdf))
+	print('number rejected due to missing data: '+str(subtype['missdata'][-1])) # from AWS QA
+	subs[site]['badsubs'].extend([i.split('.')[0] for i in awsdf.Subject.tolist()]) # subjects rejected (without '.')
 	compdf = pd.read_csv(TRratingdr+'compT1_'+site+'.csv',usecols=['final','sub'])
 	# number rejected due to bad T1: 146
 	v = compdf['final'].value_counts()['n'] if site == 'Site-RU' else 0
-	print('number rejected due to bad T1: '+str(sum(compdf['final'].isna()) + v))
+	subtype['badT1'].append(sum(compdf['final'].isna()) + v)
+	print('number rejected due to bad T1: '+str(subtype['badT1'][-1]))
 	for index, row in compdf.iterrows():
 		if (str(row['final']) != "n" and str(row['final'])!='nan'):
-			goodsubs.append(row['sub'])
+			subs[site]['goodsubs'].append(row['sub'])
 		else:
-			badsubs.append(row['sub'])
-	for key,s in {'good':goodsubs,'bad':badsubs}.items():
-		df=df.append(pd.DataFrame([s,[key]*len(s),[site]*len(s)],index=collist).transpose(),ignore_index=True)
+			subs[site]['badsubs'].append(row['sub'])
+	for key,s in subs[site].items():
+		df=df.append(pd.DataFrame([s,[key]*len(s),
+					[site]*len(s)],index=collist).transpose(),ignore_index=True)
 
+Phenodf = pd.concat((pd.read_csv(f) for f in glob.glob(phenopath+'HBN_R*Pheno.csv')),ignore_index=True)
 Phenodf = Phenodf.rename(index=str, columns={"EID": "sub"})	
 Phenodf['sub'] = 'sub-'+Phenodf['sub']
 df = pd.concat([df, Phenodf],sort=False).groupby('sub', as_index=False, sort=False).first()
@@ -78,7 +86,7 @@ df = pd.read_csv(metaphenopath+'allphenoaccnt.csv')
 
 %matplotlib inline
 
-for key in ['good','bad']:
+for key in ['goodsubs','badsubs']:
 	gbhist = df.loc[df['goodbad'] == key]['Total'].hist(bins=20)
 	gbhist.set_title(key+" Phenotypic Data Availability")
 	gbhist.set_ylabel("Frequency")
@@ -87,11 +95,16 @@ for key in ['good','bad']:
 	fig = gbhist.get_figure()
 	fig.savefig(figurepath+key+"_Pheno_hist.png")
 
-goodhist = df['Age'].hist(bins=21)
-goodhist.set_title("Age range")
-gbhist.set_ylabel("Frequency")
-gbhist.set_xlabel("Age")
+from ISC_settings import agel
+med = np.median(agel)
+import seaborn as sns
+plt.rcParams.update({'font.size': 15})
+goodhist = sns.distplot(df.loc[df['goodbad'] == 'goodsubs']['Age'], kde=False)
+goodhist.set_ylabel("Frequency")
+goodhist.axvline(x=med,color=[0.5,0.5,0.5],linestyle='--')
+plt.tight_layout()
 plt.show()
+goodhist.get_figure().savefig(figurepath+'SfN_2019/Age_hist.png')
 
 df['Total'][df['Total']>60].count()
 
