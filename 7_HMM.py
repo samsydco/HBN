@@ -120,6 +120,8 @@ with h5py.File(HMMf,'a') as hf:
 			grpb = grpf.require_group('bin_'+str(b))
 			mismatch_ll = np.zeros((nsplit,len(k_list)))
 			for split in range(nsplit):
+				# test on same subset as above
+				Dtest = D[dd.io.load(HMMf,'/'+roin+'/bin_'+str(b)+'/split_'+str(split)+'/LO')]
 				grps = grpb.require_group('split_'+str(split))
 				for i,k in enumerate(k_list):
 					grpk = grps.require_group('k_'+str(k))
@@ -130,7 +132,7 @@ with h5py.File(HMMf,'a') as hf:
 					hmm_perm = brainiak.eventseg.event.EventSegment(n_events=k)
 					hmm_perm.event_var_ = var # event variance?
 					hmm_perm.set_event_patterns(pat)
-					_, p_ll = hmm_perm.find_events(np.mean(D, axis=0).T)
+					_, p_ll = hmm_perm.find_events(np.mean(Dtest, axis=0).T)
 					grpk.create_dataset('mismatch_ll',data=p_ll[0])
 					
 

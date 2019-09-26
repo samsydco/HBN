@@ -108,7 +108,7 @@ for task in ['DM','TP']:
 					i['f'][s-2] = 2*r/(n_subj*(1-r))
 				if g == 'Loo':
 					i['f'][s-2] = (N*np.square(r)+ \
-					 np.sqrt((N^2)*np.power(r,4,dtype=np.float16)+4*np.square(r)*(N-1)*(1-np.square(r))))/(2*(N-1)*(1-np.square(r)))
+					 np.sqrt((N**2)*np.power(r,4,dtype=np.float16)+4*np.square(r)*(N-1)*(1-np.square(r))))/(2*(N-1)*(1-np.square(r)))
 		
 	figsubj = 25
 	fig = plt.figure()

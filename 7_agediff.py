@@ -66,29 +66,7 @@ with h5py.File(agediff_f,'a') as hf:
 						break
 					elif comp == 'all' and 'age_2' in iscf:
 						ISC[b] = dd.io.load(iscf,
-								 '/'+shuff+'/bin_'+str(b)+'/'+task+'/ISC_SH')
-					elif comp in ['0','1'] and 'age_2' not in iscf:
-						ISC[b] = dd.io.load(iscf,
-							'/'+shuff+'/bin_'+str(b)+'/'+task+'/ISC_SH_w_'+s)
-					elif comp == 'err_diff' and 'age_2' not in iscf:
-						ISC[b] = dd.io.load(iscf,
-						'/'+shuff+'/bin_'+str(b)+'/'+task+'/ISC_SH_w_1') - \
-						dd.io.load(iscf,
-						'/'+shuff+'/bin_'+str(b)+'/'+task+'/ISC_SH_w_0')
-					elif comp == 'g_diff' and 'age_2' not in iscf:
-						for i in ['ISC_SH_b_0_0', 'ISC_SH_b_0_1', 'ISC_SH_b_1_0', 'ISC_SH_b_1_1']:
-							ISC[b] += dd.io.load(iscf,
-							'/'+shuff+'/bin_'+str(b)+'/'+task+'/'+i)
-						ISC[b] = ISC[b]/4/ \
-						(np.sqrt(dd.io.load(iscf,
-						'/'+shuff+'/bin_'+str(b)+'/'+task+'/ISC_SH_w_1'))
-						*np.sqrt(dd.io.load(iscf,
-						'/'+shuff+'/bin_'+str(b)+'/'+task+'/ISC_SH_w_0')))
-					elif comp == 'all' and 'age_2' not in iscf:
-						for i in list(dd.io.load(iscf)['shuff_0']['bin_0'][task].keys()):
-							ISC[b] += dd.io.load(iscf,
-							'/'+shuff+'/bin_'+str(b)+'/'+task+'/'+i)
-						ISC[b] = ISC[b]/6
+								 '/'+shuff+'/'+task+'/bin_'+str(b)+'/ISC_w')
 					for s in range(smoothtimes):
 						ISC[b] = smooth_fun(ISC[b])
 						ISCsm[b,:,s] = ISC[b]

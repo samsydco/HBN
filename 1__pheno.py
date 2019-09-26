@@ -97,9 +97,11 @@ for key in ['goodsubs','badsubs']:
 
 from ISC_settings import agel
 med = np.median(agel)
+gooddf = df.loc[df['goodbad'] == 'goodsubs']
 import seaborn as sns
 plt.rcParams.update({'font.size': 15})
-goodhist = sns.distplot(df.loc[df['goodbad'] == 'goodsubs']['Age'], kde=False)
+for i,s in enumerate(['Male','Female'])
+goodhist = sns.distplot(df.loc[good['goodbad'] == 'goodsubs']['Age'], kde=False)
 goodhist.set_ylabel("Frequency")
 goodhist.axvline(x=med,color=[0.5,0.5,0.5],linestyle='--')
 plt.tight_layout()
