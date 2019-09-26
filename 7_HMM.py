@@ -48,7 +48,7 @@ with h5py.File(HMMf,'a') as hf:
 			nsub = len(subl)
 			# Load data
 			_,n_time = dd.io.load(subl[0],['/'+task+'/'+hemi])[0].shape
-			D = np.empty((len(subl),n_vox,n_time),dtype='float16')
+			D = np.empty((nsub,n_vox,n_time),dtype='float16')
 			for sidx, sub in enumerate(subl):
 				D[sidx,:,:] = dd.io.load(sub,['/'+task+'/'+hemi],sel=dd.aslice[vall,:])[0]
 			grpb.create_dataset('D',data=D)
