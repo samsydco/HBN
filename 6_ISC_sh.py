@@ -21,31 +21,37 @@ dd.io.save(ISCf,{'subs':subord,'ages':agel,'phenodict':phenol,'pcs':pcl})
 nsh = 1 #5 split-half iterations
 
 def ISCe_calc(iscf,task,cond,sh,shuff):
-	ISCe = dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+shuff+'/'+cond+'/'+'ISC_SH_w/0') - \
-		   dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+shuff+'/'+cond+'/'+'ISC_SH_w/1')
+	ISCe = dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+shuff+'/'+cond+'/'+'ISC_SH_w/0') -                dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+shuff+'/'+cond+'/'+'ISC_SH_w/1')
 	return ISCe
 def ISCg_calc(iscf,task,cond,sh,shuff):
-	ls = '/'+task+str(sh)+'/shuff_'+shuff+'/'+cond+'/'+'ISC_SH_b/'
-	ISCg = np.zeros(81924) 
-	for i in dd.io.load(iscf,ls).keys():
-		ISCg += dd.io.load(iscf,ls+i)
-	ISCg = ISCg/4/(np.sqrt(dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+shuff+'/'+cond+'/'+'ISC_SH_w/0'))\
-				  *np.sqrt(dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+shuff+'/'+cond+'/'+'ISC_SH_w/1')))
+	ls = '/'+task+str(sh)+'/shuff_'+shuff+'/'+cond+'/'
+	ISCg = np.zeros(len(dd.io.load(iscf,ls+'ISC_SH_w/0'))) 
+	for i in dd.io.load(iscf,ls+'ISC_SH_b').keys():
+		ISCg += dd.io.load(iscf,ls+'ISC_SH_b/'+i)
+	ISCg = ISCg/4/(np.sqrt(dd.io.load(iscf,ls+'ISC_SH_w/0'))*
+				   np.sqrt(dd.io.load(iscf,ls+'ISC_SH_w/1')))
 	return ISCg
 
 def shuff_check(iscf,task,cond,sh,nshuff):
+	n_vox = 81924
 	ISCg = ISCg_calc(iscf,task,cond,sh,str(0))
 	ISCe = ISCe_calc(iscf,task,cond,sh,str(0))
-
 	vvecte = np.zeros((nshuff,len(ISCe)))
 	vvectg = np.zeros((nshuff,len(ISCg)))
+	goodvtmp = np.arange(n_vox)
 	for shuff in np.arange(1,nshuff+1):
-		vvecte[shuff-1] = ISCe_calc(iscf,task,cond,sh,str(shuff))
-		vvectg[shuff-1] = ISCg_calc(iscf,task,cond,sh,str(shuff))
+		if 'good_v_indexes' in dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+str(shuff-1)+                                        '/'+cond).keys():
+			goodvtmp = dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+str(shuff-1)+                                        '/'+cond+'/good_v_indexes')
+		vvectetmp = np.zeros(n_vox)
+		vvectetmp[goodvtmp] = ISCe_calc(iscf,task,cond,sh,str(shuff))
+		vvectgtmp = np.zeros(len(ISCg))
+		vvectgtmp[goodvtmp] = ISCg_calc(iscf,task,cond,sh,str(shuff))
+		vvecte[shuff-1] = vvectetmp
+		vvectg[shuff-1] = vvectgtmp
 	vertsg = np.asarray([np.sum(vvectg[:,v]<ISCg[v])/nshuff for v in range(len(ISCg))]) #(previously: np.sum(vvect<ISC[v]))
 	vertse = np.asarray([np.sum(abs(vvecte[:,v])>abs(ISCe[v]))/nshuff for v in range(len(ISCe))])
-	vertsidxe = [i for i, v in enumerate(vertse) if v<0.1 and ~np.isnan(ISCe[i])]
-	vertsidxg = [i for i, v in enumerate(vertsg) if v<0.1 and ~np.isnan(ISCg[i])]
+	vertsidxe = [i for i, v in enumerate(vertse) if v<0.1 and ~np.isnan(ISCe[i]) and                            vvecte[-1,i]!=0]
+	vertsidxg = [i for i, v in enumerate(vertsg) if v<0.1 and ~np.isnan(ISCg[i]) and                            vvectg[-1,i]!=0]
 	good_v_indexes = list(set(vertsidxe+vertsidxg))
 	return good_v_indexes
 
@@ -78,9 +84,10 @@ for s in range(nsh):
 							group = np.zeros((n_vox,n_time),dtype='float16')
 							groupn = np.ones((n_vox,n_time),dtype='int')*n_subj
 							for i in subh[h][htmp]: # mem error in next line (91 reps):
-								group = np.nansum(np.stack((group,D[good_v_indexes[k],:,i])),axis=0)
+								group = np.nansum(np.stack((group,D[good_v_indexes[k],:,i])),
+												  axis=0)
 								nanverts = np.argwhere(np.isnan(D[good_v_indexes[k],:,i]))
-								groupn[nanverts[:, 0],nanverts[:,1]] = groupn[nanverts[:,0],nanverts[:,1]]-1
+								groupn[nanverts[:, 0],nanverts[:,1]] =                                                       groupn[nanverts[:,0],nanverts[:,1]]-1
 							groups[h,htmp] = zscore(group/groupn,axis=1)
 						grpw = grpk.require_group('ISC_SH_w')
 						grpw.create_dataset(str(h),\

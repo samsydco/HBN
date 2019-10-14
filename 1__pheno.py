@@ -100,8 +100,9 @@ med = np.median(agel)
 gooddf = df.loc[df['goodbad'] == 'goodsubs']
 import seaborn as sns
 plt.rcParams.update({'font.size': 15})
-for i,s in enumerate(['Male','Female'])
-goodhist = sns.distplot(df.loc[good['goodbad'] == 'goodsubs']['Age'], kde=False)
+for i,s in enumerate(['Male','Female']):
+	goodhist = sns.distplot(gooddf.loc[gooddf['Sex'] == i]['Age'], kde=False,label=s)
+goodhist.legend()
 goodhist.set_ylabel("Frequency")
 goodhist.axvline(x=med,color=[0.5,0.5,0.5],linestyle='--')
 plt.tight_layout()
