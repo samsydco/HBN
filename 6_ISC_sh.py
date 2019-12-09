@@ -14,7 +14,9 @@ from ISC_settings import *
 del phenol['all']
 phenolperm = phenol
 
-ISCf = ISCpath+'ISC_'+str(date.today())+'_sh_2.h5'
+start_date = str(date.today())
+
+ISCf = ISCpath+'ISC_'+start_date+'_sh_2.h5'
 if os.path.exists(ISCf):
     os.remove(ISCf)
 dd.io.save(ISCf,{'subs':subord,'ages':agel,'phenodict':phenol,'pcs':pcl})
@@ -71,6 +73,7 @@ for s in range(nsh):
 			grpt = hf.create_group(task+str(s))
 			good_v_indexes = {key: np.arange(81924) for key in phenol.keys()}
 			for shuff in tqdm.tqdm(range(nshuff+1)):
+				print(start_date)
 				grps = grpt.require_group('shuff_'+str(shuff))
 				for k,v in phenol.items():
 					grpk = grps.require_group(k)

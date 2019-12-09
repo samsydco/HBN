@@ -15,46 +15,77 @@ from settings import *
 from ISC_settings import *
 
 gdiffroidir = path+'ROIs/SfN_2019/Fig3_'#'ROIs/g_diff/'
-g_diff_f = ISCpath+'g_diff_time_'+str(date.today())+'.h5'
-if os.path.exists(g_diff_f):
-    os.remove(g_diff_f)
 nTR=750
 ROIl = glob.glob(gdiffroidir+'*roi')
 nROI = len(ROIl)
-gdict = {}
-for f in tqdm.tqdm(ROIl):
-	fn = f.split(gdiffroidir)[1]
-	roin = fn[:-7]
-	task = 'DM' if fn[:2] == 'TP' else 'TP'
-	hemi = fn[3]
-	roi = np.loadtxt(f).astype('int')
-	vall = roi[roi[:,1]==1,0]
-	n_vox = len(vall)
-	groups = np.zeros((2,n_vox,nTR),dtype='float16')
-	for i,b in enumerate([0,nbinseq-1]):
-		subl = [ageeq[i][1][b][idx] for i in [0,1] for idx in np.random.choice(lenageeq[i][b],minageeq[i],replace=False)]
-		# Load data and z-score within a group:	
-		group = np.zeros((n_vox,nTR),dtype='float16')
-		groupn = np.ones((n_vox,nTR),dtype='int')*len(subl)
-		for sub in subl:
-			d = dd.io.load(sub,['/'+task+'/'+hemi],sel=dd.aslice[vall,:])[0]
-			group = np.nansum(np.stack((group,d)),axis=0)
-			nanverts = np.argwhere(np.isnan(d))
-			groupn[nanverts[:, 0],nanverts[:,1]] = groupn[nanverts[:,0],nanverts[:,1]]-1
-		groups[i] = zscore(group/groupn,axis=0)
-	gdict[roin] = np.sum(np.multiply(groups[0],groups[1]),axis=0)/(n_vox-1)
-dd.io.save(g_diff_f,gdict)
+ses = [0,10,20,30,40,50,60]
+
+def calc_isc(g1,g2,n_vox):
+	ISCt = np.sum(np.multiply(g1,g2),axis=0)/(n_vox-1)
+	return ISCt
+
+#g_diff_f = ISCpath+'g_diff_time_2019-10-04.h5'
+g_diff_f = ISCpath+'g_diff_time_'+str(date.today())+'.h5'
+if g_diff_f[-13:-3] == str(date.today()):
+	if os.path.exists(g_diff_f):
+		os.remove(g_diff_f)
+	gdict = {}
+	for f in tqdm.tqdm(ROIl):
+		fn = f.split(gdiffroidir)[1]
+		roin = fn[:-7]
+		task = 'DM' if fn[:2] == 'TP' else 'TP'
+		hemi = fn[3]
+		roi = np.loadtxt(f).astype('int')
+		vall = roi[roi[:,1]==1,0]
+		n_vox = len(vall)
+		groups = np.zeros((2,2,n_vox,nTR),dtype='float16')
+		for i,b in enumerate([0,nbinseq-1]):
+			subl = [[],[]]
+			for ii in [0,1]:
+				subg = [ageeq[ii][1][b][idx] for idx in np.random.choice(lenageeq[ii][b],divmod(minageeq[ii],2)[0]*2,replace=False)]
+				subl[0].extend(subg[:divmod(minageeq[i],2)[0]])
+				subl[1].extend(subg[divmod(minageeq[i],2)[0]:])
+			for h in [0,1]:
+				# Load data and z-score within a group:	
+				group = np.zeros((n_vox,nTR),dtype='float16')
+				groupn = np.ones((n_vox,nTR),dtype='int')*len(subl)
+				for sub in subl[h]:
+					d = dd.io.load(sub,['/'+task+'/'+hemi],sel=dd.aslice[vall,:])[0]
+					group = np.nansum(np.stack((group,d)),axis=0)
+					nanverts = np.argwhere(np.isnan(d))
+					groupn[nanverts[:, 0],nanverts[:,1]] = groupn[nanverts[:,0],nanverts[:,1]]-1
+				groups[i,h] = zscore(group/groupn,axis=0)
+		ISCg = np.zeros(nTR) 
+		for htmp1 in [0,1]:
+			for htmp2 in [0,1]:
+				ISCg += calc_isc(groups[0,htmp1],groups[1,htmp2],n_vox)
+		ISC0 = calc_isc(groups[0,0],groups[0,1],n_vox)
+		ISC1 = calc_isc(groups[1,0],groups[1,1],n_vox)
+		ISCg[ISCg<0] = 0
+		ISC0[ISC0<0] = 0
+		ISC1[ISC1<0] = 0
+		gdict[roin] = {}
+		for s in ses:
+			ham = np.hamming(np.round(s/0.8))
+			ham = ham/np.sum(ham)
+			if s==0:
+				gdict[roin][str(s)] = ISCg/4/(np.sqrt(ISC0)*np.sqrt(ISC1))
+				gdict[roin][str(s)][np.isfinite(gdict[roin][str(s)])] = 0
+			else:
+				gdict[roin][str(s)] = np.convolve(ISCg,ham,'same')/4/(
+					np.sqrt(np.convolve(ISC0,ham,'same'))*np.sqrt(np.convolve(ISC1,ham,'same')))
+	dd.io.save(g_diff_f,gdict)
+else:
+	gdict = dd.io.load(g_diff_f)
 xticks = np.arange(0,600,0.8) #x axis in seconds
-for s in [0,10,20,30]:
+for s in ses:
 	plt.figure()
-	ham = np.hamming(np.round(s/0.8))
-	ham = ham/np.sum(ham)
 	plt.style.use('seaborn-muted')
 	for r,t in gdict.items():
 		if ham.size==0:
-			plt.plot(xticks,t,label=r[6:])
+			plt.plot(xticks,t[str(s)],label=r[6:])
 		else:
-			plt.plot(xticks,np.convolve(t,ham,'same'),label=r[6:])
+			plt.plot(xticks,np.convolve(t[str(s)],ham,'same'),label=r[6:])
 		plt.xlabel('time (sec)')
 		plt.ylabel('ISC (r)')
 	plt.legend()

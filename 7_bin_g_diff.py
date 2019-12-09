@@ -64,8 +64,10 @@ for f in ROIl:
 		df = df[cols[-2:]+cols[:-2]]
 		df = df.reindex(cols[-2:]+cols[:-2])
 		dfs[roin][task] = df
-		embedding = MDS(n_components=1, dissimilarity='precomputed')
-		X_transformed[roin][task] = embedding.fit_transform(np.nan_to_num(df.values))
+		X_transformed[roin][task] = {}
+		for ndims in [1,2]:
+			embedding = MDS(n_components=ndims, dissimilarity='precomputed')
+			X_transformed[roin][task][str(ndims)] = embedding.fit_transform((1-np.nan_to_num(df.values)))
 for task in ['DM']:#dfs[roin].keys():
 	allvals = [dfs[r][task].values for r in dfs.keys()]
 	for roin in dfs.keys():
@@ -80,20 +82,29 @@ for task in ['DM']:#dfs[roin].keys():
 		plt.tight_layout()
 		plt.show()
 		ax.figure.savefig(figurepath+'SfN_2019/Figure_3_thresh/'+task+'_'+roin+'.png')
+
 # display mds
 xlab = df.columns.tolist()
-figs = {key: plt.figure().add_subplot(111) for key in ['DM','TP']}
-for fi,v in enumerate(X_transformed):
-	for task,vv in X_transformed[v].items():
-		ax = figs[task]
-		ax.set_yticks([],[])
-		ax.set_xticks(vv,[])
-		#ax[task][v].set_xticklabels([])
-		ax.plot(vv,np.zeros(len(vv)),'.',label=' '.join(v[3:].split('_')))
-for task in figs.keys():
-	figs[task].set_xticklabels(xlab)
-	lgd = figs[task].legend(loc='lower right')
-	figs[task].figure.savefig(figurepath+'SfN_2019/Figure_3/'+task+'_MDS.png')
-		
+plt.rcParams.update({'font.size': 8})
+for task in ['DM','TP']:
+	fig, ax = plt.subplots(nrows=5, ncols=2, figsize = (4,10))
+	for i,roiv in enumerate(X_transformed.items()):
+		for ndims,data in roiv[1][task].items():
+			axid = int(ndims)-1
+			xvals = data if ndims == '1' else data[:,0]
+			yvals = np.zeros(len(xlab)) if ndims == '1' else data[:,1]
+			ax[i,axid].scatter(xvals,yvals)
+			ax[i,axid].set_xlim(-.2,.2)
+			ax[i,axid].set_ylim(-.2,.2)
+			#if ndims == 1: ax[i,axid].set_ylim(-.5,.5)
+			ax[i,axid].set_aspect(1.0)
+			for ii, txt in enumerate(xlab):
+				sub = 0.05 if ndims =='2' else 0
+				rot = 0 if ndims =='2' else 30
+				ax[i,axid].annotate(txt, xy=(xvals[ii],yvals[ii]+sub),ha='center',rotation=rot)
+			ax[i,axid].set_title('ROI:'+roiv[0])
+	plt.tight_layout()
+	plt.show()
+	fig.savefig(figurepath+'agediff_g_diff/'+task+'_MDS.png')
 		
 	
