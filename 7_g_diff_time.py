@@ -17,7 +17,6 @@ from ISC_settings import *
 gdiffroidir = path+'ROIs/SfN_2019/Fig3_'#'ROIs/g_diff/'
 nTR=750
 ROIl = glob.glob(gdiffroidir+'*roi')
-nROI = len(ROIl)
 ses = [0,10,20,30,40,50,60]
 
 def calc_isc(g1,g2,n_vox):
@@ -70,7 +69,7 @@ if g_diff_f[-13:-3] == str(date.today()):
 			ham = ham/np.sum(ham)
 			if s==0:
 				gdict[roin][str(s)] = ISCg/4/(np.sqrt(ISC0)*np.sqrt(ISC1))
-				gdict[roin][str(s)][np.isfinite(gdict[roin][str(s)])] = 0
+				gdict[roin][str(s)][~np.isfinite(gdict[roin][str(s)])] = 0
 			else:
 				gdict[roin][str(s)] = np.convolve(ISCg,ham,'same')/4/(
 					np.sqrt(np.convolve(ISC0,ham,'same'))*np.sqrt(np.convolve(ISC1,ham,'same')))
