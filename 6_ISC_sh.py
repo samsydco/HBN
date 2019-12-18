@@ -23,16 +23,22 @@ dd.io.save(ISCf,{'subs':subord,'ages':agel,'phenodict':phenol,'pcs':pcl})
 nsh = 1 #5 split-half iterations
 
 def ISCe_calc(iscf,task,cond,sh,shuff):
-	ISCe = dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+shuff+'/'+cond+'/'+'ISC_SH_w/0') -                dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+shuff+'/'+cond+'/'+'ISC_SH_w/1')
+	#ISCe = dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+shuff+'/'+cond+'/'+'ISC_SH_w/0') -                dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+shuff+'/'+cond+'/'+'ISC_SH_w/1')
+	ISCe = iscf['.'][task+str(sh)]['shuff_'+shuff][cond]['ISC_SH_w']['0'].value - iscf['.'][task+str(sh)]['shuff_'+shuff][cond]['ISC_SH_w']['1'].value
 	return ISCe
 def ISCg_calc(iscf,task,cond,sh,shuff):
-	ls = '/'+task+str(sh)+'/shuff_'+shuff+'/'+cond+'/'
-	ISCg = np.zeros(len(dd.io.load(iscf,ls+'ISC_SH_w/0'))) 
-	for i in dd.io.load(iscf,ls+'ISC_SH_b').keys():
-		ISCg += dd.io.load(iscf,ls+'ISC_SH_b/'+i)
-	ISCg = ISCg/4/(np.sqrt(dd.io.load(iscf,ls+'ISC_SH_w/0'))*
-				   np.sqrt(dd.io.load(iscf,ls+'ISC_SH_w/1')))
-	return ISCg
+    #ls = '/'+task+str(sh)+'/shuff_'+shuff+'/'+cond+'/'
+    #ISCg = np.zeros(len(dd.io.load(iscf,ls+'ISC_SH_w/0')))
+    ISCg = np.zeros(len(iscf[task+str(sh)]['shuff_'+str(shuff)][cond]['ISC_SH_w']['0']))
+    for i in iscf[task+str(sh)]['shuff_'+str(shuff)][cond]['ISC_SH_b'].keys():
+        ISCg += iscf[task+str(sh)]['shuff_'+str(shuff)][cond]['ISC_SH_b'][i]
+    ISCg = ISCg/4/(np.sqrt(iscf[task+str(sh)]['shuff_'+str(shuff)][cond]['ISC_SH_w']['0'])*
+				   np.sqrt(iscf[task+str(sh)]['shuff_'+str(shuff)][cond]['ISC_SH_w']['1']))
+	#for i in dd.io.load(iscf,ls+'ISC_SH_b').keys():
+	#	ISCg += dd.io.load(iscf,ls+'ISC_SH_b/'+i)
+	#ISCg = ISCg/4/(np.sqrt(dd.io.load(iscf,ls+'ISC_SH_w/0'))*
+	#			   np.sqrt(dd.io.load(iscf,ls+'ISC_SH_w/1')))
+    return ISCg
 
 def shuff_check(iscf,task,cond,sh,nshuff):
 	n_vox = 81924
@@ -42,8 +48,10 @@ def shuff_check(iscf,task,cond,sh,nshuff):
 	vvectg = np.zeros((nshuff,len(ISCg)))
 	goodvtmp = np.arange(n_vox)
 	for shuff in np.arange(1,nshuff+1):
-		if 'good_v_indexes' in dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+str(shuff-1)+                                        '/'+cond).keys():
-			goodvtmp = dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+str(shuff-1)+                                        '/'+cond+'/good_v_indexes')
+		if 'good_v_indexes' in iscf[task+str(sh)]['shuff_'+str(shuff-1)][cond].keys():
+			goodvtmp = iscf[task+str(sh)]['shuff_'+str(shuff-1)][cond]['good_v_indexes']
+		#if 'good_v_indexes' in dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+str(shuff-1)+                                        '/'+cond).keys():
+		#	goodvtmp = dd.io.load(iscf,'/'+task+str(sh)+'/shuff_'+str(shuff-1)+                                        '/'+cond+'/good_v_indexes')
 		vvectetmp = np.zeros(n_vox)
 		vvectetmp[goodvtmp] = ISCe_calc(iscf,task,cond,sh,str(shuff))
 		vvectgtmp = np.zeros(len(ISCg))
@@ -101,7 +109,7 @@ for s in range(nsh):
 							grpb.create_dataset(str(htmp1)+'_'+str(htmp2),\
 							data=np.sum(np.multiply(groups[0,htmp1],groups[1,htmp2]),axis=1)/(n_time-1)) # correlate across groups
 					if any(shu==shuff for shu in [101,1001]):
-						good_v_indexes[k] = shuff_check(ISCf,task,k,s,shuff-1)
+						good_v_indexes[k] = shuff_check(hf,task,k,s,shuff-1)
 						print('The number of verts left after',str(shuff),\
 							  'iterations for group',k,'is',len(good_v_indexes[k]))
 						grpk.create_dataset('good_v_indexes',data=good_v_indexes[k])

@@ -8,13 +8,20 @@ import deepdish as dd
 from datetime import date
 import brainiak.funcalign.srm
 from scipy.stats import zscore
+import matplotlib.pyplot as plt
 from settings import *
 from ISC_settings import *
 
-SRMf = ISCpath+'SRM_'+str(date.today())+'.h5'
+agediffroidir = path+'ROIs/'
+ROIopts = ['agediff/*v2','SfN_2019/Fig2_']
+agedifffs = agediffroidir + ROIopts[0]
+SRMf = ISCpath+'SRM_'+str(date.today())
+SRMf = SRMf+'_v2.h5' if ROIopts[0] in agedifffs else SRMf+'.h5'
 if os.path.exists(SRMf):
 	os.remove(SRMf)
-agediffroidir = path+'ROIs/SfN_2019/Fig2_'#'ROIs/agediff/'
+
+agedifffs = agediffroidir+'agediff/*v2'#'SfN_2019/Fig2_'#'ROIs/agediff/'
+agedifffs2 = agediffroidir+'SfN_2019/Fig2_'
 klist = np.arange(2,100)
 n_iter = 20
 train_task = 'DM'
@@ -34,20 +41,21 @@ def loo(data,losub):
 	return data
 
 fits = {}
-for f in glob.glob(agediffroidir+'*roi'):#glob.glob(agediffroidir+'*v2*'):
+for f in tqdm.tqdm(glob.glob(agedifffs+'*roi')):#glob.glob(agediffroidir+'*v2*'):
 	print(f)
-	fbits = f.split(agediffroidir)[1].split('_')
+	fbits = f.split(agediffroidir)[1].split('/')[1].split('_')
 	vall = []
 	with open(f, 'r') as inputfile:
 		for line in inputfile:
 			if len(line.split(' ')) == 3:
 				vall.append(int(line.split(' ')[1]))
 	nvox = len(vall)
-	hemi = fbits[1][0]
-	fits[' '.join(fbits)] = {}
+	hemi = 'L' if 'SfN' in agedifffs else fbits[3][0].capitalize()
+	fits['_'.join(fbits)] = {}
+	fits['_'.join(fbits)]['nvox'] = nvox
 	for b in [0,nbinseq-1]:
 		print('b =',b)
-		fits[' '.join(fbits)][str(b)] = {}
+		fits['_'.join(fbits)][str(b)] = {}
 		subl = []
 		for i in [0,1]:
 			subg = [ageeq[i][1][b][idx] for idx in np.random.choice(lenageeq[i][b],divmod(minageeq[i],2)[0]*2,replace=False)]
@@ -57,27 +65,29 @@ for f in glob.glob(agediffroidir+'*roi'):#glob.glob(agediffroidir+'*v2*'):
 		test_data  = load_data(subl,test_task, hemi,vall)
 		for k in [k for k in klist if k<nvox]:
 			print('k =',k)
-			fits[' '.join(fbits)][str(b)][str(k)] = {}
+			fits['_'.join(fbits)][str(b)][str(k)] = {}
 			for losub in range(nsub):
-				fits[' '.join(fbits)][str(b)][str(k)][str(losub)] = {}
+				fits['_'.join(fbits)][str(b)][str(k)][str(losub)] = {}
 				srm = brainiak.funcalign.srm.SRM(n_iter=n_iter, features=k)
 				srm.fit(loo(train_data,losub))
 				subw = srm.transform_subject(train_data[losub]) # Need latest brainiak version for this
 				# Now test on TP
 				sub_pred = np.dot(subw,sum(srm.transform(loo(test_data,losub)))/nsub)
-				fits[' '.join(fbits)][str(b)][str(k)][str(losub)]['frobnorm'] = np.sum((test_data[losub] - sub_pred)**2)
-				fits[' '.join(fbits)][str(b)][str(k)][str(losub)]['tcorr'] = np.sum(np.sum(np.multiply(test_data[losub],sub_pred),axis=1)/(nTRtest-1))
-				fits[' '.join(fbits)][str(b)][str(k)][str(losub)]['scorr'] = np.sum(np.sum(np.multiply(test_data[losub],sub_pred),axis=0)/(nvox-1))
+				fits['_'.join(fbits)][str(b)][str(k)][str(losub)]['frobnorm'] = np.sqrt(np.sum((test_data[losub] - sub_pred)**2))
+				fits['_'.join(fbits)][str(b)][str(k)][str(losub)]['tcorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=1)/(nTRtest-1))
+				fits['_'.join(fbits)][str(b)][str(k)][str(losub)]['scorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=0)/(nvox-1))
 				
 dd.io.save(SRMf,fits)
-fits = dd.io.load(SRMf,)
+fits = dd.io.load(SRMf)
 
 labels = ['youngest','oldest']
+yaxis = ['dist','r','r']
 for roi,r in fits.items():
 	fig, ax = plt.subplots(nrows=3, sharex=True)
+	fig.suptitle(roi.replace('_',' ')+' '+str(r['nvox'])+' vox', fontsize="x-large")
 	plt.style.use('seaborn-muted')
 	for i,fit in enumerate(['frobnorm','tcorr','scorr']):
-		for bi,b in enumerate(r.keys()):
+		for bi,b in enumerate(list(r.keys())[:-1]):
 			x = []
 			y = []
 			error = []
@@ -87,10 +97,14 @@ for roi,r in fits.items():
 				error.append(np.std([subs[sub][fit] for sub in subs.keys()]))
 			ax[i].errorbar(x, y, yerr=error, fmt='-o',label=labels[bi])
 		ax[i].set_title(fit)
+		ax[i].set_ylabel(yaxis[i])
+		ax[i].set_xlim(np.min(x),np.max(x))
 	plt.legend()
 	plt.tight_layout()
 	plt.xlabel("k dimensions")
-	plt.show()
+	#fig1 = plt.gcf()
+	#plt.show()
+	#plt.draw()
 	plt.savefig(figurepath+'SRM/'+roi+'.png')
 		
 
