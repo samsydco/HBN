@@ -24,6 +24,7 @@ ROIl = agedifffs if ROIopts[-1] in agedifffs else agedifffs+'*roi'
 n_iter = 20
 train_task = 'DM'
 test_task = 'TP'
+nTRtrain = 750
 nTRtest = 250
 
 
@@ -42,7 +43,7 @@ fits = {}
 for f in tqdm.tqdm(glob.glob(ROIl)):
 	if len(glob.glob(ROIl))==1:
 		fs = dd.io.load(f,'/ROIs')
-		for hemi, rs in d.items():
+		for hemi, rs in fs.items():
 			for r,subr in rs.items():
 				f1 = str(round(float(r)))
 				if type(subr) is list:
@@ -69,7 +70,8 @@ for f in tqdm.tqdm(glob.glob(ROIl)):
 		fits['_'.join(fbits)]['nvox'] = len(vall)
 		fits['_'.join(fbits)]['hemi'] = hemi
 for f in tqdm.tqdm(fits):
-	fits[f]['klist'] = np.unique(np.round(np.logspace(np.log(2),np.log(fits[f]['nvox']),base=np.e)))
+	fits[f]['klist'] = np.unique(np.round(np.logspace(np.log(2),np.log(np.min([nTRtrain,fits[f]['nvox']])),
+									base=np.e))).astype('int')
 	for b in [0,nbinseq-1]:
 		print('f =',f,'b =',b)
 		fits[f][str(b)] = {}
@@ -92,7 +94,7 @@ for f in tqdm.tqdm(fits):
 				sub_pred = np.dot(subw,sum(srm.transform(loo(test_data,losub)))/nsub)
 				fits[f][str(b)][str(k)][str(losub)]['frobnorm'] = np.sqrt(np.sum((test_data[losub] - sub_pred)**2))
 				fits[f][str(b)][str(k)][str(losub)]['tcorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=1)/(nTRtest-1))
-				fits[f][str(b)][str(k)][str(losub)]['scorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=0)/(nvox-1))
+				fits[f][str(b)][str(k)][str(losub)]['scorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=0)/(fits[f]['nvox']-1))
 				
 dd.io.save(SRMf,fits)
 fits = dd.io.load(SRMf)

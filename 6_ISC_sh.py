@@ -16,7 +16,7 @@ phenolperm = phenol
 
 start_date = str(date.today())
 
-ISCf = ISCpath+'ISC_'+start_date+'_sh_2.h5'
+ISCf = ISCpath+'shuff/ISC_'+start_date+'_sh_2.h5'
 if os.path.exists(ISCf):
     os.remove(ISCf)
 dd.io.save(ISCf,{'subs':subord,'ages':agel,'phenodict':phenol,'pcs':pcl})
