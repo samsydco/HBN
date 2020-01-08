@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 
-import os
-import h5py
 import tqdm
 import numpy as np
 import deepdish as dd
-from random import shuffle
 from datetime import datetime, date
 from scipy.stats import zscore
 from scipy.spatial.distance import squareform
@@ -15,11 +12,7 @@ del phenol['all']
 phenolperm = phenol
 
 start_date = str(date.today())
-
-ISCf = ISCpath+'shuff/ISC_'+start_date+'_sh_2.h5'
-if os.path.exists(ISCf):
-    os.remove(ISCf)
-dd.io.save(ISCf,{'subs':subord,'ages':agel,'phenodict':phenol,'pcs':pcl})
+ISCfs = ISCpath+'shuff/ISC_'+start_date+'_'
 nsh = 1 #5 split-half iterations
 
 def ISCe_calc(iscf,task,cond,sh,shuff):
@@ -77,47 +70,40 @@ for s in range(nsh):
 			D[sidx,:,:] = np.concatenate([dd.io.load(sub,['/'+task+'/L'])[0], dd.io.load(sub,['/'+task+'/R'])[0]], axis=0)
 		D = np.transpose(D,(1,2,0))
 		n_vox,n_time,n_subj=D.shape
-		with h5py.File(ISCf,'a') as hf:
-			grpt = hf.create_group(task+str(s))
-			good_v_indexes = {key: np.arange(81924) for key in phenol.keys()}
-			for shuff in tqdm.tqdm(range(nshuff+1)):
-				print(start_date)
-				grps = grpt.require_group('shuff_'+str(shuff))
-				for k,v in phenol.items():
-					grpk = grps.require_group(k)
-					n_vox = len(good_v_indexes[k])
-					v2 = phenolperm['sex'] if k!='sex' else phenolperm['age']
-					subh = even_out(v,v2)
-					grpk.create_dataset('subs',data=subh)
-					groups = np.zeros((2,2,n_vox,n_time),dtype='float16')
-					for h in [0,1]: # split all or between T / F
-						for htmp in [0,1]: # split within split
-							group = np.zeros((n_vox,n_time),dtype='float16')
-							groupn = np.ones((n_vox,n_time),dtype='int')*n_subj
-							for i in subh[h][htmp]: # mem error in next line (91 reps):
-								group = np.nansum(np.stack((group,D[good_v_indexes[k],:,i])),
-												  axis=0)
-								nanverts = np.argwhere(np.isnan(D[good_v_indexes[k],:,i]))
-								groupn[nanverts[:, 0],nanverts[:,1]] =                                                       groupn[nanverts[:,0],nanverts[:,1]]-1
-							groups[h,htmp] = zscore(group/groupn,axis=1)
-						grpw = grpk.require_group('ISC_SH_w')
-						grpw.create_dataset(str(h),\
-						data=np.sum(np.multiply(groups[h,0],groups[h,1]),axis=1)/(n_time-1))
-					for htmp1 in [0,1]:
-						for htmp2 in [0,1]:
-							grpb = grpk.require_group('ISC_SH_b')
-							grpb.create_dataset(str(htmp1)+'_'+str(htmp2),\
-							data=np.sum(np.multiply(groups[0,htmp1],groups[1,htmp2]),axis=1)/(n_time-1)) # correlate across groups
-					if any(shu==shuff for shu in [101,1001]):
-						good_v_indexes[k] = shuff_check(hf,task,k,s,shuff-1)
-						print('The number of verts left after',str(shuff),\
-							  'iterations for group',k,'is',len(good_v_indexes[k]))
-						grpk.create_dataset('good_v_indexes',data=good_v_indexes[k])
+		good_v_indexes = {key: np.arange(81924) for key in phenol.keys()}
+		for shuff in tqdm.tqdm(range(nshuff+1)):
+			print(start_date)
+			shuffdict = {k:{'subs':[],'ISC_w':[],'ISC_b':[],
+							'good_v_indexes':good_v_indexes} for k in ['age','sex']}#phenol.keys()}
+			for k in shuffdict.keys():
+				n_vox = len(good_v_indexes[k])
+				v2 = phenolperm['sex'] if k!='sex' else phenolperm['age']
+				shuffdict[k]['subs'] = even_out(phenol[k],v2)
+				groups = np.zeros((2,2,n_vox,n_time),dtype='float16')
+				for h in [0,1]: # split all or between T / F
+					for htmp in [0,1]: # split within split
+						group = np.zeros((n_vox,n_time),dtype='float16')
+						groupn = np.ones((n_vox,n_time),dtype='int')*n_subj
+						for i in shuffdict[k]['subs'][h][htmp]: # mem error in next line (91 reps):
+							group = np.nansum(np.stack((group,D[good_v_indexes[k],:,i])),
+											  axis=0)
+							nanverts = np.argwhere(np.isnan(D[good_v_indexes[k],:,i]))
+							groupn[nanverts[:, 0],nanverts[:,1]] =                                                           groupn[nanverts[:,0],nanverts[:,1]]-1
+						groups[h,htmp] = zscore(group/groupn,axis=1)
+					shuffdict[k]['ISC_w'].append(np.sum(np.multiply(groups[h,0],groups[h,1]),axis=1)/(n_time-1))
+				for htmp1 in [0,1]:
+					for htmp2 in [0,1]:
+						shuffdict[k]['ISC_b'].append(np.sum(np.multiply(groups[0,htmp1],groups[1,htmp2]),axis=1)/(n_time-1)) # correlate across groups
+				if any(shu==shuff for shu in [101,1001]):
+					good_v_indexes[k] = shuff_check(hf,task,k,s,shuff-1)
+					print('The number of verts left after',str(shuff),\
+						  'iterations for group',k,'is',len(good_v_indexes[k]))
+			dd.io.save(ISCfs+task+str(s)+'_shuff_'+str(shuff),shuffdict)
 				
-				# randomly shuffle phenol:
-				for k,v in phenol.items():
-					nonnanidx = np.argwhere(~np.isnan(phenol[k]))
-					randidx = np.random.permutation(nonnanidx)
-					phenol[k] = [v[randidx[nonnanidx==idx][0]] if idx in nonnanidx else i for idx,i in enumerate(v)]
+			# randomly shuffle phenol:
+			for k,v in phenol.items():
+				nonnanidx = np.argwhere(~np.isnan(phenol[k]))
+				randidx = np.random.permutation(nonnanidx)
+				phenol[k] = [v[randidx[nonnanidx==idx][0]] if idx in nonnanidx else i for idx,i in enumerate(v)]
 		
 		
