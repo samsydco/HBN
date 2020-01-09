@@ -55,9 +55,9 @@ for s in range(nsh):
 		#n_vox,n_time,n_subj=D.shape
 		good_v_indexes = {key: np.arange(n_vox) for key in phenol.keys()}
 		for shuff in tqdm.tqdm(range(nshuff+1)):
-			fstr = ISCfs+task+str(s)+'_shuff_'+str(shuff)
+			fstr = ISCfs+task+str(s)+'_shuff_'+str(shuff)+'.h5'
 			shuffdict = {k:{'subs':[],'ISC_w':[],'ISC_b':[],
-							'good_v_indexes':good_v_indexes} for k in ['age','sex']}#phenol.keys()}
+							'good_v_indexes':good_v_indexes[k]} for k in ['age','sex']} #phenol.keys()}
 			for k in shuffdict.keys():
 				n_vox = len(good_v_indexes[k])
 				v2 = phenolperm['sex'] if k!='sex' else phenolperm['age']
