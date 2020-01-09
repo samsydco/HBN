@@ -15,8 +15,8 @@ from ISC_settings import *
 agediffroidir = path+'ROIs/'
 ROIopts = ['agediff/*v2','SfN_2019/Fig2_','YeoROIsforSRM_2020-01-03.h5']
 agedifffs = agediffroidir + ROIopts[-1]
-SRMf = ISCpath+'SRM_'+str(date.today())
-SRMf = SRMf+'_v2.h5' if ROIopts[0] in agedifffs else SRMf+'.h5' if ROIopts[1] in agedifffs else SRMf+'_Yeo.h5'
+SRMf = ISCpath+'SRM/'+str(date.today())+'_'
+SRMf = SRMf+'v2_' if ROIopts[0] in agedifffs else SRMf if ROIopts[1] in agedifffs else SRMf+'Yeo_'
 if os.path.exists(SRMf):
 	os.remove(SRMf)
 ROIl = agedifffs if ROIopts[-1] in agedifffs else agedifffs+'*roi'
@@ -26,7 +26,6 @@ train_task = 'DM'
 test_task = 'TP'
 nTRtrain = 750
 nTRtest = 250
-
 
 def load_data(subl,task,hemi,vall):
 	data = []
@@ -73,7 +72,6 @@ for f in tqdm.tqdm(fits):
 	fits[f]['klist'] = np.unique(np.round(np.logspace(np.log(2),np.log(np.min([nTRtrain,fits[f]['nvox']])),
 									base=np.e))).astype('int')
 	for b in [0,nbinseq-1]:
-		print('f =',f,'b =',b)
 		fits[f][str(b)] = {}
 		subl = []
 		for i in [0,1]:
@@ -83,7 +81,6 @@ for f in tqdm.tqdm(fits):
 		train_data = load_data(subl,train_task,fits[f]['hemi'],fits[f]['vall'])
 		test_data  = load_data(subl,test_task, fits[f]['hemi'],fits[f]['vall'])
 		for k in fits[f]['klist']:
-			print('k =',k)
 			fits[f][str(b)][str(k)] = {}
 			for losub in range(nsub):
 				fits[f][str(b)][str(k)][str(losub)] = {}
@@ -95,9 +92,11 @@ for f in tqdm.tqdm(fits):
 				fits[f][str(b)][str(k)][str(losub)]['frobnorm'] = np.sqrt(np.sum((test_data[losub] - sub_pred)**2))
 				fits[f][str(b)][str(k)][str(losub)]['tcorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=1)/(nTRtest-1))
 				fits[f][str(b)][str(k)][str(losub)]['scorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=0)/(fits[f]['nvox']-1))
-				
-dd.io.save(SRMf,fits)
-fits = dd.io.load(SRMf)
+	dd.io.save(SRMf+f+'.h5',fits[f])
+
+fits = {}
+for f in glob.glob(SRMf+'*'):
+	fits[f.split(SRMf)[-1][:-3]] = dd.io.load(f)
 
 labels = ['youngest','oldest']
 yaxis = ['dist','r','r']
