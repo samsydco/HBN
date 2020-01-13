@@ -7,6 +7,7 @@
 import os
 import h5py
 import tqdm
+import glob
 import numpy as np
 import deepdish as dd
 import matplotlib.pyplot as plt
@@ -17,11 +18,14 @@ from matplotlib.colors import Normalize
 import matplotlib as mpl
 from HMM_settings import *
 
-HMMfdate = str(min([datetime.strptime(i.split('/')[-1].split('.h5')[0].split('HMM_')[1],'%Y-%m-%d') for i in glob.glob(HMMpath+'*') if 'fig' not in i], \
-	key=lambda x: abs(x - datetime.today()))).split(' ')[0]
-HMMf = HMMpath+'HMM_'+HMMfdate+'.h5'#'HMM_2019-09-12.h5'
-HMMff = HMMpath+'HMM_'+HMMfdate+'_fig.h5'
-ROIl = list(dd.io.load(HMMf).keys())
+ROIopts = ['YeoROIsforSRM_2020-01-03.h5','ROIs/SfN_2019/ROIs_Fig3/Fig3_','ROIs/g_diff/']
+ROInow = ROIopts[0]
+HMMf = HMMpath+ROInow+'/'
+
+#HMMfdate = str(min([datetime.strptime(i.split('/')[-1].split('.h5')[0].split('HMM_')[1],'%Y-%m-%d') for i in glob.glob(HMMpath+'*') if 'fig' not in i], key=lambda x: abs(x - datetime.today()))).split(' ')[0]
+#HMMf = HMMpath+'HMM_'+HMMfdate+'.h5'#'HMM_2019-09-12.h5'
+HMMff = HMMf+'fig.h5'
+ROIl = [f for f in glob.glob(HMMf+'*h5') if 'fig' not in f]#list(dd.io.load(HMMf).keys())
 nROI = len(ROIl)
 
 def plot_tt_similarity_matrix(ax, data_matrix, bounds, start,n_TRs, TR, cmin, cmax, flip=False):

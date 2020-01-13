@@ -5,21 +5,19 @@ import tqdm
 import glob
 import numpy as np
 import deepdish as dd
-from datetime import date
 import brainiak.funcalign.srm
 from scipy.stats import zscore
 import matplotlib.pyplot as plt
-from settings import *
-from ISC_settings import *
+from HMM_settings import *
 
 agediffroidir = path+'ROIs/'
 ROIopts = ['agediff/*v2','SfN_2019/Fig2_','YeoROIsforSRM_2020-01-03.h5']
 agedifffs = agediffroidir + ROIopts[-1]
-SRMf = ISCpath+'SRM/'+str(date.today())+'_'
-SRMf = SRMf+'v2_' if ROIopts[0] in agedifffs else SRMf if ROIopts[1] in agedifffs else SRMf+'Yeo_'
-if os.path.exists(SRMf):
-	os.remove(SRMf)
-ROIl = agedifffs if ROIopts[-1] in agedifffs else agedifffs+'*roi'
+SRMf = ISCpath+'SRM/'
+SRMf = SRMf+'v2/' if ROIopts[0] in agedifffs else SRMf+'SfN_Fig2/' if ROIopts[1] in agedifffs else SRMf+'Yeo/'
+if not os.path.exists(SRMf):
+    os.makedirs(SRMf)
+ROIl = agedifffs if ROIopts[-1] in agedifffs else agedifffs
 
 n_iter = 20
 train_task = 'DM'
@@ -38,64 +36,44 @@ def loo(data,losub):
 	data = data[:losub] + data[losub + 1:]
 	return data
 
-fits = {}
-for f in tqdm.tqdm(glob.glob(ROIl)):
-	if len(glob.glob(ROIl))==1:
-		fs = dd.io.load(f,'/ROIs')
-		for hemi, rs in fs.items():
-			for r,subr in rs.items():
-				f1 = str(round(float(r)))
-				if type(subr) is list:
-					fits[f1] = {}
-					fits[f1]['vall'] = subr
-					fits[f1]['nvox'] = len(subr)
-					fits[f1]['hemi'] = hemi[0].capitalize()
-				else:
-					for f2,subr_ in subr.items():
-						fits[f1+'_'+f2] = {}
-						fits[f1+'_'+f2]['vall'] = subr_
-						fits[f1+'_'+f2]['nvox'] = len(subr_)
-						fits[f1+'_'+f2]['hemi'] = hemi[0].capitalize()
-	if len(glob.glob(ROIl))>1:
-		fbits = f.split(agediffroidir)[1].split('/')[1].split('_')
-		vall = []
-		with open(f, 'r') as inputfile:
-			for line in inputfile:
-				if len(line.split(' ')) == 3:
-					vall.append(int(line.split(' ')[1]))
-		hemi = 'L' if 'SfN' in agedifffs else fbits[3][0].capitalize()
-		fits['_'.join(fbits)] = {}
-		fits['_'.join(fbits)]['vall'] = vall
-		fits['_'.join(fbits)]['nvox'] = len(vall)
-		fits['_'.join(fbits)]['hemi'] = hemi
+fits = makeROIdict(ROIl)
+
 for f in tqdm.tqdm(fits):
-	fits[f]['klist'] = np.unique(np.round(np.logspace(np.log(2),np.log(np.min([nTRtrain,fits[f]['nvox']])),
-									base=np.e))).astype('int')
-	for b in [0,nbinseq-1]:
-		fits[f][str(b)] = {}
-		subl = []
-		for i in [0,1]:
-			subg = [ageeq[i][1][b][idx] for idx in np.random.choice(lenageeq[i][b],divmod(minageeq[i],2)[0]*2,replace=False)]
-			subl.extend(subg)
-		nsub = len(subl)
-		train_data = load_data(subl,train_task,fits[f]['hemi'],fits[f]['vall'])
-		test_data  = load_data(subl,test_task, fits[f]['hemi'],fits[f]['vall'])
-		for k in fits[f]['klist']:
-			fits[f][str(b)][str(k)] = {}
-			for losub in range(nsub):
-				fits[f][str(b)][str(k)][str(losub)] = {}
-				srm = brainiak.funcalign.srm.SRM(n_iter=n_iter, features=k)
-				srm.fit(loo(train_data,losub))
-				subw = srm.transform_subject(train_data[losub]) # Need latest brainiak version for this
-				# Now test on TP
-				sub_pred = np.dot(subw,sum(srm.transform(loo(test_data,losub)))/nsub)
-				fits[f][str(b)][str(k)][str(losub)]['frobnorm'] = np.sqrt(np.sum((test_data[losub] - sub_pred)**2))
-				fits[f][str(b)][str(k)][str(losub)]['tcorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=1)/(nTRtest-1))
-				fits[f][str(b)][str(k)][str(losub)]['scorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=0)/(fits[f]['nvox']-1))
-	dd.io.save(SRMf+f+'.h5',fits[f])
+	SRMff = SRMf+f+'.h5'
+	if not os.path.exists(SRMff):
+		fitsSRM = {}
+		vall = fits[f]['vall']
+		nvox = fits[f]['nvox']
+		hemi = fits[f]['hemi']
+		fitsSRM['vall'] = vall
+		fitsSRM['nvox'] = nvox
+		fitsSRM['hemi'] = hemi
+		fitsSRM['klist'] = np.unique(np.round(np.logspace(np.log(2),											   np.log(np.min([nTRtrain,nvox])),base=np.e))).astype('int')
+		for b in [0,nbinseq-1]:
+			fitsSRM[str(b)] = {}
+			subl = []
+			for i in [0,1]:
+				subg = [ageeq[i][1][b][idx] for idx in np.random.choice(lenageeq[i][b],divmod(minageeq[i],2)[0]*2,replace=False)]
+				subl.extend(subg)
+			nsub = len(subl)
+			train_data = load_data(subl,train_task,hemi,vall)
+			test_data  = load_data(subl,test_task, hemi,vall)
+			for k in fitsSRM['klist']:
+				fitsSRM[str(b)][str(k)] = {}
+				for losub in range(nsub):
+					fitsSRM[str(b)][str(k)][str(losub)] = {}
+					srm = brainiak.funcalign.srm.SRM(n_iter=n_iter, features=k)
+					srm.fit(loo(train_data,losub))
+					subw = srm.transform_subject(train_data[losub]) # Need latest brainiak version for this
+					# Now test on TP
+					sub_pred = np.dot(subw,sum(srm.transform(loo(test_data,losub)))/nsub)
+					fitsSRM[str(b)][str(k)][str(losub)]['frobnorm'] = np.sqrt(np.sum((test_data[losub] - sub_pred)**2))
+					fitsSRM[str(b)][str(k)][str(losub)]['tcorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=1)/(nTRtest-1))
+					fitsSRM[str(b)][str(k)][str(losub)]['scorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=0)/(nvox-1))
+		dd.io.save(SRMff',fitsSRM[f])
 
 fits = {}
-for f in glob.glob(SRMf+'*'):
+for f in glob.glob(SRMf+'*.h5'):
 	fits[f.split(SRMf)[-1][:-3]] = dd.io.load(f)
 
 labels = ['youngest','oldest']
@@ -127,12 +105,5 @@ for roi,r in fits.items():
 		
 
 
-				
-				
-				
-                
-				
-		
-	
 	
 	
