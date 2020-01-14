@@ -17,8 +17,10 @@ def makeROIdict(ROIfold):
 	ROIs = {}
 	for f in glob.glob(ROIfold):
 		if len(glob.glob(ROIfold))==1:
-			fs = dd.io.load(f,'/ROIs')
-			fs = dd.io.load(ROIfold,'/ROIs')
+			try:
+				fs = dd.io.load(f,'/ROIs')
+			except:
+				fs = dd.io.load(f)
 			for hemi, rs in fs.items():
 				for r,subr in rs.items():
 					f1 = hemi+'_'+str(round(float(r)))

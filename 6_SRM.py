@@ -11,13 +11,13 @@ import matplotlib.pyplot as plt
 from HMM_settings import *
 
 agediffroidir = path+'ROIs/'
-ROIopts = ['agediff/*v2','SfN_2019/Fig2_','YeoROIsforSRM_2020-01-03.h5']
+ROIopts = ['agediff/*v2','SfN_2019/Fig2_','YeoROIsforSRM_2020-01-03.h5','YeoROIsforSRM_sel_2020-01-14.h5']
 agedifffs = agediffroidir + ROIopts[-1]
 SRMf = ISCpath+'SRM/'
 SRMf = SRMf+'v2/' if ROIopts[0] in agedifffs else SRMf+'SfN_Fig2/' if ROIopts[1] in agedifffs else SRMf+'Yeo/'
 if not os.path.exists(SRMf):
     os.makedirs(SRMf)
-ROIl = agedifffs if ROIopts[-1] in agedifffs else agedifffs
+ROIl = agedifffs if any(r in agedifffs for r in ROIopts[-2:]) else agedifffs
 
 n_iter = 20
 train_task = 'DM'
@@ -70,7 +70,7 @@ for f in tqdm.tqdm(fits):
 					fitsSRM[str(b)][str(k)][str(losub)]['frobnorm'] = np.sqrt(np.sum((test_data[losub] - sub_pred)**2))
 					fitsSRM[str(b)][str(k)][str(losub)]['tcorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=1)/(nTRtest-1))
 					fitsSRM[str(b)][str(k)][str(losub)]['scorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=0)/(nvox-1))
-		dd.io.save(SRMff',fitsSRM[f])
+		dd.io.save(SRMff,fitsSRM[f])
 
 fits = {}
 for f in glob.glob(SRMf+'*.h5'):

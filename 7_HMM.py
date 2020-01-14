@@ -17,7 +17,7 @@ from random import randrange
 from scipy.stats import pearsonr
 from sklearn.model_selection import KFold
 
-ROIopts = ['YeoROIsforSRM_2020-01-03.h5','SfN_2019/ROIs_Fig3/Fig3_','g_diff/']
+ROIopts = ['YeoROIsforSRM_sel_2020-01-14.h5','YeoROIsforSRM_2020-01-03.h5','SfN_2019/ROIs_Fig3/Fig3_','g_diff/']
 ROInow = ROIopts[0]
 ROIfold = path+'ROIs/'+ROInow
 HMMf = HMMpath+ROInow+'/'
