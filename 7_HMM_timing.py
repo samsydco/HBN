@@ -15,7 +15,7 @@ from scipy.stats import pearsonr
 from random import randrange
 from sklearn.model_selection import KFold
 
-ROIopts = ['YeoROIsforSRM_2020-01-03.h5','SfN_2019/ROIs_Fig3/Fig3_','g_diff/']
+ROIopts = ['YeoROIsforSRM_sel_2020-01-14.h5','YeoROIsforSRM_2020-01-03.h5','SfN_2019/ROIs_Fig3/Fig3_','g_diff/']
 ROInow = ROIopts[0]
 ROIfold = path+'ROIs/'+ROInow
 HMMf = HMMpath+'timing_'+ROInow+'/'
@@ -57,7 +57,7 @@ for roi in tqdm.tqdm(ROIs):
 				Dtrain = D[LI]
 				Dtest = D[LO]
 				# Fit HMM with TxV data, leaving some subjects out
-				for k in k_list:
+				for ki,k in enumerate(k_list):
 					kstr = 'k_'+str(k)
 					ROIsHMM[task][splitsrt][kstr] = {}
 					hmm = brainiak.eventseg.event.EventSegment(n_events=k)
@@ -68,7 +68,7 @@ for roi in tqdm.tqdm(ROIs):
 					# predict the event boundaries for the test set
 					hmm_bounds, tune_ll = hmm.find_events(np.mean(Dtest, axis=0).T)
 					ROIsHMM[task][splitsrt][kstr]['seg_lo']=hmm_bounds
-					ROIsHMM[task]['tune_ll'][split,k]=tune_ll[0]
+					ROIsHMM[task]['tune_ll'][split,ki]=tune_ll[0]
 					events = np.argmax(hmm_bounds, axis=1)
 					_, event_lengths = np.unique(events, return_counts=True)
 					hmm_bounds = np.where(np.diff(events))[0]
@@ -79,8 +79,8 @@ for roi in tqdm.tqdm(ROIs):
 							corrs[t] = pearsonr(np.mean(Dtest, axis=0)[:,t],\
 												np.mean(Dtest, axis=0)[:,t+w])[0]
 						# Test within minus across boudary pattern correlation with held-out subjects
-						ROIsHMM[task]['within_r'][split,k,wi] = np.mean(corrs[events[:-w] == events[w:]])
-						ROIsHMM[task]['across_r'][split,k,wi] = np.mean(corrs[events[:-w] != events[w:]])
+						ROIsHMM[task]['within_r'][split,ki,wi] = np.mean(corrs[events[:-w] == events[w:]])
+						ROIsHMM[task]['across_r'][split,ki,wi] = np.mean(corrs[events[:-w] != events[w:]])
 			# after fitting all k's for all splits, determine best number of events:
 			ROIsHMM[task]['best_tune_ll'] = np.argmax(np.mean(ROIsHMM[task]['tune_ll'],axis=0))
 			ROIsHMM[task]['best_corr'] = []
