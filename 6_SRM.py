@@ -70,7 +70,7 @@ for f in tqdm.tqdm(fits):
 					fitsSRM[str(b)][str(k)][str(losub)]['frobnorm'] = np.sqrt(np.sum((test_data[losub] - sub_pred)**2))
 					fitsSRM[str(b)][str(k)][str(losub)]['tcorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=1)/(nTRtest-1))
 					fitsSRM[str(b)][str(k)][str(losub)]['scorr'] = np.mean(np.sum(np.multiply(test_data[losub],sub_pred),axis=0)/(nvox-1))
-		dd.io.save(SRMff,fitsSRM[f])
+		dd.io.save(SRMff,fitsSRM)
 
 fits = {}
 for f in glob.glob(SRMf+'*.h5'):
