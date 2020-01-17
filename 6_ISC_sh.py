@@ -71,8 +71,7 @@ for s in range(nsh):
 						groupn = np.ones((n_vox,n_time),dtype='int')*len(shuffdict[k]['subs'][h][htmp])
 						for i in shuffdict[k]['subs'][h][htmp]: # mem error in next line (91 reps):
 							D = np.concatenate([dd.io.load(subord[i],['/'+task+'/L'])[0], dd.io.load(subord[i],['/'+task+'/R'])[0]], axis=0)
-							group = np.nansum(np.stack((group,D[good_v_indexes[k],:])),
-											  axis=0)
+							group = np.nansum(np.stack((group,D[good_v_indexes[k],:])),axis=0)
 							nanverts = np.argwhere(np.isnan(D[good_v_indexes[k],:]))
 							groupn[nanverts[:, 0],nanverts[:,1]] = groupn[nanverts[:,0],nanverts[:,1]]-1
 						groups[h,htmp] = zscore(group/groupn,axis=1)
