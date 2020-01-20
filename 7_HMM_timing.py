@@ -84,6 +84,6 @@ for roi in tqdm.tqdm(ROIs):
 			# after fitting all k's for all splits, determine best number of events:
 			ROIsHMM[task]['best_tune_ll'] = np.argmax(np.mean(ROIsHMM[task]['tune_ll'],axis=0))
 			ROIsHMM[task]['best_corr'] = []
-			for w in win_range:
-				ROIsHMM[task]['best_corr'].append(np.argmax(np.mean(ROIsHMM[task]['within_r'][:,:,w]-ROIsHMM[task]['across_r'][:,:,w],axis=0)))
+			for wi,w in enumerate(win_range):
+				ROIsHMM[task]['best_corr'].append(np.argmax(np.mean(ROIsHMM[task]['within_r'][:,:,wi]-ROIsHMM[task]['across_r'][:,:,w],axis=0)))
 		dd.io.save(ROIf,ROIsHMM)
