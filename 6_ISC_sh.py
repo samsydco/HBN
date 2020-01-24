@@ -24,14 +24,14 @@ def ISCg_calc(fstr,cond):
     return ISCg
 
 def shuff_check(fstr,cond,nshuff,n_vox):
-	fstrtmp = ('_').join(fstr.split('_')[:-1])+'_'+str(0)
+	fstrtmp = ('_').join(fstr.split('_')[:-1])+'_'+str(0)+'.h5'
 	ISCg = ISCg_calc(fstrtmp,cond)
 	ISCe = ISCe_calc(fstrtmp,cond)
 	vvecte = np.zeros((nshuff,len(ISCe)))
 	vvectg = np.zeros((nshuff,len(ISCg)))
-	goodvtmp = dd.io.load(('_').join(fstr.split('_')[:-1])+'_'+str(nshuff),'/'+cond+'/'+'good_v_indexes')
+	goodvtmp = dd.io.load(('_').join(fstr.split('_')[:-1])+'_'+str(nshuff)+'.h5','/'+cond+'/'+'good_v_indexes')
 	for shuff in np.arange(1,nshuff+1):
-		fstrtmp = ('_').join(fstr.split('_')[:-1])+'_'+str(shuff)
+		fstrtmp = ('_').join(fstr.split('_')[:-1])+'_'+str(shuff)+'.h5'
 		vvecte[shuff-1,goodvtmp] = ISCe_calc(fstrtmp,cond)
 		vvectg[shuff-1,goodvtmp] = ISCg_calc(fstrtmp,cond)
 	vertsg = np.asarray([np.sum(vvectg[:,v]<ISCg[v])/nshuff for v in range(len(ISCg))]) #(previously: np.sum(vvect<ISC[v]))
