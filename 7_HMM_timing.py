@@ -85,5 +85,5 @@ for roi in tqdm.tqdm(ROIs):
 			ROIsHMM[task]['best_tune_ll'] = np.argmax(np.mean(ROIsHMM[task]['tune_ll'],axis=0))
 			ROIsHMM[task]['best_corr'] = []
 			for wi,w in enumerate(win_range):
-				ROIsHMM[task]['best_corr'].append(np.argmax(np.mean(ROIsHMM[task]['within_r'][:,:,wi]-ROIsHMM[task]['across_r'][:,:,w],axis=0)))
+				ROIsHMM[task]['best_corr'].append(np.argmax(np.mean(ROIsHMM[task]['within_r'][:,:,wi]-ROIsHMM[task]['across_r'][:,:,wi],axis=0)))
 		dd.io.save(ROIf,ROIsHMM)
