@@ -76,6 +76,10 @@ fits = {}
 for f in glob.glob(SRMf+'*.h5'):
 	fits[f.split(SRMf)[-1][:-3]] = dd.io.load(f)
 
+def sortlist(l,order):
+    newlist = [l[i] for i in order]
+    return newlist
+    
 labels = ['youngest','oldest']
 yaxis = ['dist','r','r']
 for roi,r in fits.items():
@@ -83,15 +87,16 @@ for roi,r in fits.items():
 	fig.suptitle(roi.replace('_',' ')+' '+str(r['nvox'])+' vox', fontsize="x-large")
 	plt.style.use('seaborn-muted')
 	for i,fit in enumerate(['frobnorm','tcorr','scorr']):
-		for bi,b in enumerate(list(r.keys())[:-1]):
+		for bi,b in enumerate(bins):
 			x = []
 			y = []
 			error = []
-			for k,subs in r[b].items():
+			for k,subs in r[str(b)].items():
 				x.append(int(k))
 				y.append(np.mean([subs[sub][fit] for sub in subs.keys()]))
 				error.append(np.std([subs[sub][fit] for sub in subs.keys()]))
-			ax[i].errorbar(x, y, yerr=error, fmt='-o',label=labels[bi])
+				csort=np.argsort(x) # sort x,y,and error to eliminate funny lines in plots!
+			ax[i].errorbar(sortlist(x,csort), sortlist(y,csort), yerr=sortlist(error,csort), fmt='-o',label=labels[bi])
 		ax[i].set_title(fit)
 		ax[i].set_ylabel(yaxis[i])
 		ax[i].set_xlim(np.min(x),np.max(x))
@@ -101,7 +106,7 @@ for roi,r in fits.items():
 	#fig1 = plt.gcf()
 	#plt.show()
 	#plt.draw()
-	plt.savefig(figurepath+'SRM/'+roi+'.png')
+	plt.savefig(figurepath+'SRM/Yeo/'+roi+'.png')
 		
 
 
