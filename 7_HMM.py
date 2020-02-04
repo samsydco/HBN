@@ -18,7 +18,7 @@ from scipy.stats import pearsonr
 from sklearn.model_selection import KFold
 
 ROIopts = ['YeoROIsforSRM_sel_2020-01-14.h5','YeoROIsforSRM_2020-01-03.h5','SfN_2019/ROIs_Fig3/Fig3_','g_diff/']
-ROInow = ROIopts[0]
+ROInow = ROIopts[1]
 ROIfold = path+'ROIs/'+ROInow
 HMMf = HMMpath+ROInow+'/'
 if not os.path.exists(HMMf):
@@ -45,14 +45,16 @@ for roi in tqdm.tqdm(ROIs):
 				ROIsHMM[task]['bin_'+str(b)]['subl'] = subl
 				nsub = len(subl)
 				# Load data
-				dtmp = dd.io.load(subl[0],['/'+task+'/'+hemi],sel=dd.aslice[vall,:])[0]
-				vall = [v for i,v in enumerate(vall) if i not in np.where(np.isnan(dtmp[:,0]))[0]]
-				ROIsHMM['vall'] = vall
-				ROIsHMM['nvox'] = len(vall)
-				nTR = dtmp.shape[1]
+				nTR = dd.io.load(subl[0],['/'+task+'/'+hemi])[0].shape[1]
 				D = np.empty((nsub,len(vall),nTR),dtype='float16')
+				badvox = []
 				for sidx, sub in enumerate(subl):
 					D[sidx,:,:] = dd.io.load(sub,['/'+task+'/'+hemi],sel=dd.aslice[vall,:])[0]
+					badvox.extend(np.where(np.isnan(D[sidx,:,0]))[0]) # Some subjects missing some voxels
+				D = np.delete(D,badvox,1)
+				vall = np.delete(vall,badvox)
+				ROIsHMM['vall'] = vall
+				ROIsHMM['nvox'] = len(vall)
 				ROIsHMM[task]['bin_'+str(b)]['D'] = D
 				for split in range(nsplit):
 					ROIsHMM[task]['bin_'+str(b)]['split_'+str(split)] = {}
@@ -62,7 +64,6 @@ for roi in tqdm.tqdm(ROIs):
 					#LO = np.random.choice(nsub,round(nsub*.2),replace=False) # 20%
 					Dtrain = D[LI]
 					Dtest = D[LO]
-				
 					# Fit HMM with VxT data, leaving some subjects out
 					# preallocate
 					for k in k_list:
@@ -134,20 +135,20 @@ for roi in tqdm.tqdm(ROIs):
 						hmm_perm.set_event_patterns(pat)
 						_, p_ll = hmm_perm.find_events(np.mean(Dtest, axis=0).T)
 						ROIsHMM[task]['bin_'+str(b)]['split_'+str(split)]['k_'+str(k)]['mismatch_ll']=p_ll[0]
-		for b in bins:
-			bin = 'bin_'+str(b)
-			ROIsHMM[task][bin]['all_sub_events'] = {}
-			D = ROIsHMM[task][bin]['D']
-			# set final patterns and event timings for each k with all subjects:
-			for k in k_list:
-				ROIsHMM[task][bin]['all_sub_events']['k_'+str(k)] = {}
-				#fit HMM
-				hmms_wb = brainiak.eventseg.event.EventSegment(n_events=k)
-				hmms_wb.fit(np.mean(D,axis=0).T)
-				ROIsHMM[task][bin]['all_sub_events']['k_'+str(k)]['pattern']=hmms_wb.event_pat_
-				ROIsHMM[task][bin]['all_sub_events']['k_'+str(k)]['seg_og']=hmms_wb.segments_[0]
-				ROIsHMM[task][bin]['all_sub_events']['k_'+str(k)]['event_var']=hmms_wb.event_var_
-		dd.io.save(ROIf,ROIsHMM)
+			for b in bins:
+				bin = 'bin_'+str(b)
+				ROIsHMM[task][bin]['all_sub_events'] = {}
+				D = ROIsHMM[task][bin]['D']
+				# set final patterns and event timings for each k with all subjects:
+				for k in k_list:
+					ROIsHMM[task][bin]['all_sub_events']['k_'+str(k)] = {}
+					#fit HMM
+					hmms_wb = brainiak.eventseg.event.EventSegment(n_events=k)
+					hmms_wb.fit(np.mean(D,axis=0).T)
+					ROIsHMM[task][bin]['all_sub_events']['k_'+str(k)]['pattern']=hmms_wb.event_pat_
+					ROIsHMM[task][bin]['all_sub_events']['k_'+str(k)]['seg_og']=hmms_wb.segments_[0]
+					ROIsHMM[task][bin]['all_sub_events']['k_'+str(k)]['event_var']=hmms_wb.event_var_
+			dd.io.save(ROIf,ROIsHMM)
 
 				
 
