@@ -4,6 +4,10 @@
 from settings import *
 from ISC_settings import *
 
+tasks = ['DM','TP']
+TR=0.8
+nTR=[750,250]
+
 TR1 = 12 #12 sec
 TR2 = 300 #300 sec (5 min)
 k_list = np.unique(np.round((10*60)/np.arange(TR1,TR2,TR1))).astype(int)
