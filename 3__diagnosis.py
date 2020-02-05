@@ -67,6 +67,7 @@ for c in ['tic disorder','schizophrenia spectrum and other psychotic disorder','
 	dfd[c] = dfd.loc[:,clist].any(axis=1)
 	dfd.drop(clist, axis=1, inplace=True)
 dfd.drop([c for c in list(dfd.columns) if '_ ' in c], axis=1, inplace=True)
+dfd.to_csv(metaphenopath+'Neurodevelopmental_Diagnosis_Frequency.csv', index=False)
 
 # plot percentage of each column
 diagnosis = []

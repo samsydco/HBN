@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from settings import *
-#subord = subord[0:5] # for testing!
 from datetime import date,datetime
 from scipy.stats import binned_statistic
 import glob

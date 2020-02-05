@@ -8,11 +8,21 @@ from scipy.stats import zscore
 from scipy.spatial.distance import squareform
 from settings import *
 from ISC_settings import *
+
+start_date = str(date.today())
+
+no_atypical = True
+if no_atypical == True
+	dfd = pd.read_csv(metaphenopath+'Neurodevelopmental_Diagnosis_Frequency.csv')
+	subord = [prepath+sub+'.h5' for sub in list(dfd.loc[dfd['No Diagnosis Given'] == True]['EID'])]
+	agel,pcl,phenol = make_phenol(subord)
+	ISCfs = ISCpath+'ISC_No_Diagnosis'
+else:
+	ISCfs = ISCpath+'shuff/ISC_'+start_date+'_'
+
 del phenol['all']
 phenolperm = phenol
 
-start_date = str(date.today())
-ISCfs = ISCpath+'shuff/ISC_'+start_date+'_'
 nsh = 1 #5 split-half iterations
 
 def ISCe_calc(fstr,cond):
@@ -42,7 +52,7 @@ def shuff_check(fstr,cond,nshuff,n_vox):
 	return good_v_indexes
 
 
-nshuff = 10000 # number of shuffles
+nshuff = 1#0000 # number of shuffles
 for s in range(nsh):
 	for task in ['DM','TP']:
 		phenol = phenolperm
