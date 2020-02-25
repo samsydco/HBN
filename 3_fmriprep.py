@@ -11,7 +11,7 @@ from settings import *
 
 #site = 'Site-CBIC'
 site = 'Site-RU'
-output_space = 'MNI152NLin2009cAsym' 
+output_space = 'template' # default: MNI152NLin2009cAsym 
 #output space = 'fsaverage6' 
 
 compcsv = TRratingdr+'compT1_'+site+'.csv'
