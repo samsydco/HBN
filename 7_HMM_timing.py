@@ -63,7 +63,8 @@ for roi in tqdm.tqdm(ROIs):
 				LI,LO = next(kf.split(np.arange(nsub)))
 				Dtrain = [np.mean(ROIsHMM[task]['bin_0']['D'][LI],axis=0).T,
 						  np.mean(ROIsHMM[task]['bin_4']['D'][LI],axis=0).T]
-				Dtest =  np.mean(np.concatenate([ROIsHMM[task]['bin_0']['D'][LO],ROIsHMM[task]['bin_4']['D'][LO]],axis=0),axis=0).T
+				Dtest =  [np.mean(ROIsHMM[task]['bin_0']['D'][LO],axis=0).T,
+						  np.mean(ROIsHMM[task]['bin_4']['D'][LO],axis=0).T]
 				# Fit HMM with TxV data, leaving some subjects out
 				for ki,k in enumerate(k_list):
 					kstr = 'k_'+str(k)
@@ -73,10 +74,15 @@ for roi in tqdm.tqdm(ROIs):
 					ROIsHMM[task][splitsrt][kstr]['pattern']=hmm.event_pat_
 					ROIsHMM[task][splitsrt][kstr]['seg_og']=hmm.segments_
 					ROIsHMM[task][splitsrt][kstr]['event_var']=hmm.event_var_
-					# predict the event boundaries for the test set
-					hmm_bounds, tune_ll = hmm.find_events(Dtest)
+					ROIsHMM[task][splitsrt][kstr]['train_ll']=hmm.ll_
+					# predict the event boundaries for the average test set
+					hmm_bounds, tune_ll = hmm.find_events(np.mean(np.dstack(Dtest),axis=2))
 					ROIsHMM[task][splitsrt][kstr]['seg_lo']=hmm_bounds
 					ROIsHMM[task]['tune_ll'][split,ki]=tune_ll[0]
+					# predict the event boundaries for each bin
+					for bi,b in enumerate(bins):
+						_, tune_ll = hmm.find_events(Dtest[bi])
+						ROIsHMM[task][splitsrt][kstr]['bin_'+str(b)+'_tune_ll'] = tune_ll
 					events = np.argmax(hmm_bounds, axis=1)
 					_, event_lengths = np.unique(events, return_counts=True)
 					hmm_bounds = np.where(np.diff(events))[0]
@@ -92,6 +98,31 @@ for roi in tqdm.tqdm(ROIs):
 			ROIsHMM[task]['best_tune_ll'] = np.argmax(np.mean(ROIsHMM[task]['tune_ll'],axis=0))
 			ROIsHMM[task]['best_corr'] = np.argmax(np.mean(np.nanmean(ROIsHMM[task]['within_r']-ROIsHMM[task]['across_r'],axis=0),axis=1))
 		dd.io.save(ROIf,ROIsHMM)
+	else: # Now we are adding ll's for bin_0 and bin_4 (both train and test)
+		ROIsHMM = dd.io.load(ROIf)
+		for task in ROIs[roi]['tasks']:
+			for split in range(nsplit):
+				splitsrt = 'split_'+str(split)
+				LI,LO = next(kf.split(np.arange(nsub)))
+				Dtrain = [np.mean(ROIsHMM[task]['bin_0']['D'][LI],axis=0).T,
+						  np.mean(ROIsHMM[task]['bin_4']['D'][LI],axis=0).T]
+				Dtest =  [np.mean(ROIsHMM[task]['bin_0']['D'][LO],axis=0).T,
+						  np.mean(ROIsHMM[task]['bin_4']['D'][LO],axis=0).T]
+				# Fit HMM with TxV data, leaving some subjects out
+				for ki,k in enumerate(k_list):
+					kstr = 'k_'+str(k)
+					hmm = brainiak.eventseg.event.EventSegment(n_events=k)
+					hmm.fit(Dtrain)
+					ROIsHMM[task][splitsrt][kstr]['train_ll']=hmm.ll_
+					# predict the event boundaries for each bin
+					for bi,b in enumerate(bins):
+						_, tune_ll = hmm.find_events(Dtest[bi])
+						ROIsHMM[task][splitsrt][kstr]['bin_'+str(b)+'_tune_ll'] = tune_ll
+		
+		dd.io.save(ROIf,ROIsHMM)
+						
+				
+			
 		
 
 	
