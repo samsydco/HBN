@@ -101,7 +101,7 @@ for roi in tqdm.tqdm(ROIs):
 	else: # Now we are adding ll's for bin_0 and bin_4 (both train and test)
 		ROIsHMM = dd.io.load(ROIf)
 		for task in ROIs[roi]['tasks']:
-			for b in enumerate(bins):
+			for b in bins:
 				ROIsHMM[task]['bin_'+str(b)]['tune_ll'] = np.zeros((nsplit,len(k_list)))
 			for split in range(nsplit):
 				splitsrt = 'split_'+str(split)
