@@ -23,7 +23,7 @@ for index, row in compdf.iterrows():
         #not os.path.exists(fmripreppath+row['sub']+'.html')):
         #len(glob.glob(fmripreppath+sub_temp+'/figures/*sdc*'))!=2):
         plist.append(row['sub'])
-plist = plist[:12]
+plist = plist[:4]
 
 password = input('Type the password for scohen@sophon.columbia.edu:')
 # Run participants in batches of nchunk - check what is max?:
