@@ -101,6 +101,8 @@ for roi in tqdm.tqdm(ROIs):
 	else: # Now we are adding ll's for bin_0 and bin_4 (both train and test)
 		ROIsHMM = dd.io.load(ROIf)
 		for task in ROIs[roi]['tasks']:
+			for b in enumerate(bins):
+				ROIsHMM[task]['bin_'+str(b)]['tune_ll'] = np.zeros((nsplit,len(k_list)))
 			for split in range(nsplit):
 				splitsrt = 'split_'+str(split)
 				LI,LO = next(kf.split(np.arange(nsub)))
@@ -117,8 +119,7 @@ for roi in tqdm.tqdm(ROIs):
 					# predict the event boundaries for each bin
 					for bi,b in enumerate(bins):
 						_, tune_ll = hmm.find_events(Dtest[bi])
-						ROIsHMM[task][splitsrt][kstr]['bin_'+str(b)+'_tune_ll'] = tune_ll
-		
+						ROIsHMM[task]['bin_'+str(b)]['tune_ll'][split,ki] = tune_ll
 		dd.io.save(ROIf,ROIsHMM)
 						
 				
