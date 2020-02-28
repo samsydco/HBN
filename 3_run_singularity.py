@@ -10,7 +10,7 @@ for attr in attrlist:
     globals()[attr] = getattr (m, attr)
 	
 output_space = 'MNI152NLin2009cAsym'
-path_tmp = path if site =='Site-RU' else path+site+'/'
+path_tmp = path+site+'/'
 
 for chunk in tqdm(pchunk):
 	pstr = ' '.join(chunk)
