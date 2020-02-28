@@ -75,44 +75,56 @@ best_model_id = {key: {key: {key: [] for key in ['bin_0','bin_4']} for key in RO
 best_k = {key: {key: {key: [] for key in ['bin_0','bin_4']} for key in ROIl} for key in tasks}
 linelist = ['-','--',':']
 dashList = [(5,2),(2,5),(4,10),(3,3,2,2),(5,2,20,2)]
-# Now need to plot one figure for DM and one for TP (one for each task)
-for task in tasks:
-	nTR_ = [nTR[i] for i in range(len(tasks)) if tasks[i]==task][0]
-	x_list = [np.round(TR*(nTR_/k),2) for k in k_list]
-	for f in ROIl:
-		fshort = f.split('/')[-1][:-3]
-		figs = {key: plt.figure() for key in ['fig1','fig2','fig3']}
+xnans = np.nan*np.zeros(4)
+
+def extend_for_TP(array,xnans,task):
+	if task == 'DM':
+		array = array
+	else:
+		array = np.concatenate((array,xnans), axis=0)
+	return array
+
+# make a dict with log likelihoods to save for later: plotting on brain!
+lls = {f:{task:{b:{key: np.zeros((len(k_list),nsplit)) for key in ['tune_ll','perm_ll','mismatch_ll']} for b in bins} for task in tasks} for f in ROIl}
+for f in ROIl:
+	fshort = f.split('/')[-1][:-3]
+	lls[fshort] = {task:{b:{key: np.zeros((len(k_list),nsplit)) for key in ['tune_ll','perm_ll','mismatch_ll']} for b in bins} for task in tasks}
+	figs = {key: plt.subplots(2,sharex=True) for key in ['fig1','fig2','fig3']}
+	ax = {key: [] for key in ['fig1','fig2','fig3']}
+	for k,v in figs.items():
+		#axa = figs[k][0]  # The big subplot
+		axa = figs[k][0].add_subplot(111, frameon=False)
+		axa.set_title(fshort)
+		axa.set_xlabel('Average Event Duration',labelpad=20)
+		if '1' in k:
+			axa.set_ylabel('Within- minus across-boundary\npattern correlation (r)',labelpad=40)
+		else:
+			axa.set_ylabel('Log likelihood\nPer TR',labelpad=40)
+		axa.set_yticks([],[])
+		axa.set_xticks([],[])
+	for ti,task in enumerate(tasks):
+		nTR_ = nTR[ti]
+		x_list = [np.round(TR*(nTR_/k),2) for k in k_list]
+		if task == 'TP': x_list = x_list+[120,150,200,300]
 		for k,v in figs.items():
-			axa = figs[k].add_subplot(111)    # The big subplot
-			axa.set_xlabel('Average Event Duration',labelpad=20)
-			if '1' in k:
-				axa.set_ylabel('Within- minus across-boundary\npattern correlation (r)',labelpad=40)
-			else:
-				axa.set_ylabel('Tune log likelihood',labelpad=40)
-			#axa.set_yticks([],[])
-			axa.set_xticks([],[])
-			axa.spines["right"].set_visible(False)
-			axa.spines["left"].set_visible(False)
-		ax = {}
-		for k,v in figs.items():
-			ax[k] = figs[k].add_subplot(111)
-			ax[k].set_title(fshort+' '+task)
-			ax[k].set_xticks(x_list,[])
-			ax[k].set_xticklabels([])
+			ax[k].append(figs[k][1][ti])
+			ax[k][ti].set_title(task)
+			if ti == 1:
+				ax[k][ti].set_xticks(x_list,[])
+				ax[k][ti].set_xticklabels([])
 		for b in bins:
-			lls = {key: np.zeros((len(k_list),nsplit)) for key in ['tune_ll','perm_ll','mismatch_ll']}
 			was = {key: np.zeros((len(k_list),nsplit,len(win_range))) for key in ['wa','perm']}
 			try:
-				for key in lls:
-					lls[key] = dd.io.load(f,'/'.join(['/'+task,'bin_'+str(b),key]))
+				for key in lls[fshort][task][b]:
+					lls[fshort][task][b][key] = dd.io.load(f,'/'.join(['/'+task,'bin_'+str(b),key]))
 				for key in was:
 					was[key] = dd.io.load(f,'/'.join(['/'+task,'bin_'+str(b),key]))
 			except ValueError:
 				for ki,k in enumerate(k_list):
 					for split in range(nsplit):
 						bstr = '/'.join(['/'+task,'bin_'+str(b),'split_'+str(split),'k_'+str(k)])
-						for key in lls:
-							lls[key][ki,split] = np.mean(dd.io.load(f,'/'.join([bstr,key])))
+						for key in lls[fshort][task][b]:
+							lls[fshort][task][b][key][ki,split] = np.mean(dd.io.load(f,'/'.join([bstr,key])))
 						for wi,w in enumerate(win_range):
 							bstrw = '/'.join([bstr,'w_'+str(w)])
 							was['wa'][ki,split,wi] = np.mean(dd.io.load(f,'/'.join([bstrw,'within_r']))) - \
@@ -120,8 +132,8 @@ for task in tasks:
 							perms = dd.io.load(f,'/'.join([bstrw,'perms']))
 							was['perm'][ki,split,wi] = np.mean([np.mean(perms[p]) for p in perms if 'within' in p]) - np.mean([np.mean(perms[p]) for p in perms if 'across' in p]) 
 				hf = h5py.File(f,'a') # open the file
-				for key in lls:
-					hf.create_dataset('/'.join(['/'+task,'bin_'+str(b),key]),data=lls[key])
+				for key in lls[fshort][task][b]:
+					hf.create_dataset('/'.join(['/'+task,'bin_'+str(b),key]), data=lls[fshort][task][b][key])
 					#data = hf['/'.join(['/'+task,'bin_'+str(b),key])]       # load the data
 					#data[...] = lls[key]
 				for key in was:
@@ -131,25 +143,32 @@ for task in tasks:
 				hf.close()		
 			c = '#1f77b4' if b == 0 else '#ff7f0e'
 			lab = 'Ages '+str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))
-			best_model_id[task][f]['bin_'+str(b)] = np.argmax(np.mean(lls['tune_ll'],1))
-			best_k[task][f]['bin_'+str(b)] = k_list[best_model_id[task][f]['bin_'+str(b)]]
-			ax['fig1'].errorbar(x_list, np.mean(np.nanmean(was['wa'],1),1), yerr=np.mean(np.nanmean(was['perm'],1),1),color = c,label=lab) #Need nanmean for TP, 50 events (some events are shorter than longest window)			
-			for lli,ll in enumerate(lls.keys()):
-				ax['fig2'].errorbar(x_list, np.mean(lls[ll],1), yerr=np.std(lls[ll],1), color=c, linestyle=linelist[lli],label=lab+' '+ll)
-			subvar = np.sqrt(np.var(lls['tune_ll'],1)+np.var(lls['perm_ll'],1)-[2*np.mean((lls['tune_ll'][i,:]-np.mean(lls['tune_ll'][i,:]))*(lls['perm_ll'][i,:]-np.mean(lls['perm_ll'][i,:]))) for i in range(len(k_list))])
-			ax['fig3'].errorbar(x_list,np.mean(lls['tune_ll'],1)-np.mean(lls['perm_ll'],1), yerr=subvar, color=c,label=lab+' tune - perm ll')
+			best_model_id[task][fshort]['bin_'+str(b)] = np.argmax(np.mean(lls[fshort][task][b]['tune_ll'],1))
+			best_k[task][fshort]['bin_'+str(b)] = k_list[best_model_id[task][fshort]['bin_'+str(b)]]
+			fig1y = extend_for_TP(np.mean(np.nanmean(was['wa'],1),1),xnans,task)
+			fig1yerr = extend_for_TP(np.mean(np.nanmean(was['perm'],1),1),xnans,task)
+			ax['fig1'][ti].errorbar(x_list, fig1y, yerr=fig1yerr,color = c,label=lab) #Need nanmean for TP, 50 events (some events are shorter than longest window)			
+			for lli,ll in enumerate(lls[fshort][task][b].keys()):
+				fig2y = extend_for_TP(np.mean(lls[fshort][task][b][ll],1)/nTR_,xnans,task)
+				fig2yerr = extend_for_TP(np.std(lls[fshort][task][b][ll],1)/nTR_,xnans,task)
+				ax['fig2'][ti].errorbar(x_list, fig2y, yerr=fig2yerr, color=c, linestyle=linelist[lli],label=lab+' '+ll)
+			fig3y = extend_for_TP(np.mean(lls[fshort][task][b]['tune_ll'],1)-np.mean(lls[fshort][task][b]['perm_ll'],1),xnans,task)
+			subvar = extend_for_TP(np.sqrt(np.var(lls[fshort][task][b]['tune_ll'],1)+np.var(lls[fshort][task][b]['perm_ll'], 1)-[2*np.mean((lls[fshort][task][b]['tune_ll'][i,:]-np.mean(lls[fshort][task][b]['tune_ll'][i,:]))*(lls[fshort][task][b]['perm_ll'][i,:]-np.mean(lls[fshort][task][b]['perm_ll'][i,:]))) for i in range(len(k_list))]),xnans,task)
+			ax['fig3'][ti].errorbar(x_list,fig3y, yerr=subvar, color=c,label=lab+' tune - perm ll')
 			for key in ['fig2','fig3']:
-				ax[key].axvline(x=TR*(nTR_/best_k[task][f]['bin_'+str(b)]),color=c,linestyle='--')
-		lgd = {}
-		for k,v in figs.items():
-			ax[k].set_xticklabels(x_list,rotation=45)
-			figs[k].set_size_inches(6, 6)
-			figs[k].tight_layout()
-			lgd[k] = ax[k].legend(loc='lower right', bbox_to_anchor=(1.55, 0))
-		plt.show()
-		figs['fig1'].savefig(figurepath+'HMM/within_r-across_r/'+fshort+'_'+task+'.png', bbox_extra_artists=(lgd['fig1'],), bbox_inches='tight')
-		figs['fig2'].savefig(figurepath+'HMM/tune_ll/'+fshort+'_'+task+'.png', bbox_extra_artists=(lgd['fig2'],), bbox_inches='tight')
-		figs['fig3'].savefig(figurepath+'HMM/tune_sub_ll/'+fshort+'_'+task+'.png', bbox_extra_artists=(lgd['fig2'],), bbox_inches='tight')
+				ax[key][ti].axvline(x=TR*(nTR_/best_k[task][fshort]['bin_'+str(b)]),color=c,linestyle='--')
+	lgd = {}
+	for k,v in figs.items():
+		ax[k][ti].set_xticklabels(x_list,rotation=45)
+		figs[k][0].set_size_inches(6, 6)
+		figs[k][0].tight_layout()
+		lgd[k] = ax[k][ti].legend(loc='lower right', bbox_to_anchor=(1.55, 0))
+	plt.show()
+	figs['fig1'][0].savefig(figurepath+'HMM/within_r-across_r/'+fshort+'.png', bbox_extra_artists=(lgd['fig1'],), bbox_inches='tight')
+	figs['fig2'][0].savefig(figurepath+'HMM/tune_ll/'+fshort+'.png', bbox_extra_artists=(lgd['fig2'],), bbox_inches='tight')
+	figs['fig3'][0].savefig(figurepath+'HMM/tune_sub_ll/'+fshort+'.png', bbox_extra_artists=(lgd['fig2'],), bbox_inches='tight')
+	
+dd.io.save(HMMpath+'lls_'+ROInow,lls)
 
 
 plt.rcParams.update({'font.size': 15})
