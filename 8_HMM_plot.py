@@ -75,9 +75,9 @@ best_model_id = {key: {key: {key: [] for key in ['bin_0','bin_4']} for key in RO
 best_k = {key: {key: {key: [] for key in ['bin_0','bin_4']} for key in ROIl} for key in tasks}
 linelist = ['-','--',':']
 dashList = [(5,2),(2,5),(4,10),(3,3,2,2),(5,2,20,2)]
-xnans = np.nan*np.zeros(4)
 
-def extend_for_TP(array,xnans,task):
+def extend_for_TP(array,task):
+	xnans = np.nan*np.zeros(4)
 	if task == 'DM':
 		array = array
 	else:
@@ -145,15 +145,15 @@ for f in ROIl:
 			lab = 'Ages '+str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))
 			best_model_id[task][fshort]['bin_'+str(b)] = np.argmax(np.mean(lls[fshort][task][b]['tune_ll'],1))
 			best_k[task][fshort]['bin_'+str(b)] = k_list[best_model_id[task][fshort]['bin_'+str(b)]]
-			fig1y = extend_for_TP(np.mean(np.nanmean(was['wa'],1),1),xnans,task)
-			fig1yerr = extend_for_TP(np.mean(np.nanmean(was['perm'],1),1),xnans,task)
+			fig1y = extend_for_TP(np.mean(np.nanmean(was['wa'],1),1),task)
+			fig1yerr = extend_for_TP(np.mean(np.nanmean(was['perm'],1),1),task)
 			ax['fig1'][ti].errorbar(x_list, fig1y, yerr=fig1yerr,color = c,label=lab) #Need nanmean for TP, 50 events (some events are shorter than longest window)			
 			for lli,ll in enumerate(lls[fshort][task][b].keys()):
-				fig2y = extend_for_TP(np.mean(lls[fshort][task][b][ll],1)/nTR_,xnans,task)
-				fig2yerr = extend_for_TP(np.std(lls[fshort][task][b][ll],1)/nTR_,xnans,task)
+				fig2y = extend_for_TP(np.mean(lls[fshort][task][b][ll],1)/nTR_,task)
+				fig2yerr = extend_for_TP(np.std(lls[fshort][task][b][ll],1)/nTR_,task)
 				ax['fig2'][ti].errorbar(x_list, fig2y, yerr=fig2yerr, color=c, linestyle=linelist[lli],label=lab+' '+ll)
-			fig3y = extend_for_TP(np.mean(lls[fshort][task][b]['tune_ll'],1)-np.mean(lls[fshort][task][b]['perm_ll'],1),xnans,task)
-			subvar = extend_for_TP(np.sqrt(np.var(lls[fshort][task][b]['tune_ll'],1)+np.var(lls[fshort][task][b]['perm_ll'], 1)-[2*np.mean((lls[fshort][task][b]['tune_ll'][i,:]-np.mean(lls[fshort][task][b]['tune_ll'][i,:]))*(lls[fshort][task][b]['perm_ll'][i,:]-np.mean(lls[fshort][task][b]['perm_ll'][i,:]))) for i in range(len(k_list))]),xnans,task)
+			fig3y = extend_for_TP(np.mean(lls[fshort][task][b]['tune_ll'],1)-np.mean(lls[fshort][task][b]['perm_ll'],1),task)
+			subvar = extend_for_TP(np.sqrt(np.var(lls[fshort][task][b]['tune_ll'],1)+np.var(lls[fshort][task][b]['perm_ll'], 1)-[2*np.mean((lls[fshort][task][b]['tune_ll'][i,:]-np.mean(lls[fshort][task][b]['tune_ll'][i,:]))*(lls[fshort][task][b]['perm_ll'][i,:]-np.mean(lls[fshort][task][b]['perm_ll'][i,:]))) for i in range(len(k_list))]),task)
 			ax['fig3'][ti].errorbar(x_list,fig3y, yerr=subvar, color=c,label=lab+' tune - perm ll')
 			for key in ['fig2','fig3']:
 				ax[key][ti].axvline(x=TR*(nTR_/best_k[task][fshort]['bin_'+str(b)]),color=c,linestyle='--')
