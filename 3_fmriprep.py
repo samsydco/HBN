@@ -1,36 +1,34 @@
 #!/usr/bin/env python3
 
-def main():
-	import subprocess as sp 
-	import glob
-	import pandas as pd
-	import numpy as np
-	import os
-	from tqdm import tqdm
-	import datetime
-	from settings import *
+import subprocess as sp 
+import glob
+import pandas as pd
+import numpy as np
+import os
+from tqdm import tqdm
+import datetime
+from settings import *
+	
+#site = 'Site-CBIC'
+site = 'Site-RU'
+output_space = 'template' # default: MNI152NLin2009cAsym 
+#output space = 'fsaverage6' 
 
-	#site = 'Site-CBIC'
-	site = 'Site-RU'
-	output_space = 'template' # default: MNI152NLin2009cAsym 
-	#output space = 'fsaverage6' 
+compcsv = TRratingdr+'compT1_'+site+'.csv'
+compdf = pd.read_csv(compcsv)
 
-	compcsv = TRratingdr+'compT1_'+site+'.csv'
-	compdf = pd.read_csv(compcsv)
-
-	plist = []
-	for index, row in compdf.iterrows():
-		if (str(row['final']) != "n" and str(row['final'])!='nan'):# and
-			#not os.path.exists(fmripreppath+row['sub']+'.html')):
-			#len(glob.glob(fmripreppath+sub_temp+'/figures/*sdc*'))!=2):
-			plist.append(row['sub'])
-	plist = plist[:4]
-	nchunk = 4 # number of items per chunk (maybe use 10?)
-	pchunk = [plist[x:x+nchunk] for x in range(0,len(plist),nchunk)]
+plist = []
+for index, row in compdf.iterrows():
+	if (str(row['final']) != "n" and str(row['final'])!='nan'):# and
+		#not os.path.exists(fmripreppath+row['sub']+'.html')):
+		#len(glob.glob(fmripreppath+sub_temp+'/figures/*sdc*'))!=2):
+		plist.append(row['sub'])
+plist = plist[:4]
+nchunk = 4 # number of items per chunk (maybe use 10?)
+pchunk = [plist[x:x+nchunk] for x in range(0,len(plist),nchunk)]
 	
 if __name__ == "__main__":
-   # stuff only to run when not called via 'import' here
-   main()
+	# stuff only to run when not called via 'import' here
 
 	password = input('Type the password for scohen@sophon.columbia.edu:')
 	# Run participants in batches of nchunk - check what is max?:
