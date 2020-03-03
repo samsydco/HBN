@@ -12,7 +12,7 @@ from HMM_settings import *
 
 agediffroidir = path+'ROIs/'
 ROIopts = ['agediff/*v2','SfN_2019/Fig2_','YeoROIsforSRM_2020-01-03.h5','YeoROIsforSRM_sel_2020-01-14.h5']
-agedifffs = agediffroidir + ROIopts[-1]
+agedifffs = agediffroidir + ROIopts[-2]
 SRMf = ISCpath+'SRM/'
 SRMf = SRMf+'v2/' if ROIopts[0] in agedifffs else SRMf+'SfN_Fig2/' if ROIopts[1] in agedifffs else SRMf+'Yeo/'
 if not os.path.exists(SRMf):
@@ -83,7 +83,7 @@ def sortlist(l,order):
 labels = ['youngest','oldest']
 yaxis = ['dist','r','r']
 for roi,r in fits.items():
-	fig, ax = plt.subplots(nrows=3, sharex=True)
+	fig, ax = plt.subplots(3, 2, sharey='row', sharex='col')
 	fig.suptitle(roi.replace('_',' ')+' '+str(r['nvox'])+' vox', fontsize="x-large")
 	plt.style.use('seaborn-muted')
 	for i,fit in enumerate(['frobnorm','tcorr','scorr']):
@@ -96,16 +96,18 @@ for roi,r in fits.items():
 				y.append(np.mean([subs[sub][fit] for sub in subs.keys()]))
 				error.append(np.std([subs[sub][fit] for sub in subs.keys()]))
 				csort=np.argsort(x) # sort x,y,and error to eliminate funny lines in plots!
-			ax[i].errorbar(sortlist(x,csort), sortlist(y,csort), yerr=sortlist(error,csort), fmt='-o',label=labels[bi])
-		ax[i].set_title(fit)
-		ax[i].set_ylabel(yaxis[i])
-		ax[i].set_xlim(np.min(x),np.max(x))
+			x_ = sortlist(x,csort)
+			y_ = sortlist(y,csort)
+			error_ = sortlist(error,csort)
+			for zoom in range(2):
+				if zoom == 1: x_=x_[:15]; y_=y_[:15]; error_=error_[:15]
+				ax[i,zoom].errorbar(x_, y_, yerr=error_, fmt='-o',label=labels[bi])
+				ax[i,zoom].set_title(fit)
+		ax[i,0].set_ylabel(yaxis[i])
+		ax[i,0].set_xlim(np.min(x),np.max(x))
 	plt.legend()
 	plt.tight_layout()
 	plt.xlabel("k dimensions")
-	#fig1 = plt.gcf()
-	#plt.show()
-	#plt.draw()
 	plt.savefig(figurepath+'SRM/Yeo/'+roi+'.png')
 		
 
