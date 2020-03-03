@@ -102,6 +102,10 @@ for sub in glob.glob(path+'sub*'):
 			if '\"IntendedFor\":' not in open(f).read():
 				for line in file:
 					print(line.replace('\"PatientPosition\": \"HFS\"','\"PatientPosition\": \"HFS\",\n    \"IntendedFor\": '+replacement_text),end='')
-                    
+					
+
+# New BIDS convention: (for when using singularity)
+#sub*/fmap/sub*_dir-AP_acq-fMRI_epi* -> sub*/fmap/sub*_dir-AP_acq-fMRI_epi*
+#sub*/fmap/sub*_dir-PA_acq-fMRI_epi* -> sub*/fmap/sub*_dir-AP_acq-fMRI_epi*
                     
  
