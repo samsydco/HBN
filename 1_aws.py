@@ -5,6 +5,7 @@ import numpy as np
 import os
 import csv
 import glob
+import tqdm
 import fileinput
 from settings import *
 
@@ -105,7 +106,18 @@ for sub in glob.glob(path+'sub*'):
 					
 
 # New BIDS convention: (for when using singularity)
-#sub*/fmap/sub*_dir-AP_acq-fMRI_epi* -> sub*/fmap/sub*_dir-AP_acq-fMRI_epi*
-#sub*/fmap/sub*_dir-PA_acq-fMRI_epi* -> sub*/fmap/sub*_dir-AP_acq-fMRI_epi*
-                    
+#sub*/fmap/sub*_dir-AP_acq-fMRI_epi* -> sub*/fmap/sub*_acq-fMRI_phase1*
+#sub*/fmap/sub*_dir-PA_acq-fMRI_epi* -> sub*/fmap/sub*_acq-fMRI_phase2*
+import shutil
+path='/data/HBN/test2/'
+for site in ['Site-RU','Site-CBIC']:
+	path_tmp = path + site + '/'
+	for sub in tqdm.tqdm(glob.glob(path_tmp+'sub*')):
+		sub_short = sub.split('/')[-1]
+		for p_tmp, phase in enumerate(['AP','PA']):
+			p_num = str(p_tmp+1)
+			for file in ['.json','.nii.gz']:
+				f = shutil.copy(sub+'/fmap/'+sub_short+'_dir-'+phase+'_acq-fMRI_epi'+file, \
+							sub+'/fmap/'+sub_short+'_acq-fMRI_phase'+p_num+file)
+                
  
