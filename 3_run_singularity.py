@@ -8,12 +8,13 @@ except AttributeError:
     attrlist = dir (m)
 for attr in attrlist:
     globals()[attr] = getattr (m, attr)
-	
+
+site = 'Site-RU'
 output_space = 'MNI152NLin2009cAsym'
 path_tmp = path+site+'/'
 
 for chunk in tqdm(pchunk):
-	pstr = ' '.join(chunk)
+	pstr = ' '.join([c[4:] for c in chunk])
 	for task in ['DM']:#,'TP']:
 		date = str(datetime.datetime.now())[0:19].replace(' ','_')
 		f = open("%sfmriprep_cmdoutput/%s_%s_%s.txt"%(path,task,date,pstr.replace(" ","_")), "w")
