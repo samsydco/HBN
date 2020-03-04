@@ -11,14 +11,22 @@ from ISC_settings import *
 
 start_date = str(date.today())
 
-no_atypical = True
-if no_atypical == True
+no_atypical = False
+if no_atypical == True:
 	dfd = pd.read_csv(metaphenopath+'Neurodevelopmental_Diagnosis_Frequency.csv')
 	subord = [prepath+sub+'.h5' for sub in list(dfd.loc[dfd['No Diagnosis Given'] == True]['EID'])]
 	agel,pcl,phenol = make_phenol(subord)
 	ISCfs = ISCpath+'ISC_No_Diagnosis'
 else:
 	ISCfs = ISCpath+'shuff/ISC_'+start_date+'_'
+smallsub = False
+if smallsub == True:
+	dfd = pd.read_csv(metaphenopath+'Neurodevelopmental_Diagnosis_Frequency.csv')
+	nsubs = len(dfd.loc[dfd['No Diagnosis Given'] == True]['EID'])
+	subord = np.random.choice(subord, nsubs, replace=False)
+	agel,pcl,phenol = make_phenol(subord)
+	ISCfs = ISCpath+'ISC_small/ISC_small_'+subord[-1].split('/')[-1][4:-3]+'_'
+	
 
 del phenol['all']
 phenolperm = phenol
