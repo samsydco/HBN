@@ -15,7 +15,7 @@ path_tmp = path+site+'/'
 
 for chunk in tqdm(pchunk):
 	pstr = ' '.join([c[4:] for c in chunk])
-	for task in ['DM']:#,'TP']:
+	for task in ['DM','TP']:
 		date = str(datetime.datetime.now())[0:19].replace(' ','_')
 		f = open("%sfmriprep_cmdoutput/%s_%s_%s.txt"%(path,task,date,pstr.replace(" ","_")), "w")
 		command = ('singularity run --cleanenv \

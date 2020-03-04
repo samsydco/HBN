@@ -11,7 +11,7 @@ from settings import *
 	
 #site = 'Site-CBIC'
 site = 'Site-RU'
-output_space = 'template' # default: MNI152NLin2009cAsym 
+output_space = 'MNI152NLin2009cAsym' # 'template'
 #output space = 'fsaverage6' 
 
 compcsv = TRratingdr+'compT1_'+site+'.csv'
@@ -19,11 +19,11 @@ compdf = pd.read_csv(compcsv)
 
 plist = []
 for index, row in compdf.iterrows():
-	if (str(row['final']) != "n" and str(row['final'])!='nan'):# and
-		#not os.path.exists(fmripreppath+row['sub']+'.html')):
+	if ((str(row['final']) != "n" and str(row['final'])!='nan') and
+		not os.path.exists(fmripreppath+row['sub']+'.html')):
 		#len(glob.glob(fmripreppath+sub_temp+'/figures/*sdc*'))!=2):
 		plist.append(row['sub'])
-plist = plist[:4]
+plist = plist[:75]
 nchunk = 4 # number of items per chunk (maybe use 10?)
 pchunk = [plist[x:x+nchunk] for x in range(0,len(plist),nchunk)]
 	
