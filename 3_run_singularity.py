@@ -21,12 +21,11 @@ for chunk in tqdm(pchunk):
 		command = ('singularity run --cleanenv \
 		-B '+path_tmp+':/data \
 		-B '+outputdr+':/out \
-		-B '+tmpdr+'/:/work \
+		-B '+tmpdr+':/work \
 		/data/Loci/fmriprep-1.5.6.simg \
 		/data /out \
 		participant \
 		--ignore=slicetiming \
-		--use-syn-sdc \
 		--fs-license-file=/data/fs_license.txt \
 		--output-spaces '+output_space+' \
 		-w /work/ \
