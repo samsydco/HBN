@@ -133,7 +133,7 @@ for ti,task in enumerate(tasks):
 		ROIsHMM = dd.io.load(roi)
 		rhs = np.mean([bin_ll['bin_0'][task][roi_short],bin_ll['bin_4'][task][roi_short]])
 		for b in bins:
-			yvsospred[task][roi_short]['bin_'+str(b)]['ll>rhs'] = np.sum((np.mean(ROIsHMM[task]['tune_ll'],axis=0)/nTR_)[(np.mean(ROIsHMM[task]['tune_ll'],axis=0)/nTR_)>rhs])
+			yvsospred[task][roi_short]['bin_'+str(b)]['ll_rhs'] = np.sum(yvsospred[task][roi_short]['bin_'+str(b)]['tune_ll'][yvsospred[task][roi_short]['bin_'+str(b)]['tune_ll']>rhs]-rhs)
 	ax[ti].set_title(task+', r = '+str(np.round(np.corrcoef(ys['bin_0'],ys['bin_4'])[0,1],2)))
 	ys['all'] = []
 	for v in tune_ll[task].values():
@@ -145,10 +145,6 @@ fig.set_size_inches(9,6)
 fig.tight_layout()
 #plt.show()
 fig.savefig(figurepath+'HMM/tune_ll_timing/RHS_ll.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
-		
-	
-
-			
 
 dd.io.save(HMMpath+'f_timing_'+ROInow,yvsospred)
 			
