@@ -9,8 +9,6 @@ except AttributeError:
 for attr in attrlist:
     globals()[attr] = getattr (m, attr)
 
-site = 'Site-RU'
-output_space = 'MNI152NLin2009cAsym'
 path_tmp = path+site+'/'
 
 for chunk in tqdm(pchunk):
