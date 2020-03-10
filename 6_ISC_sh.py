@@ -71,16 +71,12 @@ for s in range(nsh):
 		subs[k] = [sub for i,sub in enumerate(subord) if i in subs_idx]
 		for cond2 in conds:
 			phenol_split[k][cond2] = [p for i,p in enumerate(phenolperm[cond2]) if i in subs_idx]
-	for task in ['DM','TP']:
+	for task in ['TP']:#['DM','TP']:
 		n_time = dd.io.load(subord[0],['/'+task+'/L'])[0].shape[1]
 		n_vox = 81924
 		for k in conds:
 			subord_k = subs[k]
 			phenol = phenol_split[k]
-			D = np.empty((len(subord_k),n_vox,n_time),dtype='float16') 
-			for sidx, sub in tqdm.tqdm(enumerate(subord_k)):
-				D[sidx,:,:] = np.concatenate([dd.io.load(sub,['/'+task+'/L'])[0], dd.io.load(sub,['/'+task+'/R'])[0]], axis=0)
-			D = np.transpose(D,(1,2,0))
 			good_v_indexes = np.arange(n_vox)
 			for shuff in tqdm.tqdm(range(nshuff+1)):
 				fstr = ISCfs+task+'_'+k+'_shuff_'+str(shuff)+'.h5'
@@ -97,9 +93,10 @@ for s in range(nsh):
 						group = np.zeros((n_vox,n_time),dtype='float16')
 						groupn = np.ones((n_vox,n_time),dtype='int')*len(shuffdict['subs'][h][htmp])
 						for i in shuffdict['subs'][h][htmp]:
+							D = np.concatenate([dd.io.load(subord_k[i],['/'+task+'/L'])[0], dd.io.load(subord_k[i],['/'+task+'/R'])[0]], axis=0)
 							group = np.nansum(np.stack((group,\
-														D[good_v_indexes,:,i])),axis=0)
-							nanverts = np.argwhere(np.isnan(D[good_v_indexes,:,i]))
+														D[good_v_indexes,:])),axis=0)
+							nanverts = np.argwhere(np.isnan(D[good_v_indexes,:]))
 							groupn[nanverts[:, 0],nanverts[:,1]] = groupn[nanverts[:,0],nanverts[:,1]]-1
 						groups[h,htmp] = zscore(group/groupn,axis=1)
 					shuffdict['ISC_w'].append(np.sum(np.multiply(groups[h,0],groups[h,1]),axis=1)/(n_time-1))
