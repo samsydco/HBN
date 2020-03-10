@@ -10,9 +10,9 @@ from sklearn import linear_model
 from scipy import stats
 from settings import *
 
-subs = glob.glob('%ssub*.html'%(fmripreppath))
+subs = glob.glob('%ssub*.html'%(fmripreppath_old))
 subs = [s.replace('.html', '') for s in subs]
-subs = [s.replace(fmripreppath, '') for s in subs]
+subs = [s.replace(fmripreppath_old, '') for s in subs]
 subs = [sub for sub in subs if not os.path.isfile(prepath + sub + '.h5') and sub not in bad_sub_dict]
 # Check if fmap has been processed
 # subs = [sub for sub in subs if len(glob.glob(fmripreppath+sub+'/figures/*sdc*'))==2]
