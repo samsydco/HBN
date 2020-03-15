@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
 from HMM_settings import *
 
-ROIopts = ['YeoROIsforSRM_sel_2020-01-14.h5','YeoROIsforSRM_2020-01-03.h5','SfN_2019/ROIs_Fig3/Fig3_','g_diff/']
 ROInow = ROIopts[1]
 HMMf = HMMpath+'timing_'+ROInow+'/'
 ROIs = glob.glob(HMMf+'*h5')

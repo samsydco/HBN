@@ -16,6 +16,8 @@ bins = [0,nbinseq-1]
 win_range = np.arange(7,12) #range of windows tested for within - across corr
 nshuff = 100
 
+ROIopts = ['YeoROIsforSRM_sel_2020-01-14.h5','YeoROIsforSRM_2020-01-03.h5','SfN_2019/ROIs_Fig3/Fig3_','g_diff/']
+
 # For 6_SRM.py, 7_HMM.py, and 7_HMM_timing.py
 def makeROIdict(ROIfold):
 	ROIs = {}
