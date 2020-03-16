@@ -31,10 +31,12 @@ for roi in tqdm.tqdm(ROIs):
 	for task in tasks:
 		best_k = k_list[np.argmax(np.mean(ROIsHMM[task]['tune_ll'],axis=0))]
 		D = np.concatenate([ROIsHMM[task]['bin_0']['D'],ROIsHMM[task]['bin_4']['D']])
+		subl = np.arange(nsub*2)
 		for shuff in tqdm.tqdm(range(nshuff+1)):
 			shuffstr = 'shuff_'+str(shuff)
 			roidict[task][shuffstr] = {}
-			Dsplit = [D[:nsub],D[nsub:]] # split young and old
+			
+			Dsplit = [D[subl[:nsub]],D[subl[nsub:]]] # split young and old
 			hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
 			hmm.fit([np.mean(d,axis=0).T for d in Dsplit])
 			auc = []
@@ -54,6 +56,8 @@ for roi in tqdm.tqdm(ROIs):
 				for bi,b in enumerate(bins):
 					_, tune_ll = hmm.find_events(Dtest[bi]) # tune_ll per age group
 					roidict[task][shuffstr]['bin_'+str(b)][split] = tune_ll
+			# RANDOMIZE
+			subl = np.random.permutation(nsub*2)
 	dd.io.save(savedir+roi_short+'.h5',roidict)
 		
 
