@@ -35,7 +35,6 @@ for roi in tqdm.tqdm(ROIs):
 		for shuff in tqdm.tqdm(range(nshuff+1)):
 			shuffstr = 'shuff_'+str(shuff)
 			roidict[task][shuffstr] = {}
-			
 			Dsplit = [D[subl[:nsub]],D[subl[nsub:]]] # split young and old
 			hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
 			hmm.fit([np.mean(d,axis=0).T for d in Dsplit])
