@@ -14,37 +14,49 @@ import tqdm
 import numpy as np
 import deepdish as dd
 import brainiak.eventseg.event
+from sklearn.model_selection import KFold
 from HMM_settings import *
 
 ROInow = ROIopts[1]
 HMMf = HMMpath+'timing_'+ROInow+'/'
+savedir = HMMpath+'shuff/'
 ROIs = glob.glob(HMMf+'*h5')
+nsub = 41
+kf = KFold(n_splits=nsplit,shuffle=True)
 
 for roi in tqdm.tqdm(ROIs):
 	roi_short = roi.split('/')[-1][:-3]
 	ROIsHMM = dd.io.load(roi)
+	roidict = {key: {} for key in tasks}
 	for task in tasks:
 		best_k = k_list[np.argmax(np.mean(ROIsHMM[task]['tune_ll'],axis=0))]
-		
-		for b in bins:
-			ROIsHMM[task]['bin_'+str(b)]['tune_ll'] = np.zeros((nsplit,len(k_list)))
-		for split in range(nsplit):
-			splitsrt = 'split_'+str(split)
-			LI,LO = next(kf.split(np.arange(nsub)))
-			Dtrain = [np.mean(ROIsHMM[task]['bin_0']['D'][LI],axis=0).T,
-					  np.mean(ROIsHMM[task]['bin_4']['D'][LI],axis=0).T]
-			Dtest =  [np.mean(ROIsHMM[task]['bin_0']['D'][LO],axis=0).T,
-					  np.mean(ROIsHMM[task]['bin_4']['D'][LO],axis=0).T]
-			# Fit HMM with TxV data, leaving some subjects out
-			for ki,k in enumerate(k_list):
-				kstr = 'k_'+str(k)
-				hmm = brainiak.eventseg.event.EventSegment(n_events=k)
+		D = np.concatenate([ROIsHMM[task]['bin_0']['D'],ROIsHMM[task]['bin_4']['D']])
+		for shuff in tqdm.tqdm(range(nshuff+1)):
+			shuffstr = 'shuff_'+str(shuff)
+			roidict[task][shuffstr] = {}
+			Dsplit = [D[:nsub],D[nsub:]] # split young and old
+			hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
+			hmm.fit([np.mean(d,axis=0).T for d in Dsplit])
+			auc = []
+			for bi in range(len(bins)):
+				auc.append(np.dot(hmm.segments_[bi], np.arange(best_k)).sum())
+			roidict[task][shuffstr]['auc_diff'] = (auc[1]-auc[0])/(best_k)*TR
+			for b in bins:
+				roidict[task][shuffstr]['bin_'+str(b)] = np.zeros(nsplit)
+			for split in range(nsplit):
+				LI,LO = next(kf.split(np.arange(nsub)))
+				Dtrain = [np.mean(Dsplit[0][LI],axis=0).T,
+						  np.mean(Dsplit[1][LI],axis=0).T]
+				Dtest =  [np.mean(Dsplit[0][LO],axis=0).T,
+						  np.mean(Dsplit[1][LO],axis=0).T]
+				hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
 				hmm.fit(Dtrain)
-				ROIsHMM[task][splitsrt][kstr]['train_ll']=hmm.ll_
-				# predict the event boundaries for each bin
 				for bi,b in enumerate(bins):
-					_, tune_ll = hmm.find_events(Dtest[bi])
-					ROIsHMM[task]['bin_'+str(b)]['tune_ll'][split,ki] = tune_ll
+					_, tune_ll = hmm.find_events(Dtest[bi]) # tune_ll per age group
+					roidict[task][shuffstr]['bin_'+str(b)][split] = tune_ll
+	dd.io.save(savedir+roi_short+'.h5',roidict)
+		
+
 	
 		
 		
