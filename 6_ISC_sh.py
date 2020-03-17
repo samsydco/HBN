@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import glob
 import tqdm
 import numpy as np
 import deepdish as dd
@@ -9,8 +10,6 @@ from scipy.spatial.distance import squareform
 from settings import *
 from ISC_settings import *
 
-start_date = str(date.today())
-
 no_atypical = False
 if no_atypical == True:
 	dfd = pd.read_csv(metaphenopath+'Neurodevelopmental_Diagnosis_Frequency.csv')
@@ -18,7 +17,7 @@ if no_atypical == True:
 	agel,pcl,phenol = make_phenol(subord)
 	ISCfs = ISCpath+'ISC_No_Diagnosis'
 else:
-	ISCfs = ISCpath+'shuff/ISC_'+start_date+'_'
+	ISCfs = ISCpath+'shuff/ISC_'
 smallsub = False
 if smallsub == True:
 	dfd = pd.read_csv(metaphenopath+'Neurodevelopmental_Diagnosis_Frequency.csv')
@@ -64,35 +63,47 @@ nshuff = 100#0000 # number of shuffles
 for s in range(nsh):
 	phenol_split = {key:{key:[] for key in conds} for key in conds}
 	subs = {key:[] for key in conds}
-	for k in conds:
-		v2 = phenolperm['sex'] if k!='sex' else phenolperm['age']
-		subh = even_out(phenolperm[k],v2)
-		subs_idx = [item2 for sublist in subh for item in sublist for item2 in item] # keeping subjects CONSISTENT across shuffles!
-		subs[k] = [sub for i,sub in enumerate(subord) if i in subs_idx]
-		for cond2 in conds:
-			phenol_split[k][cond2] = [p for i,p in enumerate(phenolperm[cond2]) if i in subs_idx]
+	if len(glob.glob(ISCfs+'*'))>0: # use same subjects as previous shuffs
+		for k in conds:
+			subs[k] = dd.io.load(glob.glob(ISCfs+'*'+k+'_shuff_0.h5')[0],'subord')
+			phenol_split[k] = dd.io.load(glob.glob(ISCfs+'*'+k+'_shuff_0.h5')[0],'phenol')
+	else: # create standardized subject list
+		for k in conds:
+			v2 = phenolperm['sex'] if k!='sex' else phenolperm['age']
+			subh = even_out(phenolperm[k],v2)
+			subs_idx = [item2 for sublist in subh for item in sublist for item2 in item] # keeping subjects CONSISTENT across shuffles!
+			subs[k] = [sub for i,sub in enumerate(subord) if i in subs_idx]
+			for cond2 in conds:
+				phenol_split[k][cond2] = [p for i,p in enumerate(phenolperm[cond2]) if i in subs_idx]
 	for task in ['TP']:#['DM','TP']:
+		print(task)
 		n_time = dd.io.load(subord[0],['/'+task+'/L'])[0].shape[1]
 		n_vox = 81924
 		for k in conds:
+			fstr = ISCfs+task+'_'+k
+			shuffl = np.arange(nshuff+1) # how many shuffs are left to run?
+			if len(glob.glob(fstr+'*')) > 0:
+				shuffcomp = [int(f.split('_')[-1][:-3]) for f in glob.glob(fstr+'*')]
+				shuffl = np.asarray([s for s in shuffl if s not in shuffcomp])
 			subord_k = subs[k]
 			phenol = phenol_split[k]
 			good_v_indexes = np.arange(n_vox)
-			for shuff in tqdm.tqdm(range(nshuff+1)):
+			for shuff in tqdm.tqdm(shuffl):
 				fstr = ISCfs+task+'_'+k+'_shuff_'+str(shuff)+'.h5'
-				shuffdict = {'subord':[],'subh':[],'ISC_w':[],'ISC_b':[],
+				shuffdict = {'subord':[],'subh':[],'phenol':[],'ISC_w':[],'ISC_b':[],
 							'good_v_indexes':good_v_indexes}
 				good_v_indexes = shuffdict['good_v_indexes']
 				n_vox = len(good_v_indexes)
 				v2 = phenol_split[k]['sex'] if k!='sex' else phenol_split[k]['age']
+				shuffdict['phenol'] = phenol
 				shuffdict['subord'] = subord_k
-				shuffdict['subs'] = even_out(phenol[k],v2)
+				shuffdict['subh'] = even_out(phenol[k],v2)
 				groups = np.zeros((2,2,n_vox,n_time),dtype='float16')
 				for h in [0,1]: # split all or between T / F
 					for htmp in [0,1]: # split within split
 						group = np.zeros((n_vox,n_time),dtype='float16')
-						groupn = np.ones((n_vox,n_time),dtype='int')*len(shuffdict['subs'][h][htmp])
-						for i in shuffdict['subs'][h][htmp]:
+						groupn = np.ones((n_vox,n_time),dtype='int')*len(shuffdict['subh'][h][htmp])
+						for i in shuffdict['subh'][h][htmp]:
 							D = np.concatenate([dd.io.load(subord_k[i],['/'+task+'/L'])[0], dd.io.load(subord_k[i],['/'+task+'/R'])[0]], axis=0)
 							group = np.nansum(np.stack((group,\
 														D[good_v_indexes,:])),axis=0)
@@ -107,11 +118,11 @@ for s in range(nsh):
 					shuffdict['good_v_indexes'] = shuff_check(fstr,shuff-1,good_v_indexes)
 					print('The number of verts left after',str(shuff),\
 						  'iterations for group',k,'is',len(good_v_indexes))
-			dd.io.save(fstr,shuffdict)	
-			# randomly shuffle phenol:
-			for cond,v in phenol.items():
-				nonnanidx = np.argwhere(~np.isnan(phenol[cond]))
-				randidx = np.random.permutation(nonnanidx)
-				phenol[cond] = [v[randidx[nonnanidx==idx][0]] if idx in nonnanidx else i for idx,i in enumerate(v)]
+				dd.io.save(fstr,shuffdict)	
+				# randomly shuffle phenol:
+				for cond,v in phenol.items():
+					nonnanidx = np.argwhere(~np.isnan(phenol[cond]))
+					randidx = np.random.permutation(nonnanidx)
+					phenol[cond] = [v[randidx[nonnanidx==idx][0]] if idx in nonnanidx else i for idx,i in enumerate(v)]
 		
 		
