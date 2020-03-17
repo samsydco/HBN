@@ -6,6 +6,7 @@
 import tqdm
 import deepdish as dd
 from sklearn.model_selection import KFold
+import brainiak.eventseg.event
 from HMM_settings import *
 SLlist = dd.io.load(ISCpath+'SLlist.h5')
 
@@ -25,10 +26,9 @@ for ti,task in enumerate(tasks):
 			for sidx, sub in enumerate(subl):
 				D[sidx+sub_] = dd.io.load(sub,['/'+task+'/'+hem])[0]
 		SLdict  = {key: [] for key in ['best_k','auc_diff','ll_diff']}
-		voxdict = {key: np.zeros(n_vox) for key in ['best_k','auc_diff','ll_diff']}
-		voxcount = np.zeros(n_vox)
-		for sl in SLlist[hem]:
-			voxl = SLlist[hem][sl]
+		voxdict = {key: np.zeros(nvox) for key in ['best_k','auc_diff','ll_diff']}
+		voxcount = np.zeros(nvox)
+		for voxl in SLlist[hem]:
 			Dsl = D[:,voxl,:]
 			Dsplit = [D[:nsub],D[nsub:]] # split young and old
 			tune_ll_both = np.zeros((nsplit,len(k_list)))
