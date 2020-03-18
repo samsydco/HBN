@@ -42,8 +42,7 @@ for roi in tqdm.tqdm(ROIs):
 			for bi in range(len(bins)):
 				auc.append(np.dot(hmm.segments_[bi], np.arange(best_k)).sum())
 			roidict[task][shuffstr]['auc_diff'] = (auc[1]-auc[0])/(best_k)*TR
-			for b in bins:
-				roidict[task][shuffstr]['bin_'+str(b)] = np.zeros(nsplit)
+			tune_ll = np.zeros((2,nsplit))
 			for split in range(nsplit):
 				LI,LO = next(kf.split(np.arange(nsub)))
 				Dtrain = [np.mean(Dsplit[0][LI],axis=0).T,
@@ -53,8 +52,8 @@ for roi in tqdm.tqdm(ROIs):
 				hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
 				hmm.fit(Dtrain)
 				for bi,b in enumerate(bins):
-					_, tune_ll = hmm.find_events(Dtest[bi]) # tune_ll per age group
-					roidict[task][shuffstr]['bin_'+str(b)][split] = tune_ll
+					_, tune_ll[bi,split] = hmm.find_events(Dtest[bi]) # tune_ll per age group
+				roidict[task][shuffstr]['ll_diff'] = np.mean(tune_ll[1,:]) - np.mean(tune_ll[0,:])
 			# RANDOMIZE
 			subl = np.random.permutation(nsub*2)
 	dd.io.save(savedir+roi_short+'.h5',roidict)
