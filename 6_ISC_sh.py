@@ -63,12 +63,11 @@ nshuff = 100#0000 # number of shuffles
 for s in range(nsh):
 	phenol_split = {key:{key:[] for key in conds} for key in conds}
 	subs = {key:[] for key in conds}
-	if len(glob.glob(ISCfs+'*'))>0: # use same subjects as previous shuffs
-		for k in conds:
-			subs[k] = dd.io.load(glob.glob(ISCfs+'*'+k+'_shuff_0.h5')[0],'subord')
-			phenol_split[k] = dd.io.load(glob.glob(ISCfs+'*'+k+'_shuff_0.h5')[0],'phenol')
-	else: # create standardized subject list
-		for k in conds:
+	for k in conds:
+		if len(glob.glob(ISCfs+'*'+k+'*'))>0: # use same subjects as previous shuffs
+			subs[k] = dd.io.load(glob.glob(ISCfs+'*'+k+'_shuff_0.h5')[0],'/subord')
+			phenol_split[k] = dd.io.load(glob.glob(ISCfs+'*'+k+'_shuff_0.h5')[0],'/phenol')
+		else: # create standardized subject list
 			v2 = phenolperm['sex'] if k!='sex' else phenolperm['age']
 			subh = even_out(phenolperm[k],v2)
 			subs_idx = [item2 for sublist in subh for item in sublist for item2 in item] # keeping subjects CONSISTENT across shuffles!
@@ -81,13 +80,20 @@ for s in range(nsh):
 		n_vox = 81924
 		for k in conds:
 			fstr = ISCfs+task+'_'+k
+			subord_k = subs[k]
+			phenol = phenol_split[k]
+			good_v_indexes = np.arange(n_vox)
 			shuffl = np.arange(nshuff+1) # how many shuffs are left to run?
 			if len(glob.glob(fstr+'*')) > 0:
 				shuffcomp = [int(f.split('_')[-1][:-3]) for f in glob.glob(fstr+'*')]
 				shuffl = np.asarray([s for s in shuffl if s not in shuffcomp])
-			subord_k = subs[k]
-			phenol = phenol_split[k]
-			good_v_indexes = np.arange(n_vox)
+				good_v_indexes = dd.io.load(fstr+'_shuff_'+str(np.max(shuffcomp))+'.h5',\
+											'/good_v_indexes')
+				# randomly shuffle phenol:
+				for cond,v in phenol.items():
+					nonnanidx = np.argwhere(~np.isnan(phenol[cond]))
+					randidx = np.random.permutation(nonnanidx)
+					phenol[cond] = [v[randidx[nonnanidx==idx][0]] if idx in nonnanidx else i for idx,i in enumerate(v)]
 			for shuff in tqdm.tqdm(shuffl):
 				fstr = ISCfs+task+'_'+k+'_shuff_'+str(shuff)+'.h5'
 				shuffdict = {'subord':[],'subh':[],'phenol':[],'ISC_w':[],'ISC_b':[],
