@@ -95,11 +95,41 @@ for roi in tqdm.tqdm(ROIs):
 	fig.tight_layout()
 	#plt.show()
 	fig.savefig(figurepath+'HMM/tune_ll_timing/'+roi_short+'.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
+
 	
+# Temp plot for comparing:
+# tune_ll for combo vs tune_ll for young+old average
+for roi in tqdm.tqdm(ROIs):
+	roi_short = roi.split('/')[-1][:-3]
+	ROIsHMM = dd.io.load(roi)
+	fig,ax = plt.subplots(2,sharex=True)
+	axa = fig.add_subplot(111, frameon=False)
+	axa.set_xlabel('Average Event Duration',labelpad=20)
+	axa.set_ylabel('Log likelihood\nPer TR',labelpad=40)
+	axa.set_yticks([],[])
+	axa.set_xticks([],[])
+	for ti,task in enumerate(tasks):
+		ax[ti].set_title(task)
+		nTR_ = nTR[ti]
+		x_list = [np.round(TR*(nTR_/k),2) for k in k_list]
+		if task == 'TP': x_list = x_list+[120,150,200,300]; ax[ti].set_xticks(x_list,[]); ax[ti].set_xticklabels([])
+		ys = {'combo':ROIsHMM[task]['tune_ll'],\
+			  'avg':np.concatenate((ROIsHMM[task]['bin_0']['tune_ll'],ROIsHMM[task]['bin_4']['tune_ll']))}
+		for y in ys:
+			c = '#1f77b4' if y == 'combo' else '#ff7f0e'
+			ymean = extend_for_TP(np.mean(ys[y],0)/nTR_,task)
+			yerro = extend_for_TP(np.std(ys[y],0)/nTR_,task)
+			ax[ti].errorbar(x_list, ymean, yerr=yerro, color=c, label=y)
+	ax[ti].set_xticklabels(x_list,rotation=45)
+	lgd = ax[ti].legend(loc='lower right', bbox_to_anchor=(1.3, 0))
+	fig.set_size_inches(9,6)
+	fig.tight_layout()
+	#plt.show()
+	fig.savefig(figurepath+'HMM/ll_combo_vs_avg/'+roi_short+'.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 # check that r.h.s. of ll's are aproximately equal across tune_ll, and each bin's tune_ll:
 # It looks like avg. of 2 bin's r.h.s. ll's will be approximately equal
-ROIshortl = list(wtf[task].keys())
+ROIshortl = list(yvsospred[task].keys())
 tune_ll = {key: {key: {} for key in ROIshortl} for key in tasks}
 bin_ll = {key: {key: {key: {} for key in ROIshortl} for key in tasks} for key in ['bin_0','bin_4']}
 for roi in tqdm.tqdm(ROIs):
