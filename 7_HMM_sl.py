@@ -58,7 +58,7 @@ for ti,task in enumerate(tasks):
 					hmm.fit(Dtrain)
 					_, tune_ll_both[split,ki] = \
 									hmm.find_events(np.mean(np.dstack(Dtest),axis=2))
-			best_k = k_list[np.argmax(np.mean(tune_ll,axis=0))]
+			best_k = k_list[np.argmax(np.mean(tune_ll_both,axis=0))]
 			voxdict['best_k'][voxl] += best_k
 			voxcount['best_k'][voxl] += 1
 			SLdict['best_k'].append(best_k)
