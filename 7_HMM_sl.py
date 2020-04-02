@@ -45,8 +45,8 @@ for ti,task in enumerate(tasks):
 				D[sidx+sub_] = dd.io.load(sub,['/'+task+'/'+hem])[0]
 		for vi,voxl in tqdm.tqdm(enumerate(SLs)):
 			Dsl = D[:,voxl,:]
-			Dsplit = [D[:nsub],D[nsub:]] # split young and old
-			tune_ll_both = np.zeros((nsplit,len(k_list)))
+			Dsplit = [Dsl[:nsub],Dsl[nsub:]] # split young and old
+			tune_ll = np.zeros((2,nsplit,len(k_list)))
 			for split in range(nsplit):
 				LI,LO = next(kf.split(np.arange(nsub)))
 				Dtrain = [np.mean(Dsplit[0][LI],axis=0).T,
@@ -56,35 +56,25 @@ for ti,task in enumerate(tasks):
 				for ki,k in enumerate(k_list):
 					hmm = brainiak.eventseg.event.EventSegment(n_events=k)
 					hmm.fit(Dtrain)
-					_, tune_ll_both[split,ki] = \
-									hmm.find_events(np.mean(np.dstack(Dtest),axis=2))
-			best_k = k_list[np.argmax(np.mean(tune_ll_both,axis=0))]
+					for bi in len(bins):
+						_, tune_ll[bi,split,ki] = \
+									hmm.find_events(Dtest[bi])
+			best_ki = np.argmax(np.mean(np.mean(tune_ll,axis=0),axis=0))
+			best_k = k_list[best_ki]
 			voxdict['best_k'][voxl] += best_k
-			voxcount['best_k'][voxl] += 1
 			SLdict['best_k'].append(best_k)
+			ll_diff = np.mean(tune_ll[1,:,best_ki]) - np.mean(tune_ll[0,:,best_ki])
+			voxdict['ll_diff'][voxl] += ll_diff
+			SLdict['ll_diff'].append(ll_diff)
+			# Now train on all subs for AUC diff
 			hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
 			hmm.fit([np.mean(d,axis=0).T for d in Dsplit])
 			auc = []
 			for bi in range(len(bins)):
 				auc.append(np.dot(hmm.segments_[bi], np.arange(best_k)).sum())
 			auc_diff = (auc[1]-auc[0])/(best_k)*TR
-			voxdict['auc_diff'][voxl] += (auc[1]-auc[0])/(best_k)*TR
+			voxdict['auc_diff'][voxl] += auc_diff
 			SLdict['auc_diff'].append(auc_diff)
-			tune_ll_bin = np.zeros((2,nsplit))
-			for split in range(nsplit):
-				LI,LO = next(kf.split(np.arange(nsub)))
-				Dtrain = [np.mean(Dsplit[0][LI],axis=0).T,
-						  np.mean(Dsplit[1][LI],axis=0).T]
-				Dtest =  [np.mean(Dsplit[0][LO],axis=0).T,
-						  np.mean(Dsplit[1][LO],axis=0).T]
-				hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
-				hmm.fit(Dtrain)
-				for bi,b in enumerate(bins):
-					_, tune_ll_bin[bi,nsplit] = \
-							hmm.find_events(Dtest[bi]) # tune_ll per age group
-				ll_diff = np.mean(tune_ll_bin[1]) - np.mean(tune_ll_bin[0])
-				voxdict['ll_diff'][voxl].append(ll_diff)
-				SLdict['ll_diff']
 			voxcount[voxl] += 1
 			dd.io.save(subsavedir+'_'.join([task,hem,str(vi)])+'.h5',\
 					   {'voxdict':voxdict, 'SLdict':SLdict, 'voxcount':voxcount})
