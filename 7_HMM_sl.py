@@ -47,6 +47,7 @@ for ti,task in enumerate(tasks):
 			Dsl = D[:,voxl,:]
 			Dsplit = [Dsl[:nsub],Dsl[nsub:]] # split young and old
 			tune_ll = np.zeros((2,nsplit,len(k_list)))
+			tune_seg = np.zeros((2,nsplit,len(k_list)))
 			for split in range(nsplit):
 				LI,LO = next(kf.split(np.arange(nsub)))
 				Dtrain = [np.mean(Dsplit[0][LI],axis=0).T,
@@ -57,7 +58,7 @@ for ti,task in enumerate(tasks):
 					hmm = brainiak.eventseg.event.EventSegment(n_events=k)
 					hmm.fit(Dtrain)
 					for bi in range(len(bins)):
-						_, tune_ll[bi,split,ki] = \
+						tune_seg[bi,split,ki], tune_ll[bi,split,ki] = \
 									hmm.find_events(Dtest[bi])
 			best_ki = np.argmax(np.mean(np.mean(tune_ll,axis=0),axis=0))
 			best_k = k_list[best_ki]
@@ -66,12 +67,9 @@ for ti,task in enumerate(tasks):
 			ll_diff = np.mean(tune_ll[1,:,best_ki]) - np.mean(tune_ll[0,:,best_ki])
 			voxdict['ll_diff'][voxl] += ll_diff
 			SLdict['ll_diff'].append(ll_diff)
-			# Now train on all subs for AUC diff
-			hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
-			hmm.fit([np.mean(d,axis=0).T for d in Dsplit])
 			auc = []
 			for bi in range(len(bins)):
-				auc.append(np.dot(hmm.segments_[bi], np.arange(best_k)).sum())
+				auc.append(np.dot(np.mean(tune_seg[bi,:,best_ki]), np.arange(best_k)).sum())
 			auc_diff = (auc[1]-auc[0])/(best_k)*TR
 			voxdict['auc_diff'][voxl] += auc_diff
 			SLdict['auc_diff'].append(auc_diff)
