@@ -113,13 +113,14 @@ for roi in tqdm.tqdm(ROIs):
 		nTR_ = nTR[ti]
 		x_list = [np.round(TR*(nTR_/k),2) for k in k_list]
 		if task == 'TP': x_list = x_list+[120,150,200,300]; ax[ti].set_xticks(x_list,[]); ax[ti].set_xticklabels([])
-		ys = {'combo':ROIsHMM[task]['tune_ll'],\
-			  'avg':np.concatenate((ROIsHMM[task]['bin_0']['tune_ll'],ROIsHMM[task]['bin_4']['tune_ll']))}
+		ys = {'combo':{'y':ROIsHMM[task]['tune_ll'],'c':'b','ls':'-'},\
+			 'avg':{'y':np.concatenate((ROIsHMM[task]['bin_0']['tune_ll'],ROIsHMM[task]['bin_4']['tune_ll'])),'c':'g','ls':'-'},\
+			 'young':{'y':ROIsHMM[task]['bin_0']['tune_ll'],'c':'r','ls':'--'},\
+			 'old':{'y':ROIsHMM[task]['bin_4']['tune_ll'],'c':'c','ls':'--'}}
 		for y in ys:
-			c = '#1f77b4' if y == 'combo' else '#ff7f0e'
-			ymean = extend_for_TP(np.mean(ys[y],0)/nTR_,task)
-			yerro = extend_for_TP(np.std(ys[y],0)/nTR_,task)
-			ax[ti].errorbar(x_list, ymean, yerr=yerro, color=c, label=y)
+			ymean = extend_for_TP(np.mean(ys[y]['y'],0)/nTR_,task)
+			yerro = extend_for_TP(np.std(ys[y]['y'],0)/nTR_,task)
+			ax[ti].errorbar(x_list, ymean, yerr=yerro, c=ys[y]['c'], ls=ys[y]['ls'], label=y)
 	ax[ti].set_xticklabels(x_list,rotation=45)
 	lgd = ax[ti].legend(loc='lower right', bbox_to_anchor=(1.3, 0))
 	fig.set_size_inches(9,6)
