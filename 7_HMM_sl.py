@@ -56,7 +56,7 @@ for ti,task in enumerate(tasks):
 				for ki,k in enumerate(k_list):
 					hmm = brainiak.eventseg.event.EventSegment(n_events=k)
 					hmm.fit(Dtrain)
-					for bi in len(bins):
+					for bi in range(len(bins)):
 						_, tune_ll[bi,split,ki] = \
 									hmm.find_events(Dtest[bi])
 			best_ki = np.argmax(np.mean(np.mean(tune_ll,axis=0),axis=0))
