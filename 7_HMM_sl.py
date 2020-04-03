@@ -58,7 +58,7 @@ for ti,task in enumerate(tasks):
 					hmm = brainiak.eventseg.event.EventSegment(n_events=k)
 					hmm.fit(Dtrain)
 					for bi in range(len(bins)):
-						tune_seg[bi][ki][split], tune_ll[bi,split,ki] = \
+						tune_seg[bi][k][split], tune_ll[bi,split,ki] = \
 									hmm.find_events(Dtest[bi])
 			best_ki = np.argmax(np.mean(np.mean(tune_ll,axis=0),axis=0))
 			best_k = k_list[best_ki]
@@ -69,7 +69,7 @@ for ti,task in enumerate(tasks):
 			SLdict['ll_diff'].append(ll_diff)
 			auc = []
 			for bi in range(len(bins)):
-				auc.append(np.dot(np.mean(tune_seg[bi][ki],axis=0), np.arange(best_k)).sum())
+				auc.append(np.dot(np.mean(tune_seg[bi][best_k],axis=0), np.arange(best_k)).sum())
 			auc_diff = (auc[1]-auc[0])/(best_k)*TR
 			voxdict['auc_diff'][voxl] += auc_diff
 			SLdict['auc_diff'].append(auc_diff)
