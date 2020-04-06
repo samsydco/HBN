@@ -118,5 +118,19 @@ for site in ['Site-RU','Site-CBIC']:
 			for file in ['_epi.json','_epi.nii.gz']:
 				f = shutil.copy(sub+'/fmap/'+sub_short+'_dir-'+phase+'_acq-fMRI'+file, \
 							    sub+'/fmap/'+sub_short+'_acq-fMRI_dir-'+phase+file)
+				
+# Add 'IntendedFor' to more subs' fmap jsons:
+path='/data/HBN/test2/'
+for site in ['Site-RU','Site-CBIC']:
+	path_tmp = path + site + '/'
+	for sub in tqdm.tqdm(glob.glob(path_tmp+'sub*')):
+		replacement_text = '[\"'+'\",\"'.join([t.replace(sub+'/','') for t in glob.glob(sub+'/func/*.nii.gz')])+'\"]'
+		for f in glob.glob(sub+'/fmap/'+'*.json'):
+			with fileinput.FileInput(f,inplace=True,backup='.bak') as file:
+				if '\"IntendedFor\":' not in open(f).read():
+					for line in file:
+						print(line.replace('\"PatientPosition\": \"HFS\"','\"PatientPosition\": \"HFS\",\n    \"IntendedFor\": '+replacement_text),end='')
+	
+
                 
  
