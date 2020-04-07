@@ -76,7 +76,7 @@ for ti,task in enumerate(tasks):
 			voxcount[voxl] += 1
 			dd.io.save(subsavedir+'_'.join([task,hem,str(vi)])+'.h5',\
 					   {'voxdict':voxdict, 'SLdict':SLdict, 'voxcount':voxcount})
-		for k,v in voxdict:
+		for k,v in voxdict.items():
 			voxdict[k] = v / voxcount
 		dd.io.save(savedir+'_'.join([task,hem])+'.h5', \
 				   {'voxdict':voxdict, 'SLdict':SLdict, 'voxcount':voxcount})
