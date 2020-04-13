@@ -21,38 +21,36 @@ for roi in tqdm.tqdm(ROIs):
 	ROIsHMM = dd.io.load(roi)
 	for ti,task in enumerate(tasks):
 		nTR_ = nTR[ti]
-		yvsospred[task][roi_short] = {key: {} for key in ['best_tune_ll','best_corr']}
+		yvsospred[task][roi_short] = {key: {} for key in ['best_tune_ll']}
 		time = np.arange(TR,nTR_*TR+1,TR)[:-1]
-		yvsospred[task][roi_short]['best_tune_ll']['ll'] = np.max(np.mean(ROIsHMM[task]['tune_ll'],axis=0))
-		yvsospred[task][roi_short]['best_tune_ll']['k'] = k_list[ROIsHMM[task]['best_tune_ll']]
-		yvsospred[task][roi_short]['best_corr']['k'] = k_list[ROIsHMM[task]['best_corr']]
+		yvsospred[task][roi_short]['best_tune_ll']['ll'] = np.max(np.mean(np.concatenate((ROIsHMM[task]['bin_0']['tune_ll'],ROIsHMM[task]['bin_4']['tune_ll'])),0))/nTR_
+		yvsospred[task][roi_short]['best_tune_ll']['k'] = k_list[np.argmax(np.mean(np.concatenate((ROIsHMM[task]['bin_0']['tune_ll'],ROIsHMM[task]['bin_4']['tune_ll'])),0))]
 		D = [np.mean(ROIsHMM[task]['bin_0']['D'],axis=0).T,
 			 np.mean(ROIsHMM[task]['bin_4']['D'],axis=0).T]
-		for kstr,k in yvsospred[task][roi_short].items():
-			kl = np.arange(k['k'])+1
-			hmm = brainiak.eventseg.event.EventSegment(n_events=k['k'])
-			hmm.fit(D)
-			fig, ax = plt.subplots(figsize=(10, 10))
-			ax.set_title(roi_short+' '+kstr+' '+task, fontsize=50)
-			ax.set_xticks(time[0::nTR_//5])
-			ax.set_xticklabels([str(int(s//60))+':'+str(int(s%60)) for s in time][0::nTR_//5], fontsize=30)
-			ax.set_xlabel('Time (seconds)', fontsize=35)
-			ax.set_yticks(kl)
-			ax.set_yticklabels(kl,fontsize=30)
-			ax.set_ylabel('Events', fontsize=45)
-			E_k = []
-			auc = []
-			for bi in range(len(hmm.segments_)):
-				E_k.append(np.dot(hmm.segments_[bi], kl))
-				auc.append(round(E_k[bi].sum(), 2))
-				ax.plot(time, E_k[bi], linewidth=5.5, alpha=0.5)
-				ax.legend(['Young', 'Old'], fontsize=30)
-			ax.fill_between(time, E_k[1], E_k[0],facecolor='silver', alpha=0.5)
-			ax.text(time[-1], 2, 'Avg prediction = ',verticalalignment='bottom', horizontalalignment='right', fontsize=35)
-			yvsospred[task][roi_short][kstr]['auc_diff'] = round((auc[1]-auc[0])/(k['k'])*TR, 2)
-			ax.text(time[-1]-10, 1, str(round((auc[1]-auc[0])/(k['k'])*TR, 2)) + ' seconds', verticalalignment='bottom', horizontalalignment='right', fontsize=35)
-			#plt.show()
-			plt.savefig(figurepath+'HMM/timing/'+roi_short+'_'+kstr+'_'+task+'.png', bbox_inches='tight')
+		k = yvsospred[task][roi_short]['best_tune_ll']['k']
+		kl = np.arange(k)+1
+		hmm = brainiak.eventseg.event.EventSegment(n_events=k)
+		hmm.fit(D)
+		fig, ax = plt.subplots(figsize=(10, 10))
+		ax.set_title(roi_short+' '+task, fontsize=50)
+		ax.set_xticks(time[0::nTR_//5])
+		ax.set_xticklabels([str(int(s//60))+':'+str(int(s%60)) for s in time][0::nTR_//5], fontsize=30)
+		ax.set_xlabel('Time (seconds)', fontsize=35)
+		ax.set_yticks(kl)
+		ax.set_yticklabels(kl,fontsize=30)
+		ax.set_ylabel('Events', fontsize=45)
+		E_k = []
+		auc = []
+		for bi in range(len(hmm.segments_)):
+			E_k.append(np.dot(hmm.segments_[bi], kl))
+			auc.append(round(E_k[bi].sum(), 2))
+			ax.plot(time, E_k[bi], linewidth=5.5, alpha=0.5)
+			ax.legend(['Young', 'Old'], fontsize=30)
+		ax.fill_between(time, E_k[1], E_k[0],facecolor='silver', alpha=0.5)
+		ax.text(time[-1], 2, 'Avg prediction = ',verticalalignment='bottom', horizontalalignment='right', fontsize=35)
+		yvsospred[task][roi_short]['best_tune_ll']['auc_diff'] = round((auc[1]-auc[0])/(k)*TR, 2)
+		ax.text(time[-1]-10, 1, str(round((auc[1]-auc[0])/(k)*TR, 2)) + ' seconds', verticalalignment='bottom', horizontalalignment='right', fontsize=35)
+		plt.savefig(figurepath+'HMM/timing/'+roi_short+'_'+task+'.png', bbox_inches='tight')
 
 def extend_for_TP(array,task):
 	xnans = np.nan*np.zeros(4)
