@@ -54,20 +54,21 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 			nTR_ = nTR[ti]
 			# Need to fit HMM for all k to find the best:
 			for b in bins:
-				roidict[task]['bin_'+str(b)] = {}
-				subl = [ageeq[i][1][b][idx] for i in [0,1] for idx in np.random.choice(lenageeq[i][b],minageeq[i],replace=False)]
-				roidict[task]['bin_'+str(b)]['subl'] = subl
-				nsub = len(subl)
-				# Load data
-				D = np.empty((nsub,len(vall),nTR_),dtype='float16')
-				badvox = []
-				for sidx, sub in enumerate(subl):
-					D[sidx,:,:] = dd.io.load(sub,['/'+task+'/'+h],sel=dd.aslice[vall,:])[0]
-					badvox.extend(np.where(np.isnan(D[sidx,:,0]))[0]) # Some subjects missing some voxels
-				D = np.delete(D,badvox,1)
-				vall = np.delete(vall,badvox)
-				roidict['vall'] = vall
-				roidict[task]['bin_'+str(b)]['D'] = D
+				if len(vall) > 0:
+					roidict[task]['bin_'+str(b)] = {}
+					subl = [ageeq[i][1][b][idx] for i in [0,1] for idx in np.random.choice(lenageeq[i][b],minageeq[i],replace=False)]
+					roidict[task]['bin_'+str(b)]['subl'] = subl
+					nsub = len(subl)
+					# Load data
+					D = np.empty((nsub,len(vall),nTR_),dtype='float16')
+					badvox = []
+					for sidx, sub in enumerate(subl):
+						D[sidx,:,:] = dd.io.load(sub,['/'+task+'/'+h], sel=dd.aslice[vall,:])[0]
+						badvox.extend(np.where(np.isnan(D[sidx,:,0]))[0]) # Some subjects missing some voxels
+					D = np.delete(D,badvox,1)
+					vall = np.delete(vall,badvox)
+					roidict['vall'] = vall
+					roidict[task]['bin_'+str(b)]['D'] = D
 			if len(vall) > 0:
 				D = [roidict[task]['bin_0']['D'],roidict[task]['bin_4']['D']]
 				tune_ll = np.zeros((2,nsplit,len(k_list)))
@@ -119,7 +120,8 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 					roidict[task][shuffstr]['auc'] = auc
 					roidict[task][shuffstr]['auc_diff'] = ((auc[1]-auc[0])/best_k)*TR
 					roidict[task][shuffstr]['ll_diff'] = (np.mean(tune_ll[shuff,1,:]) - np.mean(tune_ll[shuff,0,:]))/nTR_
-		dd.io.save(savedir+roi_short+'.h5',roidict)
+		if len(vall) > 0:
+			dd.io.save(savedir+roi_short+'.h5',roidict)
 				
 			
 				
