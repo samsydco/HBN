@@ -44,11 +44,11 @@ kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
 for hemi in glob.glob(path+'ROIs/annot/*'):
 	print(hemi)
 	lab = free.read_annot(hemi)
+	h = hemi.split('/')[-1][0].capitalize()
 	for ri,roi_tmp in enumerate(lab[2]):
 		roi_short=roi_tmp.decode("utf-8")[11:]
 		roidict = {}
 		vall = np.where(lab[0]==ri)[0]
-		roidict['hemi'] = roi_short[0]
 		for ti,task in enumerate(tasks):
 			roidict[task] = {}
 			nTR_ = nTR[ti]
@@ -62,7 +62,7 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 				D = np.empty((nsub,len(vall),nTR_),dtype='float16')
 				badvox = []
 				for sidx, sub in enumerate(subl):
-					D[sidx,:,:] = dd.io.load(sub,['/'+task+'/'+roidict['hemi']],sel=dd.aslice[vall,:])[0]
+					D[sidx,:,:] = dd.io.load(sub,['/'+task+'/'+h],sel=dd.aslice[vall,:])[0]
 					badvox.extend(np.where(np.isnan(D[sidx,:,0]))[0]) # Some subjects missing some voxels
 				D = np.delete(D,badvox,1)
 				vall = np.delete(vall,badvox)
@@ -177,7 +177,8 @@ for roi in tqdm.tqdm(ROIs):
 	dd.io.save(savedir+roi_short+'.h5',roidict)
 		
 
-'''	
+'''
+		
 		
 	
 	
