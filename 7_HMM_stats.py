@@ -29,6 +29,7 @@ import numpy as np
 import deepdish as dd
 import brainiak.eventseg.event
 from sklearn.model_selection import KFold
+import nibabel.freesurfer.io as free
 from HMM_settings import *
 
 ROInow = ROIopts[1]
@@ -39,15 +40,15 @@ nsub= 41
 y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit))+1)
 kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
 
-import nibabel.freesurfer.io as free
-for hemi in glob.glob(path+'ROIs/annot/*')
+
+for hemi in glob.glob(path+'ROIs/annot/*'):
 	print(hemi)
 	lab = free.read_annot(hemi)
 	for ri,roi_tmp in enumerate(lab[2]):
-		roi=roi_tmp.decode("utf-8")
+		roi_short=roi_tmp.decode("utf-8")[11:]
 		roidict = {}
 		vall = np.where(lab[0]==ri)[0]
-		roidict['hemi'] = hemi.split('/')[-1][0].capitalize()
+		roidict['hemi'] = roi_short[0]
 		for ti,task in enumerate(tasks):
 			roidict[task] = {}
 			nTR_ = nTR[ti]
@@ -68,13 +69,14 @@ for hemi in glob.glob(path+'ROIs/annot/*')
 				roidict['vall'] = vall
 				roidict[task]['bin_'+str(b)]['D'] = D
 			if len(vall) > 0:
+				D = [roidict[task]['bin_0']['D'],roidict[task]['bin_4']['D']]
 				tune_ll = np.zeros((2,nsplit,len(k_list)))
 				tune_seg = {key:{key:np.zeros((nsplit,nTR_,key)) for key in k_list} for key in range(len(bins))}
 				for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
-					Dtrain = [np.mean(roidict[task]['bin_0']['D'][Ls[0]],axis=0).T,
-							  np.mean(roidict[task]['bin_4']['D'][Ls[0]],axis=0).T]
-					Dtest =  [np.mean(roidict[task]['bin_0']['D'][Ls[1]],axis=0).T,
-							  np.mean(roidict[task]['bin_4']['D'][Ls[1]],axis=0).T]
+					Dtrain = [np.mean(D[0][Ls[0]],axis=0).T,
+							  np.mean(D[1][Ls[0]],axis=0).T]
+					Dtest =  [np.mean(D[0][Ls[1]],axis=0).T,
+							  np.mean(D[1][Ls[1]],axis=0).T]
 					for ki,k in enumerate(k_list):
 						hmm = brainiak.eventseg.event.EventSegment(n_events=k)
 						hmm.fit(Dtrain)
@@ -91,7 +93,7 @@ for hemi in glob.glob(path+'ROIs/annot/*')
 				for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
 					Dtrain = [np.mean(D[0][Ls[0]],axis=0).T,
 							  np.mean(D[1][Ls[0]],axis=0).T]
-					Dtest_all =  np.concatenate([D[0][Ls[1]],D[1][LO]])
+					Dtest_all =  np.concatenate([D[0][Ls[1]],D[1][Ls[1]]])
 					nsubLO = len(Ls[1])
 					subl = np.arange(nsubLO*2) # subject list to be permuted!
 					hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
@@ -103,7 +105,8 @@ for hemi in glob.glob(path+'ROIs/annot/*')
 							tune_seg[shuff,bi,split], tune_ll[shuff,bi,split] = hmm.find_events(Dtest[bi])
 						# RANDOMIZE
 						subl = np.random.permutation(nsubLO*2)
-				roidict[task]['tune_ll'] = tune_ll
+				roidict[task]['tune_ll_perm'] = tune_ll
+				roidict[task]['tune_seg_perm'] = tune_seg
 				for shuff in range(nshuff+1):
 					shuffstr = 'shuff_'+str(shuff)
 					roidict[task][shuffstr] = {}
@@ -113,16 +116,17 @@ for hemi in glob.glob(path+'ROIs/annot/*')
 						E_k.append(np.dot(np.mean(tune_seg[shuff,bi],axis=0), np.arange(best_k)+1))
 						auc.append(E_k[bi].sum())
 					roidict[task][shuffstr]['E_k'] = E_k
-					roidict[task][shuffstr]['E_k'] = auc
+					roidict[task][shuffstr]['auc'] = auc
 					roidict[task][shuffstr]['auc_diff'] = ((auc[1]-auc[0])/best_k)*TR
-					roidict[task][shuffstr]['ll_diff'] = np.mean(tune_ll[shuff,1,:]) - np.mean(tune_ll[shuff,0,:])
+					roidict[task][shuffstr]['ll_diff'] = (np.mean(tune_ll[shuff,1,:]) - np.mean(tune_ll[shuff,0,:]))/nTR_
+		dd.io.save(savedir+roi_short+'.h5',roidict)
 				
 			
 				
         
         
 
-
+'''
 
 for roi in tqdm.tqdm(ROIs):
 	roi_short = roi.split('/')[-1][:-3]
@@ -173,8 +177,7 @@ for roi in tqdm.tqdm(ROIs):
 	dd.io.save(savedir+roi_short+'.h5',roidict)
 		
 
-	
-		
+'''	
 		
 	
 	
