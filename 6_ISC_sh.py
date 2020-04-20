@@ -15,16 +15,19 @@ if no_atypical == True:
 	dfd = pd.read_csv(metaphenopath+'Neurodevelopmental_Diagnosis_Frequency.csv')
 	subord = [prepath+sub+'.h5' for sub in list(dfd.loc[dfd['No Diagnosis Given'] == True]['EID'])]
 	agel,pcl,phenol = make_phenol(subord)
-	ISCfs = ISCpath+'ISC_No_Diagnosis'
+	ISCfs = ISCpath+'No_Diag/'
+	nshuff = 0 # number of shuffles
 else:
 	ISCfs = ISCpath+'shuff/ISC_'
-smallsub = False
+	nshuff = 100#0000 # number of shuffles
+smallsub = True
 if smallsub == True:
 	dfd = pd.read_csv(metaphenopath+'Neurodevelopmental_Diagnosis_Frequency.csv')
 	nsubs = len(dfd.loc[dfd['No Diagnosis Given'] == True]['EID'])
 	subord = np.random.choice(subord, nsubs, replace=False)
 	agel,pcl,phenol = make_phenol(subord)
 	ISCfs = ISCpath+'ISC_small/ISC_small_'+subord[-1].split('/')[-1][4:-3]+'_'
+	nshuff = 0 # number of shuffles
 	
 del phenol['all']
 phenolperm = phenol
@@ -59,7 +62,7 @@ def shuff_check(fstr,nshuff,good_v_indexes):
 	good_v_indexes = list(set(vertsidxe+vertsidxg))
 	return good_v_indexes
 
-nshuff = 100#0000 # number of shuffles
+
 for s in range(nsh):
 	phenol_split = {key:{key:[] for key in conds} for key in conds}
 	subs = {key:[] for key in conds}
@@ -74,7 +77,7 @@ for s in range(nsh):
 			subs[k] = [sub for i,sub in enumerate(subord) if i in subs_idx]
 			for cond2 in conds:
 				phenol_split[k][cond2] = [p for i,p in enumerate(phenolperm[cond2]) if i in subs_idx]
-	for task in ['TP']:#['DM','TP']:
+	for task in ['DM','TP']:
 		print(task)
 		n_time = dd.io.load(subord[0],['/'+task+'/L'])[0].shape[1]
 		n_vox = 81924

@@ -48,7 +48,7 @@ for roi in tqdm.tqdm(ROIs):
 			ax.legend(['Young', 'Old'], fontsize=30)
 		ax.fill_between(time, E_k[1], E_k[0],facecolor='silver', alpha=0.5)
 		ax.text(time[-1], 2, 'Avg prediction = ',verticalalignment='bottom', horizontalalignment='right', fontsize=35)
-		yvsospred[task][roi_short]['best_tune_ll']['auc_diff'] = round((auc[1]-auc[0])/(k)*TR, 2)
+		yvsospred[task][roi_short]['best_tune_ll']['auc_diff'] = round(((auc[1]-auc[0])/k)*TR, 2)
 		ax.text(time[-1]-10, 1, str(round((auc[1]-auc[0])/(k)*TR, 2)) + ' seconds', verticalalignment='bottom', horizontalalignment='right', fontsize=35)
 		plt.savefig(figurepath+'HMM/timing/'+roi_short+'_'+task+'.png', bbox_inches='tight')
 
