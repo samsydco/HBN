@@ -22,14 +22,12 @@ All of this train/test set loop
 
 '''
 
-import os
 import glob
 import tqdm
 import numpy as np
 import deepdish as dd
 import brainiak.eventseg.event
 from sklearn.model_selection import KFold
-import nibabel.freesurfer.io as free
 from HMM_settings import *
 
 ROInow = ROIopts[1]
@@ -47,8 +45,9 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 	h = hemi.split('/')[-1][0].capitalize()
 	for ri,roi_tmp in tqdm.tqdm(enumerate(lab[2])):
 		roi_short=roi_tmp.decode("utf-8")[11:]
+		HMMf = HMMdir+roi_short+'.h5'
 		roidict = {}
-		vall = np.where(lab[0]==ri)[0]
+		vall = dd.io.load(HMMf,'/vall')
 		for ti,task in enumerate(tasks):
 			roidict[task] = {}
 			nTR_ = nTR[ti]

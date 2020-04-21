@@ -4,9 +4,7 @@ import glob
 import tqdm
 import numpy as np
 import deepdish as dd
-from datetime import datetime, date
 from scipy.stats import zscore
-from scipy.spatial.distance import squareform
 from settings import *
 from ISC_settings import *
 
