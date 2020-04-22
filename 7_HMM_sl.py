@@ -47,8 +47,10 @@ for ti,task in enumerate(tasks):
 			for sidx, sub in enumerate(subl):
 				D[sidx+sub_] = dd.io.load(sub,['/'+task+'/'+hem])[0]
 		for vi,voxl in tqdm.tqdm(enumerate(SLs)):
-			troubledict[vi] = {} # stuff to save for later troubleshooting
 			Dsl = D[:,voxl,:]
+			badvox = np.unique(np.where(np.isnan(Dsl))[1])
+			voxl_tmp = np.array([v for i,v in enumerate(voxl) if not any(b==i for b in badvox)])
+			Dsl = D[:,voxl_tmp,:]
 			Dsplit = [Dsl[:nsub],Dsl[nsub:]] # split young and old
 			tune_ll = np.zeros((2,nsplit,len(k_list)))
 			tune_seg = {key:{key:np.zeros((nsplit,nTR_,key)) for key in k_list} for key in range(len(bins))}
@@ -65,20 +67,21 @@ for ti,task in enumerate(tasks):
 									hmm.find_events(Dtest[bi])
 			troubledict[vi]['tune_ll'] = tune_ll
 			troubledict[vi]['tune_seg'] = tune_seg
+			troubledict[vi]['voxl'] = voxl_tmp
 			best_ki = np.argmax(np.mean(np.mean(tune_ll,axis=0),axis=0))
 			best_k = k_list[best_ki]
-			voxdict['best_k'][voxl] += best_k
+			voxdict['best_k'][voxl_tmp] += best_k
 			SLdict['best_k'].append(best_k)
 			ll_diff = np.mean(tune_ll[1,:,best_ki]) - np.mean(tune_ll[0,:,best_ki])
-			voxdict['ll_diff'][voxl] += ll_diff
+			voxdict['ll_diff'][voxl_tmp] += ll_diff
 			SLdict['ll_diff'].append(ll_diff)
 			auc = []
 			for bi in range(len(bins)):
 				auc.append(np.dot(np.mean(tune_seg[bi][best_k],axis=0), np.arange(best_k)+1).sum())
 			auc_diff = (auc[1]-auc[0])/(best_k)*TR
-			voxdict['auc_diff'][voxl] += auc_diff
+			voxdict['auc_diff'][voxl_tmp] += auc_diff
 			SLdict['auc_diff'].append(auc_diff)
-			voxcount[voxl] += 1
+			voxcount[voxl_tmp] += 1
 			dd.io.save(subsavedir+'_'.join([task,hem,str(vi)])+'.h5',\
 					   {'voxdict':voxdict, 'SLdict':SLdict, 'voxcount':voxcount,'troubledict':troubledict})
 		for k,v in voxdict.items():
