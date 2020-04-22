@@ -6,7 +6,6 @@ import random
 import numpy as np
 import deepdish as dd
 from scipy.stats import zscore
-import nibabel.freesurfer.io as free
 from ISC_settings import *
 
 nTR=[750,250]
@@ -26,22 +25,22 @@ def ISCg_calc(roidict,task,shuffstr):
 for roi in tqdm.tqdm(glob.glob(HMMdir+'*.h5')):
 	roi_short = roi.split('/')[-1][:-3]
 	h = roi_short[0]
-	vall = dd.io.load(roi,'/vall')
-	n_vox = len(vall)
 	roidict = {}
-	roidict['vall'] = vall
-	for ti,task in enumerate(tasks):
+	for ti,task in enumerate(['DM','TP']):
 		roidict[task] = {}
+		vall = dd.io.load(roi,'/'+'/'.join([task,'bin_0','vall']))
+		roidict[task]['vall'] = vall
+		n_vox = len(vall)
 		n_time = nTR[ti]
 		D = []
 		Age = []
 		Sex = []
 		for bi,b in enumerate(bins):
 			bstr = 'bin_'+str(b)
-			subl = dd.io.load(HMMdir+roi_short+'.h5','/'+'/'.join([task,bstr,'subl']))
+			subl = dd.io.load(roi,'/'+'/'.join([task,bstr,'subl']))
 			Sex.extend([Phenodf['Sex'][Phenodf['EID'] == shortsub(sub)].iloc[0] for sub in subl])
 			Age.extend([bi]*len(subl))
-			D.append(dd.io.load(HMMdir+roi_short+'.h5','/'+'/'.join([task,bstr,'D'])))
+			D.append(dd.io.load(roi,'/'+'/'.join([task,bstr,'D'])))
 		D = np.concatenate(D)
 		for shuff in range(nshuff+1):
 			shuffstr = 'shuff_'+str(shuff)
