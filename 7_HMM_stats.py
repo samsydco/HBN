@@ -28,6 +28,7 @@ import numpy as np
 import deepdish as dd
 import brainiak.eventseg.event
 from sklearn.model_selection import KFold
+import nibabel.freesurfer.io as free
 from HMM_settings import *
 
 ROInow = ROIopts[1]
@@ -38,26 +39,25 @@ nsub= 41
 y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit))+1)
 kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
 
-
 for hemi in glob.glob(path+'ROIs/annot/*'):
 	print(hemi)
 	lab = free.read_annot(hemi)
 	h = hemi.split('/')[-1][0].capitalize()
 	for ri,roi_tmp in tqdm.tqdm(enumerate(lab[2])):
 		roi_short=roi_tmp.decode("utf-8")[11:]
-		HMMf = HMMdir+roi_short+'.h5'
 		roidict = {}
-		vall = dd.io.load(HMMf,'/vall')
+		vall = np.where(lab[0]==ri)[0]
+		roidict['vall'] = vall
 		for ti,task in enumerate(tasks):
 			roidict[task] = {}
 			nTR_ = nTR[ti]
+			vall = roidict['vall']
 			# Need to fit HMM for all k to find the best:
 			for b in bins:
 				if len(vall) > 0:
 					roidict[task]['bin_'+str(b)] = {}
 					subl = [ageeq[i][1][b][idx] for i in [0,1] for idx in np.random.choice(lenageeq[i][b],minageeq[i],replace=False)]
 					roidict[task]['bin_'+str(b)]['subl'] = subl
-					nsub = len(subl)
 					# Load data
 					D = np.empty((nsub,len(vall),nTR_),dtype='float16')
 					badvox = []
@@ -66,7 +66,7 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 						badvox.extend(np.where(np.isnan(D[sidx,:,0]))[0]) # Some subjects missing some voxels
 					D = np.delete(D,badvox,1)
 					vall = np.delete(vall,badvox)
-					roidict['vall'] = vall
+					roidict[task]['bin_'+str(b)]['vall'] = vall
 					roidict[task]['bin_'+str(b)]['D'] = D
 			if len(vall) > 0:
 				D = [roidict[task]['bin_0']['D'],roidict[task]['bin_4']['D']]
