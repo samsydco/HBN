@@ -15,6 +15,7 @@ SLlist = dd.io.load(ISCpath+'SLlist.h5')
 savedir = HMMpath+'SL/'
 nsub = 41
 nvox = 81924//2
+y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit))+1)
 kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
 
 
@@ -24,6 +25,7 @@ for ti,task in enumerate(tasks):
 		print(task,hem)
 		subsavedir = savedir+task+'/'+hem+'/'
 		SLs = SLlist[hem]
+		troubledict = {key: {} for key in np.arange(len(SLs))}
 		SLdict  = {key: [] for key in ['best_k','auc_diff','ll_diff']}
 		voxdict = {key: np.zeros(nvox) for key in ['best_k','auc_diff','ll_diff']}
 		voxcount = np.zeros(nvox)
@@ -34,6 +36,7 @@ for ti,task in enumerate(tasks):
 			if len(glob.glob(subsavedir+'*')) > 0:
 				maxSL = np.max([int(SL.split('_')[-1][:-3]) for SL in glob.glob(subsavedir+'*')])
 				loaddict = dd.io.load(subsavedir+'_'.join([task,hem,str(maxSL)])+'.h5')
+				troubledict = loaddict['troubledict']
 				SLdict  = loaddict['SLdict']
 				voxdict = loaddict['voxdict']
 				voxcount = loaddict['voxcount']
@@ -44,6 +47,7 @@ for ti,task in enumerate(tasks):
 			for sidx, sub in enumerate(subl):
 				D[sidx+sub_] = dd.io.load(sub,['/'+task+'/'+hem])[0]
 		for vi,voxl in tqdm.tqdm(enumerate(SLs)):
+			troubledict[vi] = {} # stuff to save for later troubleshooting
 			Dsl = D[:,voxl,:]
 			Dsplit = [Dsl[:nsub],Dsl[nsub:]] # split young and old
 			tune_ll = np.zeros((2,nsplit,len(k_list)))
@@ -59,6 +63,8 @@ for ti,task in enumerate(tasks):
 					for bi in range(len(bins)):
 						tune_seg[bi][k][split], tune_ll[bi,split,ki] = \
 									hmm.find_events(Dtest[bi])
+			troubledict[vi]['tune_ll'] = tune_ll
+			troubledict[vi]['tune_seg'] = tune_seg
 			best_ki = np.argmax(np.mean(np.mean(tune_ll,axis=0),axis=0))
 			best_k = k_list[best_ki]
 			voxdict['best_k'][voxl] += best_k
@@ -74,11 +80,11 @@ for ti,task in enumerate(tasks):
 			SLdict['auc_diff'].append(auc_diff)
 			voxcount[voxl] += 1
 			dd.io.save(subsavedir+'_'.join([task,hem,str(vi)])+'.h5',\
-					   {'voxdict':voxdict, 'SLdict':SLdict, 'voxcount':voxcount})
+					   {'voxdict':voxdict, 'SLdict':SLdict, 'voxcount':voxcount,'troubledict':troubledict})
 		for k,v in voxdict.items():
 			voxdict[k] = v / voxcount
 		dd.io.save(savedir+'_'.join([task,hem])+'.h5', \
-				   {'voxdict':voxdict, 'SLdict':SLdict, 'voxcount':voxcount})
+				   {'voxdict':voxdict, 'SLdict':SLdict, 'voxcount':voxcount, 'troubledict':troubledict})
 			
 			
 	
