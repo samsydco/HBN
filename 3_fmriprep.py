@@ -9,8 +9,8 @@ from tqdm import tqdm
 import datetime
 from settings import *
 	
-#site = 'Site-CBIC'
-site = 'Site-RU'
+site = 'Site-CBIC'
+#site = 'Site-RU'
 output_space = 'MNI152NLin2009cAsym' # 'template'
 #output space = 'fsaverage6' 
 
