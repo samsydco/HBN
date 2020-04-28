@@ -23,7 +23,7 @@ def ISCg_calc(etcdict):
 				   np.sqrt(etcdict['ISC_w'][0]))
     return ISCg
 
-for ti,task in enumerate(tasks):
+for ti,task in enumerate(['DM','TP']):
 	nTR_ = nTR[ti]
 	for hem in ['L','R']:
 		print(task,hem)
@@ -70,7 +70,7 @@ for ti,task in enumerate(tasks):
 				for h in [0,1]:
 					for htmp in [0,1]:
 						for i in subh[h][htmp]:
-							groups[h,htmp] = np.nansum(np.stack((group,np.mean(Dsl[i],0))),axis=0)
+							groups[h,htmp] = np.nansum(np.stack((groups[h,htmp],np.mean(Dsl[i],0))),axis=0)
 					etcdict[shuffstr]['ISC_w'].append(pearsonr(groups[h,0],groups[h,1])[0])
 				for htmp1 in [0,1]:
 					for htmp2 in [0,1]:
@@ -78,9 +78,9 @@ for ti,task in enumerate(tasks):
 				# Now calculate g_diff and e_diff
 				e_diff = ISCe_calc(etcdict[shuffstr])
 				g_diff = ISCg_calc(etcdict[shuffstr])
-				SLdict[shuff]['e_diff'].append(e_diff)
+				SLdict['e_diff'][shuff].append(e_diff)
 				voxdict['e_diff'] += e_diff
-				SLdict[shuff]['g_diff'].append(g_diff)
+				SLdict['g_diff'][shuff].append(g_diff)
 				voxdict['g_diff'] += g_diff
 				# Now shuffle Age:
 				random.shuffle(Age)
