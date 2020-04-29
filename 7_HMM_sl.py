@@ -34,10 +34,10 @@ for ti,task in enumerate(tasks):
 		if not os.path.exists(subsavedir):
 			os.makedirs(subsavedir)
 		elif len(glob.glob(subsavedir+'*')) > 0:
-			maxSL = np.max([int(SL.split('_')[-1][:-3]) for SL in glob.glob(subsavedir+'*')])
+			maxSL = np.max([int(SL.split('_')[-1][:-3]) for SL in glob.glob(subsavedir+'*')])-1 # subtract one for trouble shooting
 			SLs = dict((k,SLs[k]) for k in SLs.keys() if k > maxSL)
 			loaddict = dd.io.load(subsavedir+'_'.join([task,hem,str(maxSL)])+'.h5')
-			etcdict = loaddict['etcdict']
+			etcdict[maxSL] = loaddict['etcdict']
 			SLdict  = loaddict['SLdict']
 			voxdict = loaddict['voxdict']
 			voxcount = loaddict['voxcount']
@@ -109,7 +109,7 @@ for ti,task in enumerate(tasks):
 				SLdict['ll_diff'][shuff].append(ll_diff)
 				voxdict['ll_diff'][shuff,voxl_tmp] += ll_diff
 			dd.io.save(subsavedir+'_'.join([task,hem,str(vi)])+'.h5',\
-					   {'voxdict':voxdict, 'SLdict':SLdict, 'voxcount':voxcount,'etcdict':etcdict})
+					   {'voxdict':voxdict, 'SLdict':SLdict, 'voxcount':voxcount,'etcdict':etcdict[vi]})
 		for k,v in voxdict.items():
 			voxdict[k] = v / voxcount
 		dd.io.save(savedir+'_'.join([task,hem])+'.h5', \
