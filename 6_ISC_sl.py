@@ -3,6 +3,7 @@
 import os
 import glob
 import tqdm
+import random
 import numpy as np
 import deepdish as dd
 from scipy.stats import pearsonr
