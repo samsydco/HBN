@@ -8,7 +8,6 @@ import numpy as np
 import deepdish as dd
 import brainiak.eventseg.event
 import matplotlib.pyplot as plt
-from scipy.stats import pearsonr
 from HMM_settings import *
 
 ROInow = ROIopts[1]
