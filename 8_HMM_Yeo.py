@@ -47,7 +47,7 @@ def extend_for_TP(array,task):
 	return array
 		
 # Now plotting difference in tune_ll between young and old:
-for roi in tqdm.tqdm(ROIs):
+for roi in tqdm.tqdm(glob.glob(HMMdir+'*.h5')):
 	roi_short = roi.split('/')[-1][:-3]
 	ROIsHMM = dd.io.load(roi)
 	fig,ax = plt.subplots(2,sharex=True)
