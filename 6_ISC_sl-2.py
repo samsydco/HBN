@@ -9,14 +9,14 @@ import tqdm
 import random
 import numpy as np
 import deepdish as dd
-from scipy.stats import zscore
+from scipy.stats import pearsonr
 from ISC_settings import *
 SLlist = dd.io.load(ISCpath+'SLlist.h5')
 
 nTR=[750,250]
 bins = [0,4]
 nvox = 81924//2
-savedir = ISCpath+'SL/'
+savedir = ISCpath+'SL_2/'
 nsub = 41
 
 def ISCe_calc(etcdict):
@@ -72,31 +72,15 @@ for ti,task in enumerate(['DM','TP']):
 				shuffstr = 'shuff_'+str(shuff)
 				etcdict[shuffstr] = {'ISC_w':[],'ISC_b':[]}
 				subh = even_out(Age,Sex)
-				
-				groups = np.zeros((2,2,nTR_),dtype='float16')
+				groups = np.zeros((2,2,n_time),dtype='float16')
 				for h in [0,1]:
 					for htmp in [0,1]:
 						for i in subh[h][htmp]:
-							groups[h,htmp] = np.nansum(np.stack((group,np.mean(Dsl[i],0))),axis=0)
+							groups[h,htmp] = np.nansum(np.stack((groups[h,htmp],np.mean(Dsl[i],0))),axis=0)
 					etcdict[shuffstr]['ISC_w'].append(pearsonr(groups[h,0],groups[h,1])[0])
 				for htmp1 in [0,1]:
 					for htmp2 in [0,1]:
 						etcdict[shuffstr]['ISC_b'].append(pearsonr(groups[0,htmp1],groups[1,htmp2])[0])
-				
-				
-				
-				
-				groups = np.zeros((2,2,n_vox,n_time),dtype='float16')
-				for h in [0,1]:
-					for htmp in [0,1]:
-						group = np.zeros((n_vox,n_time),dtype='float16')
-						for i in subh[h][htmp]:
-							group = np.nansum(np.stack((group,Dsl[i])),axis=0)
-						groups[h,htmp] = zscore(group/(nsub//2),axis=1)
-					etcdict[shuffstr]['ISC_w'].append(np.sum(np.multiply(groups[h,0],groups[h,1]),axis=1)/(n_time-1))
-				for htmp1 in [0,1]:
-					for htmp2 in [0,1]:
-						etcdict[shuffstr]['ISC_b'].append(np.sum(np.multiply(groups[0,htmp1],groups[1,htmp2]),axis=1)/(n_time-1))
 				# Now calculate g_diff and e_diff
 				e_diff = np.nanmean(ISCe_calc(etcdict[shuffstr]))
 				g_diff = np.nanmean(ISCg_calc(etcdict[shuffstr]))

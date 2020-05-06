@@ -16,7 +16,7 @@ SLlist = dd.io.load(ISCpath+'SLlist.h5')
 nTR=[750,250]
 bins = [0,4]
 nvox = 81924//2
-savedir = ISCpath+'SL/'
+savedir = ISCpath+'SL_1/'
 nsub = 41
 
 def ISCe_calc(etcdict):
