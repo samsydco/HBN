@@ -6,6 +6,7 @@ import glob
 import tqdm
 import numpy as np
 import deepdish as dd
+import brainiak.eventseg.event
 import matplotlib.pyplot as plt
 from HMM_settings import *
 
@@ -18,6 +19,10 @@ for roi in tqdm.tqdm(glob.glob(HMMdir+'*.h5')):
 		nTR_ = nTR[ti]
 		time = np.arange(TR,nTR_*TR+1,TR)[:-1]
 		k = ROIsHMM[task]['best_k']
+		D = [np.mean(ROIsHMM[task]['bin_0']['D'],axis=0).T,
+			 np.mean(ROIsHMM[task]['bin_4']['D'],axis=0).T]
+		hmm = brainiak.eventseg.event.EventSegment(n_events=k)
+		hmm.fit(D)
 		kl = np.arange(k)+1
 		fig, ax = plt.subplots(figsize=(10, 10))
 		ax.set_title(roi_short+' '+task, fontsize=50)
@@ -27,9 +32,10 @@ for roi in tqdm.tqdm(glob.glob(HMMdir+'*.h5')):
 		ax.set_yticks(kl)
 		ax.set_yticklabels(kl,fontsize=30)
 		ax.set_ylabel('Events', fontsize=45)
-		E_k = ROIsHMM[task]['shuff_0']['E_k']
-		auc = ROIsHMM[task]['shuff_0']['auc']
+		E_k = []
+		auc = []
 		for bi in range(len(bins)):
+			E_k.append(np.dot(hmm.segments_[bi], kl))
 			auc.append(round(E_k[bi].sum(), 2))
 			ax.plot(time, E_k[bi], linewidth=5.5, alpha=0.5)
 			ax.legend(['Young', 'Old'], fontsize=30)
