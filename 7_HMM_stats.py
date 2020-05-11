@@ -32,12 +32,12 @@ import nibabel.freesurfer.io as free
 from HMM_settings import *
 
 ROInow = ROIopts[1]
-HMMf = HMMpath+'timing_'+ROInow+'/'
-savedir = HMMpath+'shuff/'
-ROIs = glob.glob(HMMf+'*h5')
+savedir = HMMpath+'shuff_5bins/'
 nsub= 41
 y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit))+1)
 kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
+bins = np.arange(nbinseq)
+nbins = len(bins)
 
 for hemi in glob.glob(path+'ROIs/annot/*'):
 	print(hemi)
@@ -49,13 +49,12 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 		vall = np.where(lab[0]==ri)[0]
 		roidict['vall'] = vall
 		for ti,task in enumerate(tasks):
-			roidict[task] = {}
+			roidict[task] = {'bin_'+str(b):{'vall':[]} for b in bins}
 			nTR_ = nTR[ti]
 			vall = roidict['vall']
 			# Need to fit HMM for all k to find the best:
-			for b in bins:
-				if len(vall) > 0:
-					roidict[task]['bin_'+str(b)] = {}
+			while (len(roidict['vall'])>0 and len(roidict[task]['bin_0']['vall'])==0) or len(np.unique([len(roidict[task]['bin_'+str(b)]['vall']) for b in bins]))>1:
+				for bi,b in enumerate(bins):
 					subl = [ageeq[i][1][b][idx] for i in [0,1] for idx in np.random.choice(lenageeq[i][b],minageeq[i],replace=False)]
 					roidict[task]['bin_'+str(b)]['subl'] = subl
 					# Load data
@@ -66,21 +65,20 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 						badvox.extend(np.where(np.isnan(D[sidx,:,0]))[0]) # Some subjects missing some voxels
 					D = np.delete(D,badvox,1)
 					vall = np.delete(vall,badvox)
+					roidict['vall'] = vall
 					roidict[task]['bin_'+str(b)]['vall'] = vall
 					roidict[task]['bin_'+str(b)]['D'] = D
 			if len(vall) > 0:
-				D = [roidict[task]['bin_0']['D'],roidict[task]['bin_4']['D']]
-				tune_ll = np.zeros((2,nsplit,len(k_list)))
-				tune_seg = {key:{key:np.zeros((nsplit,nTR_,key)) for key in k_list} for key in range(len(bins))}
+				D = [roidict[task]['bin_'+str(b)]['D'] for b in bins]
+				tune_ll = np.zeros((nbins,nsplit,len(k_list)))
+				tune_seg = {key:{key:np.zeros((nsplit,nTR_,key)) for key in k_list} for key in range(nbins)}
 				for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
-					Dtrain = [np.mean(D[0][Ls[0]],axis=0).T,
-							  np.mean(D[1][Ls[0]],axis=0).T]
-					Dtest =  [np.mean(D[0][Ls[1]],axis=0).T,
-							  np.mean(D[1][Ls[1]],axis=0).T]
+					Dtrain = [np.mean(d[Ls[0]],axis=0).T for d in D]
+					Dtest  = [np.mean(d[Ls[1]],axis=0).T for d in D]
 					for ki,k in enumerate(k_list):
 						hmm = brainiak.eventseg.event.EventSegment(n_events=k)
 						hmm.fit(Dtrain)
-						for bi in range(len(bins)):
+						for bi in range(nbins):
 							tune_seg[bi][k][split], tune_ll[bi,split,ki] = \
 										hmm.find_events(Dtest[bi])
 				roidict[task]['tune_ll'] = tune_ll
@@ -88,23 +86,23 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 				#Now calculating best_k from average ll:
 				best_k = k_list[np.argmax(np.mean(np.mean(tune_ll,0),0))]
 				roidict[task]['best_k'] = best_k
-				tune_seg = np.zeros((nshuff+1,2,nsplit,nTR_,best_k))
-				tune_ll = np.zeros((nshuff+1,2,nsplit))
+				tune_seg = np.zeros((nshuff+1,nbins,nsplit,nTR_,best_k))
+				tune_ll = np.zeros((nshuff+1,nbins,nsplit))
 				for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
-					Dtrain = [np.mean(D[0][Ls[0]],axis=0).T,
-							  np.mean(D[1][Ls[0]],axis=0).T]
-					Dtest_all =  np.concatenate([D[0][Ls[1]],D[1][Ls[1]]])
+					Dtrain     = [np.mean(d[Ls[0]],axis=0).T for d in D]
+					Dtest_all  = np.concatenate([d[Ls[1]] for d in D])
+
 					nsubLO = len(Ls[1])
-					subl = np.arange(nsubLO*2) # subject list to be permuted!
+					subl = np.arange(nsubLO*nbins) # subject list to be permuted!
 					hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
 					hmm.fit(Dtrain)
-					for shuff in range(nshuff+1):
-						Dtest = [np.mean(Dtest_all[subl[:nsubLO]],axis=0).T,
-								 np.mean(Dtest_all[subl[nsubLO:]],axis=0).T]
-						for bi in range(len(bins)):
-							tune_seg[shuff,bi,split], tune_ll[shuff,bi,split] = hmm.find_events(Dtest[bi])
+					for shuff in range(nshuff+1):		
+						for bi in range(nbins):
+							idx = np.arange(bi*nsubLO,(bi+1)*nsubLO)
+							Dtest = np.mean(Dtest_all[subl[idx]],axis=0).T
+							tune_seg[shuff,bi,split], tune_ll[shuff,bi,split] = hmm.find_events(Dtest)
 						# RANDOMIZE
-						subl = np.random.permutation(nsubLO*2)
+						subl = np.random.permutation(nsubLO*nbins)
 				roidict[task]['tune_ll_perm'] = tune_ll
 				roidict[task]['tune_seg_perm'] = tune_seg
 				for shuff in range(nshuff+1):
@@ -112,7 +110,7 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 					roidict[task][shuffstr] = {}
 					E_k = []
 					auc = []
-					for bi in range(len(bins)):
+					for bi in range(nbins):
 						E_k.append(np.dot(np.mean(tune_seg[shuff,bi],axis=0), np.arange(best_k)+1))
 						auc.append(E_k[bi].sum())
 					roidict[task][shuffstr]['E_k'] = E_k
@@ -158,7 +156,7 @@ for roi in tqdm.tqdm(ROIs):
 				for shuff in range(nshuff+1):
 					Dtest = [np.mean(Dtest_all[subl[:nsubLO]],axis=0).T,
 							 np.mean(Dtest_all[subl[nsubLO:]],axis=0).T]
-					for bi in range(len(bins)):
+					for bi in range(nbins):
 						tune_seg[shuff,bi,split], tune_ll[shuff,bi,split] = hmm.find_events(Dtest[bi])
 					# RANDOMIZE
 					subl = np.random.permutation(nsubLO*2)
@@ -168,7 +166,7 @@ for roi in tqdm.tqdm(ROIs):
 				roidict[task][shuffstr] = {}
                 E_k = []
 				auc = []
-				for bi in range(len(bins)):
+				for bi in range(nbins):
                     E_k.append(np.dot(np.mean(tune_seg[shuff,bi],axis=0), np.arange(best_k)+1))
 					auc.append(E_k[bi].sum())
                 roidict[task][shuffstr]['E_k'] = E_k
