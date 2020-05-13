@@ -55,19 +55,20 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 			# Need to fit HMM for all k to find the best:
 			while (len(roidict['vall'])>0 and len(roidict[task]['bin_0']['vall'])==0) or len(np.unique([len(roidict[task]['bin_'+str(b)]['vall']) for b in bins]))>1:
 				for bi,b in enumerate(bins):
-					subl = [ageeq[i][1][b][idx] for i in [0,1] for idx in np.random.choice(lenageeq[i][b],minageeq[i],replace=False)]
-					roidict[task]['bin_'+str(b)]['subl'] = subl
-					# Load data
-					D = np.empty((nsub,len(vall),nTR_),dtype='float16')
-					badvox = []
-					for sidx, sub in enumerate(subl):
-						D[sidx,:,:] = dd.io.load(sub,['/'+task+'/'+h], sel=dd.aslice[vall,:])[0]
-						badvox.extend(np.where(np.isnan(D[sidx,:,0]))[0]) # Some subjects missing some voxels
-					D = np.delete(D,badvox,1)
-					vall = np.delete(vall,badvox)
-					roidict['vall'] = vall
-					roidict[task]['bin_'+str(b)]['vall'] = vall
-					roidict[task]['bin_'+str(b)]['D'] = D
+					if len(vall) > 0:
+						subl = [ageeq[i][1][b][idx] for i in [0,1] for idx in np.random.choice(lenageeq[i][b],minageeq[i],replace=False)]
+						roidict[task]['bin_'+str(b)]['subl'] = subl
+						# Load data
+						D = np.empty((nsub,len(vall),nTR_),dtype='float16')
+						badvox = []
+						for sidx, sub in enumerate(subl):
+							D[sidx,:,:] = dd.io.load(sub,['/'+task+'/'+h], sel=dd.aslice[vall,:])[0]
+							badvox.extend(np.where(np.isnan(D[sidx,:,0]))[0]) # Some subjects missing some voxels
+						D = np.delete(D,badvox,1)
+						vall = np.delete(vall,badvox)
+						roidict['vall'] = vall
+						roidict[task]['bin_'+str(b)]['vall'] = vall
+						roidict[task]['bin_'+str(b)]['D'] = D
 			if len(vall) > 0:
 				D = [roidict[task]['bin_'+str(b)]['D'] for b in bins]
 				tune_ll = np.zeros((nbins,nsplit,len(k_list)))
