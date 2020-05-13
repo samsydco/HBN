@@ -15,7 +15,7 @@ subs = [s.replace('.html', '') for s in subs]
 subs = [s.replace(fmripreppath_old, '') for s in subs]
 subs = [sub for sub in subs if not os.path.isfile(prepath + sub + '.h5') and sub not in bad_sub_dict]
 # Check if fmap has been processed
-# subs = [sub for sub in subs if len(glob.glob(fmripreppath+sub+'/figures/*sdc*'))==2]
+# subs = [sub for sub in subs if len(glob.glob(fmripreppath_old+sub+'/figures/*sdc*'))==2]
 
 Phenodf = pd.concat((pd.read_csv(f) for f in glob.glob(phenopath+'HBN_R*Pheno.csv')),ignore_index=True)
 
@@ -31,7 +31,7 @@ for sub in subs:
         D = dict()
         print('movie ', task)
         for hem in ['L', 'R']:
-            fname = os.path.join(fmripreppath + sub + '/func/' + \
+            fname = os.path.join(fmripreppath_old + sub + '/func/' + \
           sub + '_task-movie' + task + '_bold_space-fsaverage6.' + hem + '.func.gii')
             print('      Loading ', fname)
             gi = nib.load(fname)
@@ -45,7 +45,7 @@ for sub in subs:
         # -X, Y, Z and derivatives
         # -RotX, RotY, RotZ and derivatives
     
-        conf = np.genfromtxt(os.path.join(fmripreppath + sub + '/func/' + \
+        conf = np.genfromtxt(os.path.join(fmripreppath_old + sub + '/func/' + \
                   sub + '_task-movie' + task + '_bold_confounds.tsv'), names=True)
         motion = np.column_stack((conf['X'],
                               conf['Y'],
