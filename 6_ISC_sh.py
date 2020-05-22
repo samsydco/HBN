@@ -18,7 +18,7 @@ if no_atypical == True:
 else:
 	ISCfs = ISCpath+'shuff/ISC_'
 	nshuff = 100#0000 # number of shuffles
-smallsub = True
+smallsub = False
 if smallsub == True:
 	dfd = pd.read_csv(metaphenopath+'Neurodevelopmental_Diagnosis_Frequency.csv')
 	nsubs = len(dfd.loc[dfd['No Diagnosis Given'] == True]['EID'])

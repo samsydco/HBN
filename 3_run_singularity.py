@@ -36,6 +36,7 @@ for chunk in tqdm(pchunk):
 		/data /out \
 		participant \
 		--ignore=slicetiming \
+		--use-syn-sdc --ignore fieldmaps \
 		--fs-license-file=/data/fs_license.txt \
 		--output-spaces '+output_space+' \
 		-w /work/ \
