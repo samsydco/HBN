@@ -116,8 +116,8 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 						auc.append(E_k[bi].sum())
 					roidict[task][shuffstr]['E_k'] = E_k
 					roidict[task][shuffstr]['auc'] = auc
-					roidict[task][shuffstr]['auc_diff'] = ((auc[1]-auc[0])/best_k)*TR
-					roidict[task][shuffstr]['ll_diff'] = (np.mean(tune_ll[shuff,1,:]) - np.mean(tune_ll[shuff,0,:]))/nTR_
+					roidict[task][shuffstr]['auc_diff'] = np.mean(((np.diff(auc))/best_k)*TR)
+					roidict[task][shuffstr]['ll_diff'] = np.mean(np.diff(np.mean(tune_ll[shuff],axis=1)))/nTR_
 		if len(vall) > 0:
 			dd.io.save(savedir+roi_short+'.h5',roidict)
 				
