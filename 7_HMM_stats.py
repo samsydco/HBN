@@ -55,7 +55,7 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 				roidict[task]['vall'] = roidictold[task]['bin_0']['vall']
 				for b in bins:
 					roidict[task]['bin_'+str(b)]['D'] = roidictold[task]['bin_'+str(b)]['D']
-				Dall = [roidict[task]['bin_'+str(b)]['D'] for b in bin_tmp]
+				Dall = [roidict[task]['bin_'+str(b)]['D'] for b in bins]
 				bin_tmp = bins if 'all' in newsavedir else [0,4]
 				D = [roidict[task]['bin_'+str(b)]['D'] for b in bin_tmp]
 				# saving steps, variance, and training segmentation for future trouble shooting:
