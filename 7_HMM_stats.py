@@ -34,7 +34,7 @@ from HMM_settings import *
 
 ROInow = ROIopts[1]
 oldsavedir = HMMpath+'shuff_5bins/'
-newsavedir = HMMpath+'shuff_5bins_trainall/'#'shuff_5bins_train04/'
+newsavedir = HMMpath+'shuff_5bins_train04/'#'shuff_5bins_trainall/'#'shuff_5bins_train04/'
 nsub= 41
 y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit))+1)
 kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
@@ -55,37 +55,30 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 				roidict[task]['vall'] = roidictold[task]['bin_0']['vall']
 				for b in bins:
 					roidict[task]['bin_'+str(b)]['D'] = roidictold[task]['bin_'+str(b)]['D']
-				Dall = [roidict[task]['bin_'+str(b)]['D'] for b in bins]
+				D = [roidict[task]['bin_'+str(b)]['D'] for b in bins]
 				bin_tmp = bins if 'all' in newsavedir else [0,4]
-				D = [roidict[task]['bin_'+str(b)]['D'] for b in bin_tmp]
 				# saving steps, variance, and training segmentation for future trouble shooting:
 				steps = np.zeros((nsplit,len(k_list)))
 				evar = np.zeros((nsplit,len(k_list)))
-				trainseg = {key:np.zeros((nsplit,nTR_,key)) for key in k_list} if 'all' in newsavedir else {key:{key:np.zeros((nsplit,nTR_,key)) for key in k_list} for key in bin_tmp}
-				tune_ll = np.zeros((nsplit,len(k_list))) if 'all' in newsavedir else np.zeros((2,nsplit,len(k_list)))
-				tune_seg = {key:np.zeros((nsplit,nTR_,key)) for key in k_list} if 'all' in newsavedir else {key:{key:np.zeros((nsplit,nTR_,key)) for key in k_list} for key in bin_tmp}
+				trainseg = {key:np.zeros((nsplit,nTR_,key)) for key in k_list} if 'all' in newsavedir else {key:{keyk:{key:np.zeros((nTR_,keyk)) for key in np.arange(nsplit)} for keyk in k_list} for key in bin_tmp}
+				tune_ll = np.zeros((nbins,nsplit,len(k_list)))
+				tune_seg = {key:{keyk:{key:np.zeros((nTR_,keyk)) for key in np.arange(nsplit)} for keyk in k_list} for key in bins}
 				for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
-					Dtrain = [d[Ls[0]] for d in D]
-					Dtest  = [d[Ls[1]] for d in D]
-					if 'all' in newsavedir:
-						Dtrain = np.mean(np.concatenate(Dtrain),axis=0).T
-						Dtest  = np.mean(np.concatenate(Dtest ),axis=0).T
-					else:
-						Dtrain = [np.mean(d,axis=0).T for d in Dtrain]
-						Dtest  = [np.mean(d,axis=0).T for d in Dtest ]
+					Dtrain = [d[Ls[0]] for d in [D[bi] for bi in bin_tmp]]
+					Dtrain = np.mean(np.concatenate(Dtrain),axis=0).T if 'all' in newsavedir else [np.mean(d,axis=0).T for d in Dtrain]
+					Dtest  = [np.mean(d[Ls[1]],axis=0).T for d in D]
 					for ki,k in enumerate(k_list):
 						hmm = brainiak.eventseg.event.EventSegment(n_events=k)
 						hmm.fit(Dtrain)
 						steps[split,ki] = len(hmm.ll_)
 						evar [split,ki] = hmm.event_var_
-						tune_seg
 						if 'all' in newsavedir:
 							trainseg[k][split] = hmm.segments_[0]
-							tune_seg[k][split], tune_ll[split,ki] = hmm.find_events(Dtest)
 						else:
-							for bi in range(len(bin_tmp)):
-								trainseg[bi][k][split] = hmm.segments_[bi]
-								tune_seg[bi][k][split], tune_ll[bi,split,ki] = hmm.find_events(Dtest[bi])
+							for bi,b in enumerate(bin_tmp):
+								trainseg[b][k][split] = hmm.segments_[bi]
+						for b in bins:
+							tune_seg[b][k][split], tune_ll[b,split,ki] = hmm.find_events(Dtest[b])
 				roidict[task]['tune_ll'] = tune_ll
 				roidict[task]['tune_seg'] = tune_seg
 				roidict[task]['steps'] = steps
@@ -97,9 +90,9 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 				tune_seg = np.zeros((nshuff+1,nbins,nsplit,nTR_,best_k))
 				tune_ll = np.zeros((nshuff+1,nbins,nsplit))
 				for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
-					Dtrain = [d[Ls[0]] for d in D]
+					Dtrain = [d[Ls[0]] for d in [D[bi] for bi in bin_tmp]]
 					Dtrain = np.mean(np.concatenate(Dtrain),axis=0).T if 'all' in newsavedir else [np.mean(d,axis=0).T for d in Dtrain]
-					Dtest_all  = np.concatenate([d[Ls[1]] for d in Dall])
+					Dtest_all  = np.concatenate([d[Ls[1]] for d in D])
 					nsubLO = len(Ls[1])
 					subl = np.arange(nsubLO*nbins) # subject list to be permuted!
 					hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
