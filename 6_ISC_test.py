@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 from settings import *
 # Only using 233 subj in most recent Data version - a bit of a hack
 subord = dd.io.load(metaphenopath+'pheno_2019-05-28.h5',['/subs'])[0]
-ISCf = ISCpath+'ISC_2019-05-28.h5'
+ISCf = ISCpath+'old_ISC/ISC_2019-05-28.h5'
 n_subj = len(subord)
 n_vox = 5
 
@@ -105,7 +105,7 @@ for task in ['DM','TP']:
 				if g == 'Pair':
 					i['f'][s-2] = r/(1-r)
 				if g == 'SH':
-					i['f'][s-2] = 2*r/(n_subj*(1-r))
+					i['f'][s-2] = 2*r/(N*(1-r))
 				if g == 'Loo':
 					i['f'][s-2] = (N*np.square(r)+ \
 					 np.sqrt((N**2)*np.power(r,4,dtype=np.float16)+4*np.square(r)*(N-1)*(1-np.square(r))))/(2*(N-1)*(1-np.square(r)))
