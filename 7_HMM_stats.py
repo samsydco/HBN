@@ -34,7 +34,7 @@ from HMM_settings import *
 
 ROInow = ROIopts[1]
 oldsavedir = HMMpath+'shuff_5bins/'
-newsavedir = HMMpath+'shuff_5bins_train04/'#'shuff_5bins_trainall/'#'shuff_5bins_train04/'
+newsavedir = HMMpath+'shuff_5bins_trainall/'#'shuff_5bins_trainall/'#'shuff_5bins_train04/'
 nsub= 41
 y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit))+1)
 kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
@@ -85,7 +85,7 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 				roidict[task]['evar'] = evar
 				roidict[task]['trainseg'] = trainseg
 				#Now calculating best_k from average ll:
-				best_k = k_list[np.argmax(np.mean(tune_ll,0))] if 'all' in newsavedir else k_list[np.argmax(np.mean(np.mean(tune_ll,0),0))]
+				best_k = k_list[np.argmax(np.mean(np.mean(tune_ll,0),0))]
 				roidict[task]['best_k'] = best_k
 				tune_seg = np.zeros((nshuff+1,nbins,nsplit,nTR_,best_k))
 				tune_ll = np.zeros((nshuff+1,nbins,nsplit))
