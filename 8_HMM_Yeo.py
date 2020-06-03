@@ -10,7 +10,7 @@ import brainiak.eventseg.event
 import matplotlib.pyplot as plt
 from HMM_settings import *
 
-HMMdir = HMMpath+'shuff_5bins_train04/'#'shuff_5bins_trainall/'#'shuff_5bins/'
+HMMdir = HMMpath+'shuff_5bins_trainall/'#'shuff_5bins_train04/'#'shuff_5bins/'
 figdirend = HMMdir.split('/')[-2][5:]+'/'
 bins = np.arange(nbinseq)
 nbins = len(bins)
@@ -83,32 +83,16 @@ for roi in tqdm.tqdm(glob.glob(HMMdir+'*.h5')):
 		x_list = [np.round(TR*(nTR_/k),2) for k in k_list]
 		if task == 'TP': x_list = x_list+[120,150,200,300]; ax[ti].set_xticks(x_list,[]); ax[ti].set_xticklabels([])
 		ax[ti].set_title(task)
-		if 'all_nope' in HMMdir:
-			y = extend_for_TP(np.mean(ROIsHMM[task]['tune_ll'],0)/nTR_,task)
-			yerr = extend_for_TP(np.std(ROIsHMM[task]['tune_ll'],0)/nTR_,task)
-			ax[ti].errorbar(x_list, y, yerr=yerr)
-		elif '04_nope' in HMMdir:
-			for bi,b in enumerate([0,4]):
-				c = '#1f77b4' if b == 0 else '#ff7f0e'
-				lab = 'Ages '+str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))
-				y = extend_for_TP(np.mean(ROIsHMM[task]['tune_ll'][bi],0)/nTR_,task)
-				yerr = extend_for_TP(np.std(ROIsHMM[task]['tune_ll'][bi],0)/nTR_,task)
-				ax[ti].errorbar(x_list, y, yerr=yerr,color=c,label=lab)
-		else:
-			for bi,b in enumerate(bins):
-				lab = 'Ages '+str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))
-				y = extend_for_TP(np.mean(ROIsHMM[task]['tune_ll'][bi],0)/nTR_,task)
-				yerr = extend_for_TP(np.std(ROIsHMM[task]['tune_ll'][bi],0)/nTR_,task)
-				ax[ti].errorbar(x_list, y, yerr=yerr,color=colors[bi],label=lab)
+		for bi,b in enumerate(bins):
+			lab = 'Ages '+str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))
+			y = extend_for_TP(np.mean(ROIsHMM[task]['tune_ll'][bi],0)/nTR_,task)
+			yerr = extend_for_TP(np.std(ROIsHMM[task]['tune_ll'][bi],0)/nTR_,task)
+			ax[ti].errorbar(x_list, y, yerr=yerr,color=colors[bi],label=lab)
 	ax[ti].set_xticklabels(x_list,rotation=45)
-	#if 'all' not in HMMdir:
 	lgd = ax[ti].legend(loc='lower right', bbox_to_anchor=(1.3, 0))
 	fig.set_size_inches(9,6)
 	fig.tight_layout()
 	#plt.show()
-	#if 'all' not in HMMdir:
 	fig.savefig(figurepath+'HMM/tune_ll_Yeo'+figdirend+roi_short+'.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
-	#else:
-	#	fig.savefig(figurepath+'HMM/tune_ll_Yeo'+figdirend+roi_short+'.png')
 	
 	
