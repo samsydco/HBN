@@ -20,8 +20,7 @@ agel,pcl,phenol = make_phenol(subord)
 agelperm = agel
 phenolperm = phenol
 event_list = [56,206,244,343,373,404,443,506,544]
-ev_bump = [56,244,443,544]
-ev_idx = [ei for ei,e in enumerate(event_list) if e in ev_bump]
+nevent = len(event_list)
 task = 'DM'
 n_time=750
 nsub=40
@@ -114,8 +113,10 @@ for b in range(nbinseq):
 	p_within_greater_zero.append(np.sum(ISC_w[0,:,b]<0)/nsh)
 # Is real difference between groups' ISC_w significant?
 wshuffdiff = []
-for p in itertools.combinations(range(nbinseq),2):
-	wshuffdiff.extend(ISC_w[1,:,p[0]]-ISC_w[1,:,p[1]])
+for p2 in range(1,nbinseq):
+	wshuffdiff.extend(ISC_w[1,:,0]-ISC_w[1,:,p2])
+#for p in itertools.combinations(range(nbinseq),2):
+#	wshuffdiff.extend(ISC_w[1,:,p[0]]-ISC_w[1,:,p[1]])
 p_within_difference = {}
 for p in itertools.combinations(range(nbinseq),2):
 	p_str = str(p[0])+'_'+str(p[1])
@@ -123,7 +124,7 @@ for p in itertools.combinations(range(nbinseq),2):
 # Are any g_diff ISCs significantly below shuffle?
 gshuff = []
 for s in range(nsh):
-	gshuff.extend(np.unique(gdict['shuffle'][s]['g_diff']))
+	gshuff.extend(np.unique(gdict['shuffle'][s]['g_diff'][::2]))
 p_g = {}
 for p in itertools.combinations(range(nbinseq),2):
 	Ages = []
@@ -169,7 +170,7 @@ for event in event_list:
 dfe = pd.DataFrame(data=ISCedict)
 sns.set(font_scale = 2)
 sns.set_palette(colors_age)
-fig, ax = plt.subplots(9,figsize=(10, 22),sharex=True)
+fig, ax = plt.subplots(nevent,figsize=(10, 22),sharex=True)
 axa = fig.add_subplot(111, frameon=False)
 axa.set_ylabel('ISC', fontsize=35,labelpad=60)
 axa.set_xticks([])
@@ -203,7 +204,7 @@ dfg = pd.DataFrame(data=ISCgdict)
 dfg = dfg[dfg['Age pair'].str.contains('16 - 19')]
 sns.set(font_scale = 2)
 sns.set_palette(colors_age)
-fig, ax = plt.subplots(9,figsize=(10, 22),sharex=True)
+fig, ax = plt.subplots(nevent,figsize=(10, 22),sharex=True)
 axa = fig.add_subplot(111, frameon=False)
 axa.set_ylabel('ISC', fontsize=35,labelpad=60)
 axa.set_xticks([])
@@ -351,8 +352,8 @@ bumpdict = {'Age':[],'Event':[],'Activity':[],'Time':[]}
 # Univariate bump
 plt.rcParams.update({'font.size': 30})
 x = np.arange(-1*TW//2,TW//2)*TR
-bumps   = np.zeros((nbinseq,len(event_list),TW))
-bumpstd = np.zeros((nbinseq,len(event_list),TW))
+bumps   = np.zeros((nbinseq,nevent,TW))
+bumpstd = np.zeros((nbinseq,nevent,TW))
 fig, ax = plt.subplots(nbinseq,figsize=(11, 20),sharex=True)
 axa = fig.add_subplot(111, frameon=False)
 axa.set_xlabel('Seconds from boundary', fontsize=35,labelpad=50)
@@ -381,19 +382,41 @@ lgd = ax[bi].legend(loc='lower right', bbox_to_anchor=(1.7, -0.5))
 plt.savefig(figurepath+'HPC/bump.png', bbox_inches='tight')
 eseclist = np.unique(eseclist)
 
+# HPC bump plots like ISC_time plots: (Grouped by Event)
+dfbump = pd.DataFrame(data=bumpdict)
+sns.set(font_scale = 2)
 sns.set_palette(colors_age)
-df = pd.DataFrame(data=bumpdict)
-bumptime = df.Time.unique()[22] # ~ 5 seconds = 22
-df = df.loc[df['Time'] == bumptime]
-fig, ax = plt.subplots(9,figsize=(10, 22),sharex=True)
+fig, ax = plt.subplots(nevent,figsize=(10, 25),sharex=True)
+axa = fig.add_subplot(111, frameon=False)
+axa.set_ylabel('Boundary-Triggered\nHippocampal Activity', fontsize=35,labelpad=95)
+axa.set_xticks([])
+axa.set_yticks([])
+for ei,esec in enumerate(eseclist):
+	g = sns.lineplot(x='Time', y='Activity',
+                hue='Age', data=dfbump.loc[dfbump['Event'] == esec], ax=ax[ei])#,ci='sd')
+	ax[ei].axvline(0, c='k', ls='--',lw=2)
+	ax[ei].set_title('Event at '+str(esec)+' s',fontsize=30,color=colors_ev[ei])
+	ax[ei].set_xlim([min(x),max(x)])
+	g.set_ylabel('')
+	if ei<8: ax[ei].get_legend().remove()
+ax[ei].legend(loc='lower right', bbox_to_anchor=(1.4, -0.4))
+ax[ei].set_xlabel('Time [s]')
+plt.subplots_adjust(top=0.92, bottom=0.08, hspace=0.25,
+                    wspace=0.35)
+plt.savefig(figurepath+'HPC/bump_Event_group.png', bbox_inches='tight')
+
+
+bumptime = dfbump.Time.unique()[22] # ~ 5 seconds = 22
+dfbump = dfbump.loc[dfbump['Time'] == bumptime]
+fig, ax = plt.subplots(nevent,figsize=(10, 22),sharex=True)
 axa = fig.add_subplot(111, frameon=False)
 axa.set_ylabel('Boundary-Triggered\nHippocampal Activity', fontsize=35,labelpad=100)
 axa.set_xticks([])
 axa.set_yticks([])
 for ei,event in enumerate(eseclist):#[44.8,195.2,354.4,435.2]): # events with biggest bump in oldest group:
 	ax[ei].set_title('Event at '+str(event)+' s',fontsize=30,color=colors_ev[ei])
-	sns.swarmplot(x="Age", y="Activity", data=df.loc[df['Event'] == event],zorder=1,ax=ax[ei])
-	sns.pointplot(x="Age", y="Activity", data=df.loc[df['Event'] == event],markers='+',join=False,color='k',ci='sd',capsize=.1, zorder=100,ax=ax[ei])
+	sns.swarmplot(x="Age", y="Activity", data=dfbump.loc[dfbump['Event'] == event],zorder=1,ax=ax[ei])
+	sns.pointplot(x="Age", y="Activity", data=dfbump.loc[dfbump['Event'] == event],markers='+',join=False,color='k',ci='sd',capsize=.1, zorder=100,ax=ax[ei])
 	if ei!=8: ax[ei].set_xticks([], [])
 	#ax[ei].set_yticks([-0.25,0,0.25])
 	#ax[ei].set_yticklabels([-0.25,0,0.25], fontsize = 25)
