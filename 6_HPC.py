@@ -10,7 +10,7 @@ import itertools
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
-from ISC_settings import *
+from HMM_settings import *
 from scipy.stats import zscore
 
 # Remove subjects over max(eqbins) age:
@@ -19,8 +19,6 @@ subord = [s for si,s in enumerate(subord) if incl_idx[si]]
 agel,pcl,phenol = make_phenol(subord)
 agelperm = agel
 phenolperm = phenol
-event_list = [56,206,244,343,373,404,443,506,544]
-nevent = len(event_list)
 task = 'DM'
 n_time=750
 nsub=40

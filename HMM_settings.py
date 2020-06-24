@@ -4,6 +4,9 @@
 from settings import *
 from ISC_settings import *
 
+event_list = [56,206,244,343,373,404,443,506,544]
+nevent = len(event_list)
+
 tasks = ['DM','TP']
 TR=0.8
 nTR=[750,250]
