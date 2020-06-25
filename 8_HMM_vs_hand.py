@@ -12,7 +12,7 @@ task='DM'
 nTR=750
 bins = np.arange(nbinseq)
 nbins = len(bins)
-ROIl = glob.glob(ROIdir+'*')
+ROIl = [roi.split('/')[-1][:-3] for roi in glob.glob(ROIdir+'*')]
 nROI = len(ROIl)
 
 # From Chris:
@@ -38,14 +38,14 @@ def match_z(proposed_bounds, gt_bounds, num_TRs):
 event_bounds = {key:{key:[] for key in bins} for key in ROIl}
 matchz_mat = np.zeros((nROI,nbins))
 for ri,roi in tqdm.tqdm(enumerate(ROIl)):
-	roidict = dd.io.load(roi,'/'+task)
+	roidict = dd.io.load(ROIdir+roi+'.h5','/'+task)
 	best_k = roidict['best_k']
 	for b in bins:
 		D = np.mean(roidict['bin_'+str(b)]['D'],axis=0).T
 		hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
 		hmm.fit(D)
-		event_bounds[roi][b] = np.where(np.diff(np.argmax(hmm.segments_[0], axis = 1)))[0]
-		matchz_mat[ri,b] = match_z(event_bounds[roi][b],event_list,nTR)
+		event_bounds[roi_short][b] = np.where(np.diff(np.argmax(hmm.segments_[0], axis = 1)))[0]
+		matchz_mat[ri,b] = match_z(event_bounds[roi_short][b],event_list,nTR)
 
 dd.io.save(HMMpath+'HMM_vs_hand.h5',{'event_bounds':event_bounds,'matchz_mat':matchz_mat})
 
