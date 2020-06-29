@@ -44,8 +44,8 @@ for ri,roi in tqdm.tqdm(enumerate(ROIl)):
 		D = np.mean(roidict['bin_'+str(b)]['D'],axis=0).T
 		hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
 		hmm.fit(D)
-		event_bounds[roi_short][b] = np.where(np.diff(np.argmax(hmm.segments_[0], axis = 1)))[0]
-		matchz_mat[ri,b] = match_z(event_bounds[roi_short][b],event_list,nTR)
+		event_bounds[roi][b] = np.where(np.diff(np.argmax(hmm.segments_[0], axis = 1)))[0]
+		matchz_mat[ri,b] = match_z(event_bounds[roi][b],event_list,nTR)
 
 dd.io.save(HMMpath+'HMM_vs_hand.h5',{'event_bounds':event_bounds,'matchz_mat':matchz_mat})
 
