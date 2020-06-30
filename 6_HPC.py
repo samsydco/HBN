@@ -10,8 +10,8 @@ import itertools
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
+import scipy.stats as ss
 from HMM_settings import *
-from scipy.stats import zscore
 
 # Remove subjects over max(eqbins) age:
 incl_idx = [a<eqbins[-1] for a in agel]
@@ -29,6 +29,8 @@ colors_age = ['#edf8fb','#b3cde3','#8c96c6','#8856a7','#810f7c']
 colors_ev = ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999']
 x = np.arange(-1*TW//2,TW//2)*TR
 xstim = np.arange(n_time)*TR
+xticks = [str(int(round(eqbins[i])))+\
+		  ' - '+str(int(round(eqbins[i+1])))+' y.o.' for i in range(len(eqbins)-1)]
 
 # ISC: within and between
 D = {key:{} for key in range(nbinseq)}
@@ -62,10 +64,10 @@ for bootidx,bootv in enumerate(bootvs):
 				subl[1].extend(subg[divmod(minageeq[i],2)[0]:])
 			for sub in subl[0]+subl[1]:
 				if bootv != 'shuffle' and sub not in D[b]:
-					D[b][sub] = np.mean(zscore(dd.io.load(sub,['/'+task+'/HPC'])[0],axis=1),axis=0)
+					D[b][sub] = np.mean(ss.zscore(dd.io.load(sub,['/'+task+'/HPC'])[0],axis=1),axis=0)
 				elif bootv == 'shuffle' and all(sub not in D[b_] for b_ in range(nbinseq)):
 					realbin = np.sum([agelperm[[sub.split('/')[-1] for sub in subord].index(sub.split('/')[-1])] >= e for e in eqbins]) - 1
-					D[realbin][sub] = np.mean(zscore(dd.io.load(sub,['/'+task+'/HPC'])[0],axis=1),axis=0)
+					D[realbin][sub] = np.mean(ss.zscore(dd.io.load(sub,['/'+task+'/HPC'])[0],axis=1),axis=0)
 			subla[bootv][s][b].append(subl)
 			for h in [0,1]: # split all or between T / F
 				group = np.zeros((n_time),dtype='float16')
@@ -75,7 +77,7 @@ for bootidx,bootv in enumerate(bootvs):
 					group = np.nansum(np.stack((group,D[realbin][sub])),axis=0)
 					nanverts = np.argwhere(np.isnan(D[realbin][sub]))
 					groupn[nanverts] = groupn[nanverts]-1
-				groups[b,h] = zscore(group/groupn)
+				groups[b,h] = ss.zscore(group/groupn)
 			ISC_w_time[bootidx,s,b] = np.multiply(groups[b,0],groups[b,1])
 			ISC_w[bootidx,s,b] = np.sum(ISC_w_time[bootidx,s,b])/(n_time-1)
 		for p in itertools.combinations(range(nbinseq),2):
@@ -138,8 +140,6 @@ for p in itertools.combinations(range(nbinseq),2):
 
 # e diff plot
 sns.set_palette(colors_age)
-xticks = [str(int(round(eqbins[i])))+\
-		  ' - '+str(int(round(eqbins[i+1])))+' y.o.' for i in range(len(eqbins)-1)]
 edf = pd.DataFrame(columns=['Age', 's', 'ISC'])
 for s in range(nsh):
 	for b in range(nbinseq):
@@ -237,7 +237,7 @@ for p in itertools.combinations(range(nbinseq),2):
 			ISCgtimedict['Age pair'].extend([xticks[p[0]]+' with '+xticks[p[1]]]*len(xstim))
 			ISCgtimedict['s'].extend([s]*len(xstim))
 			ISCgtimedict['ISC'].extend(ISC_g_time['splithalf'][s][str(p[0])+'_'+str(p[1])])
-			ISCgtimedict['z-scored ISC'].extend(zscore(ISC_g_time['splithalf'][s][str(p[0])+'_'+str(p[1])]))
+			ISCgtimedict['z-scored ISC'].extend(ss.zscore(ISC_g_time['splithalf'][s][str(p[0])+'_'+str(p[1])]))
 			ISCgtimedict['Time'].extend(xstim)
 dfgtime = pd.DataFrame(data=ISCgtimedict)
 
@@ -263,7 +263,7 @@ for b in range(nbinseq):
 		ISCetimedict['Age'].extend([xticks[b]]*len(xstim))
 		ISCetimedict['s'].extend([s]*len(xstim))
 		ISCetimedict['ISC'].extend(ISC_w_time[2,s,b])
-		ISCetimedict['z-scored ISC'].extend(zscore(ISC_w_time[2,s,b]))
+		ISCetimedict['z-scored ISC'].extend(ss.zscore(ISC_w_time[2,s,b]))
 		ISCetimedict['Time'].extend(xstim)
 dfetime = pd.DataFrame(data=ISCetimedict)
 
@@ -283,23 +283,21 @@ plt.savefig(figurepath+'HPC/ISC_w_time_timecourse.png', bbox_inches='tight')
 
 # Lagged correlation between age-groups:
 # g_diff and e_diff
-glagdict = {'Age Pairs':[],'correlation':[],'Time lag [s]':[],'s':[]}
+glagdict = {'Age Pair':[],'correlation':[],'Time lag [s]':[],'s':[]}
 xcorrx = np.concatenate([np.arange(-n_time+1,0)*TR,np.arange(n_time)*TR])
-p2 = (3,4)
-for p1 in itertools.combinations(range(nbinseq),2):
-	if max(range(nbinseq)) in p1 and p1!=p2:
+for p in itertools.combinations(range(nbinseq),2):
+	if 4 in p:
 		for s in range(nsh):
-			ISCp1 = ISC_g_time['splithalf'][s][str(p1[0])+'_'+str(p1[1])]
-			ISCp2 = ISC_g_time['splithalf'][s][str(p2[0])+'_'+str(p2[1])]
-			xcorr = np.correlate(ISCp1,ISCp2,"full")
-			glagdict['Age Pairs'].extend([xticks[p1[0]]+' with '+xticks[p1[1]]+' and '+xticks[p2[0]]+' with '+xticks[p2[1]]]*len(xcorrx))
+			ISC = ISC_g_time['splithalf'][s][str(p[0])+'_'+str(p[1])]
+			xcorr = np.correlate(ISC,ISC,"full")
+			glagdict['Age Pair'].extend([xticks[p[0]]+' with '+xticks[p[1]]]*len(xcorrx))
 			glagdict['s'].extend([s]*len(xcorrx))
 			glagdict['correlation'].extend(xcorr/np.max(xcorr))
 			glagdict['Time lag [s]'].extend(xcorrx)
 dfglag = pd.DataFrame(data=glagdict)
 fig,ax = plt.subplots(1,1,figsize=(5,5))
 g = sns.lineplot(x='Time lag [s]', y='correlation',
-                hue='Age Pairs', ax=ax, data=dfglag[abs(dfglag['Time lag [s]'])<10], ci='sd')
+                hue='Age Pair', ax=ax, data=dfglag[abs(dfglag['Time lag [s]'])<10], ci='sd')
 ax.legend(loc='center', bbox_to_anchor=(0.5, -0.3))
 plt.savefig(figurepath+'HPC/ISC_xcorr.png', bbox_inches='tight')
 
@@ -320,6 +318,35 @@ g = sns.lineplot(x='Time lag [s]', y='correlation',
 ax.legend(loc='center', bbox_to_anchor=(0.5, -0.3))
 plt.savefig(figurepath+'HPC/ISC_xcorr_within.png', bbox_inches='tight')
 
+# Is there a lag in HPC time course of younger kids?
+bumplagdict = {'Age Pair':[],'correlation':[],'Time lag [s]':[],'s':[]}
+b2 = nbinseq-1
+for b1 in range(nbinseq-1):
+	bumps = []
+	for b in [b1,b2]:
+		bumps.append(np.mean([d for d in D[b].values()],axis=0))
+	xcorr = np.correlate(bumps[0],bumps[1],"full")
+	bumplagdict['Age Pair'].extend([xticks[b1]+' with '+xticks[b2]]*len(xcorrx))
+	bumplagdict['s'].extend([s]*len(xcorrx))
+	bumplagdict['correlation'].extend(xcorr/np.max(xcorr))
+	bumplagdict['Time lag [s]'].extend(xcorrx)
+dfbumplag = pd.DataFrame(data=bumplagdict)
+sns.set_palette(colors_age)
+fig,ax = plt.subplots(1,1,figsize=(5,5))
+g = sns.lineplot(x='Time lag [s]', y='correlation',
+                hue='Age Pair', ax=ax, data=dfbumplag[abs(dfbumplag['Time lag [s]'])<10], ci='sd')
+ax.legend(loc='center', bbox_to_anchor=(0.5, -0.3))
+plt.savefig(figurepath+'HPC/bump_xcorr.png', bbox_inches='tight')
+
+# Does HPC bump correlate across all time?
+for p in itertools.combinations(range(nbinseq),2):
+	bumps = []
+	for b in p:
+		bumps.append(np.mean([d for d in D[b].values()],axis=0))
+	print(p)
+	r,pval = ss.pearsonr(bumps[0],bumps[1])
+	print(r,pval)
+	
 	
 # g_diff plot
 plt.rcParams.update({'font.size': 15})
@@ -346,7 +373,7 @@ plt.savefig(figurepath+'HPC/g_diff.png', bbox_inches='tight')
 
 
 eseclist = []
-bumpdict = {'Age':[],'Event':[],'Activity':[],'Time':[]}
+bumpdict = {'Age':[],'Event':[],'Activity':[],'Time':[],'Subj':[]}
 # Univariate bump
 plt.rcParams.update({'font.size': 30})
 x = np.arange(-1*TW//2,TW//2)*TR
@@ -366,10 +393,11 @@ for bi in range(nbinseq):
 		esec = np.round(e*TR,2)
 		eseclist.append(esec)
 		bumpi = [d[e-TW//2:e+TW//2] for d in D[bi].values()]
-		for sub in bumpi:
+		for sub,d in D[bi].items():
+			bumpdict['Subj'].extend([sub]*len(x))
 			bumpdict['Age'].extend([xticks[bi]]*len(x))
 			bumpdict['Event'].extend([esec]*len(x))
-			bumpdict['Activity'].extend(sub)
+			bumpdict['Activity'].extend(d[e-TW//2:e+TW//2])
 			bumpdict['Time'].extend(x)
 		bumps[bi,ei]   = np.mean(bumpi,axis=0)
 		bumpstd[bi,ei] = np.std (bumpi,axis=0)
@@ -402,6 +430,19 @@ ax[ei].set_xlabel('Time [s]')
 plt.subplots_adjust(top=0.92, bottom=0.08, hspace=0.25,
                     wspace=0.35)
 plt.savefig(figurepath+'HPC/bump_Event_group.png', bbox_inches='tight')
+
+# bump significance test:
+for b in dfbump['Age'].unique():
+	for e in dfbump['Event'].unique():
+		bedf = dfbump[(dfbump['Age'] == b) & (dfbump['Event'] == e)]
+		subjl = bedf['Subj'].unique()
+		precumsum = [bedf[(bedf['Subj'] == s) & (bedf['Time'].between(-8,0))]['Activity'].sum() for s in subjl]
+		postcumsum = [bedf[(bedf['Subj'] == s) & (bedf['Time'].between(0,8))]['Activity'].sum() for s in subjl]
+		print(b,e)
+		print(ss.ttest_1samp(postcumsum,0.0))
+		print(ss.ttest_rel(postcumsum,precumsum))
+		
+		
 
 
 bumptime = dfbump.Time.unique()[22] # ~ 5 seconds = 22
