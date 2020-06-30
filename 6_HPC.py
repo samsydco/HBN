@@ -31,6 +31,7 @@ x = np.arange(-1*TW//2,TW//2)*TR
 xstim = np.arange(n_time)*TR
 xticks = [str(int(round(eqbins[i])))+\
 		  ' - '+str(int(round(eqbins[i+1])))+' y.o.' for i in range(len(eqbins)-1)]
+xcorrx = np.concatenate([np.arange(-n_time+1,0)*TR,np.arange(n_time)*TR])
 
 # ISC: within and between
 D = {key:{} for key in range(nbinseq)}
@@ -284,7 +285,6 @@ plt.savefig(figurepath+'HPC/ISC_w_time_timecourse.png', bbox_inches='tight')
 # Lagged correlation between age-groups:
 # g_diff and e_diff
 glagdict = {'Age Pair':[],'correlation':[],'Time lag [s]':[],'s':[]}
-xcorrx = np.concatenate([np.arange(-n_time+1,0)*TR,np.arange(n_time)*TR])
 for p in itertools.combinations(range(nbinseq),2):
 	if 4 in p:
 		for s in range(nsh):
@@ -319,7 +319,7 @@ ax.legend(loc='center', bbox_to_anchor=(0.5, -0.3))
 plt.savefig(figurepath+'HPC/ISC_xcorr_within.png', bbox_inches='tight')
 
 # Is there a lag in HPC time course of younger kids?
-bumplagdict = {'Age Pair':[],'correlation':[],'Time lag [s]':[],'s':[]}
+bumplagdict = {'Age Pair':[],'correlation':[],'Time lag [s]':[]}
 b2 = nbinseq-1
 for b1 in range(nbinseq-1):
 	bumps = []
@@ -327,7 +327,6 @@ for b1 in range(nbinseq-1):
 		bumps.append(np.mean([d for d in D[b].values()],axis=0))
 	xcorr = np.correlate(bumps[0],bumps[1],"full")
 	bumplagdict['Age Pair'].extend([xticks[b1]+' with '+xticks[b2]]*len(xcorrx))
-	bumplagdict['s'].extend([s]*len(xcorrx))
 	bumplagdict['correlation'].extend(xcorr/np.max(xcorr))
 	bumplagdict['Time lag [s]'].extend(xcorrx)
 dfbumplag = pd.DataFrame(data=bumplagdict)
@@ -432,16 +431,51 @@ plt.subplots_adjust(top=0.92, bottom=0.08, hspace=0.25,
 plt.savefig(figurepath+'HPC/bump_Event_group.png', bbox_inches='tight')
 
 # bump significance test:
+dfbump[['One Sample t', 'One Sample p', 'Two Sample t', 'Two Sample p', 'One Sample < 0.05', 'Two Sample < 0.05']] = pd.DataFrame([[np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]], index=dfbump.index)
 for b in dfbump['Age'].unique():
 	for e in dfbump['Event'].unique():
 		bedf = dfbump[(dfbump['Age'] == b) & (dfbump['Event'] == e)]
 		subjl = bedf['Subj'].unique()
-		precumsum = [bedf[(bedf['Subj'] == s) & (bedf['Time'].between(-8,0))]['Activity'].sum() for s in subjl]
-		postcumsum = [bedf[(bedf['Subj'] == s) & (bedf['Time'].between(0,8))]['Activity'].sum() for s in subjl]
-		print(b,e)
-		print(ss.ttest_1samp(postcumsum,0.0))
-		print(ss.ttest_rel(postcumsum,precumsum))
+		precumsum = [bedf[(bedf['Subj'] == s) & (bedf['Time'].between(-8,-0.5))]['Activity'].sum() for s in subjl]
+		postcumsum = [bedf[(bedf['Subj'] == s) & (bedf['Time'].between(0.5,8))]['Activity'].sum() for s in subjl]
+		t1,p1 = ss.ttest_1samp(postcumsum,0.0)
+		t2,p2 = ss.ttest_rel(postcumsum,precumsum)
+		s1='*' if p1<0.05 else ''
+		s2='*' if p2<0.05 else ''
+		dfbump['One Sample t'][(dfbump['Age'] == b) & (dfbump['Event'] == e)] = t1
+		dfbump['One Sample p'][(dfbump['Age'] == b) & (dfbump['Event'] == e)] = p1
+		dfbump['Two Sample t'][(dfbump['Age'] == b) & (dfbump['Event'] == e)] = t2
+		dfbump['Two Sample p'][(dfbump['Age'] == b) & (dfbump['Event'] == e)] = p1
+		dfbump['One Sample < 0.05'][(dfbump['Age'] == b) & (dfbump['Event'] == e)] = s1
+		dfbump['Two Sample < 0.05'][(dfbump['Age'] == b) & (dfbump['Event'] == e)] = s2
 		
+# dfbump facetgrid with tvals, and pvals:
+sns.set()
+sns.set(font_scale = 2)
+g = sns.relplot(x="Time", y="Activity", col="Event", row='Age', kind="line", hue='Two Sample < 0.05', data=dfbump)#, ci='sd')
+for bi,b in enumerate(dfbump['Age'].unique()):
+	for ei,e in enumerate(dfbump['Event'].unique()):
+		bedf = dfbump[(dfbump['Age'] == b) & (dfbump['Event'] == e)]
+		strroot = 'Event at ' + str(e) + 's\n' + b
+		t1 = bedf['One Sample t'].iloc[0]
+		p1 = bedf['One Sample p'].iloc[0]
+		t2 = bedf['Two Sample t'].iloc[0]
+		p2 = bedf['Two Sample p'].iloc[0]
+		s1 = bedf['One Sample < 0.05'].iloc[0]
+		s2 = bedf['Two Sample < 0.05'].iloc[0]
+		if s1 == '*' and s2 == '*':
+			g.axes[bi][ei].set_title(strroot + '\n one samp: t='+str(np.round(t1,2))+', p=' + str(np.round(p1,2))+ s1 + '\n two samp: t=' + str(np.round(t2,2)) + ', p =' + str(np.round(p2,2)) + s2)
+		elif s1 == '*':
+			g.axes[bi][ei].set_title(strroot + '\n one samp: t='+str(np.round(t1,2))+', p=' + str(np.round(p1,2))+ s1 + '\n two samp: t=' + str(np.round(t2,2)))
+		elif s2 == '*':
+			g.axes[bi][ei].set_title(strroot + '\n one samp: t='+str(np.round(t1,2))+ '\n two samp: t=' + str(np.round(t2,2)) + ', p =' + str(np.round(p2,2)) + s2)
+		else:
+			g.axes[bi][ei].set_title(strroot + '\n one samp: t='+str(np.round(t1,2))+ '\n two samp: t=' + str(np.round(t2,2)))
+g.set_xlabels("Time [s]")	
+g._legend.remove()
+g.fig.tight_layout()
+g.savefig(figurepath+'HPC/bump_facetplot.png')
+
 		
 
 
