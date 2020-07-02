@@ -3,6 +3,7 @@
 # HMM Settings
 from settings import *
 from ISC_settings import *
+from event_ratings import event_list
 
 event_list = [56,206,244,343,373,404,443,506,544]
 nevent = len(event_list)
