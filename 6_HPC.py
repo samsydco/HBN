@@ -7,11 +7,14 @@
 
 import tqdm
 import itertools
+import numpy as np
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.stats as ss
 from HMM_settings import *
+event_list = [e for e in event_list if e+TW//2<n_time]
+nevent = len(event_list)
 
 # Remove subjects over max(eqbins) age:
 incl_idx = [a<eqbins[-1] for a in agel]
@@ -26,7 +29,7 @@ TW = 30
 TR=0.8
 nsh = 1000 # number of split half iterations
 colors_age = ['#edf8fb','#b3cde3','#8c96c6','#8856a7','#810f7c']
-colors_ev = ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999']
+colors_ev  = ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928']
 x = np.arange(-1*TW//2,TW//2)*TR
 xstim = np.arange(n_time)*TR
 xticks = [str(int(round(eqbins[i])))+\
@@ -292,50 +295,46 @@ for p in itertools.combinations(range(nbinseq),2):
 			xcorr = np.correlate(ISC,ISC,"full")
 			glagdict['Age Pair'].extend([xticks[p[0]]+' with '+xticks[p[1]]]*len(xcorrx))
 			glagdict['s'].extend([s]*len(xcorrx))
-			glagdict['correlation'].extend(xcorr/np.max(xcorr))
+			glagdict['correlation'].extend(xcorr)
 			glagdict['Time lag [s]'].extend(xcorrx)
 dfglag = pd.DataFrame(data=glagdict)
 fig,ax = plt.subplots(1,1,figsize=(5,5))
 g = sns.lineplot(x='Time lag [s]', y='correlation',
                 hue='Age Pair', ax=ax, data=dfglag[abs(dfglag['Time lag [s]'])<10], ci='sd')
 ax.legend(loc='center', bbox_to_anchor=(0.5, -0.3))
-plt.savefig(figurepath+'HPC/ISC_xcorr.png', bbox_inches='tight')
+plt.savefig(figurepath+'HPC/ISC_xcorr_g_nonorm.png', bbox_inches='tight')
 
-wlagdict = {'Age Pair':[],'correlation':[],'Time lag [s]':[],'s':[]}
-b2 = nbinseq-1
-for b1 in range(nbinseq-1):
+wlagdict = {'Age':[],'correlation':[],'Time lag [s]':[],'s':[]}
+for b in range(nbinseq-1):
 	for s in range(nsh):
-		xcorr = np.correlate(ISC_w_time[2,s,b1],ISC_w_time[2,s,b2],"full")
-		wlagdict['Age Pair'].extend([xticks[b1]+' with '+xticks[b2]]*len(xcorrx))
+		xcorr = np.correlate(ISC_w_time[2,s,b],ISC_w_time[2,s,b],"full")
+		wlagdict['Age'].extend([xticks[b]]*len(xcorrx))
 		wlagdict['s'].extend([s]*len(xcorrx))
-		wlagdict['correlation'].extend(xcorr/np.max(xcorr))
+		wlagdict['correlation'].extend(xcorr)
 		wlagdict['Time lag [s]'].extend(xcorrx)
 dfelag = pd.DataFrame(data=wlagdict)
 sns.set_palette(colors_age)
 fig,ax = plt.subplots(1,1,figsize=(5,5))
 g = sns.lineplot(x='Time lag [s]', y='correlation',
-                hue='Age Pair', ax=ax, data=dfelag[abs(dfelag['Time lag [s]'])<10], ci='sd')
+                hue='Age', ax=ax, data=dfelag[abs(dfelag['Time lag [s]'])<10], ci='sd')
 ax.legend(loc='center', bbox_to_anchor=(0.5, -0.3))
-plt.savefig(figurepath+'HPC/ISC_xcorr_within.png', bbox_inches='tight')
+plt.savefig(figurepath+'HPC/ISC_xcorr_within_nonorm.png', bbox_inches='tight')
 
 # Is there a lag in HPC time course of younger kids?
-bumplagdict = {'Age Pair':[],'correlation':[],'Time lag [s]':[]}
-b2 = nbinseq-1
-for b1 in range(nbinseq-1):
-	bumps = []
-	for b in [b1,b2]:
-		bumps.append(np.mean([d for d in D[b].values()],axis=0))
-	xcorr = np.correlate(bumps[0],bumps[1],"full")
-	bumplagdict['Age Pair'].extend([xticks[b1]+' with '+xticks[b2]]*len(xcorrx))
-	bumplagdict['correlation'].extend(xcorr/np.max(xcorr))
+bumplagdict = {'Age':[],'correlation':[],'Time lag [s]':[]}
+for b in range(nbinseq-1):
+	bumps = np.mean([d for d in D[b].values()],axis=0)
+	xcorr = np.correlate(bumps,bumps,"full")
+	bumplagdict['Age'].extend([xticks[b]]*len(xcorrx))
+	bumplagdict['correlation'].extend(xcorr)
 	bumplagdict['Time lag [s]'].extend(xcorrx)
 dfbumplag = pd.DataFrame(data=bumplagdict)
 sns.set_palette(colors_age)
 fig,ax = plt.subplots(1,1,figsize=(5,5))
 g = sns.lineplot(x='Time lag [s]', y='correlation',
-                hue='Age Pair', ax=ax, data=dfbumplag[abs(dfbumplag['Time lag [s]'])<10], ci='sd')
+                hue='Age', ax=ax, data=dfbumplag[abs(dfbumplag['Time lag [s]'])<10], ci='sd')
 ax.legend(loc='center', bbox_to_anchor=(0.5, -0.3))
-plt.savefig(figurepath+'HPC/bump_xcorr.png', bbox_inches='tight')
+plt.savefig(figurepath+'HPC/bump_xcorr_nonorm.png', bbox_inches='tight')
 
 # Does HPC bump correlate across all time?
 for p in itertools.combinations(range(nbinseq),2):
@@ -423,7 +422,7 @@ for ei,esec in enumerate(eseclist):
 	ax[ei].set_title('Event at '+str(esec)+' s',fontsize=30,color=colors_ev[ei])
 	ax[ei].set_xlim([min(x),max(x)])
 	g.set_ylabel('')
-	if ei<8: ax[ei].get_legend().remove()
+	if ei<nevent-1: ax[ei].get_legend().remove()
 ax[ei].legend(loc='lower right', bbox_to_anchor=(1.4, -0.4))
 ax[ei].set_xlabel('Time [s]')
 plt.subplots_adjust(top=0.92, bottom=0.08, hspace=0.25,
@@ -452,7 +451,7 @@ for b in dfbump['Age'].unique():
 # dfbump facetgrid with tvals, and pvals:
 sns.set()
 sns.set(font_scale = 2)
-g = sns.relplot(x="Time", y="Activity", col="Event", row='Age', kind="line", hue='Two Sample < 0.05', data=dfbump)#, ci='sd')
+g = sns.relplot(x="Time", y="Activity", col="Event", row='Age', kind="line", hue='One Sample < 0.05', data=dfbump)#, ci='sd')
 for bi,b in enumerate(dfbump['Age'].unique()):
 	for ei,e in enumerate(dfbump['Event'].unique()):
 		bedf = dfbump[(dfbump['Age'] == b) & (dfbump['Event'] == e)]
