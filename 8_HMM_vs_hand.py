@@ -5,6 +5,7 @@
 
 import tqdm
 import brainiak.eventseg.event
+from scipy.stats import zscore, norm
 from HMM_settings import *
 
 ROIdir = HMMpath+'shuff_5bins_train04/'
@@ -20,7 +21,7 @@ nROI = len(ROIl)
 # Returns z score relative to a null distribution via permutation
 def match_z(proposed_bounds, gt_bounds, num_TRs):
     nPerm = 1000
-    threshold = 3
+    threshold = 7 # s.t. boundaries within 6 sec. 
     np.random.seed(0)
 
     gt_lengths = np.diff(np.concatenate(([0],gt_bounds,[num_TRs])))

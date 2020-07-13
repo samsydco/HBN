@@ -3,6 +3,7 @@
 
 import numpy as np
 import pandas as pd
+import deepdish as dd
 import matplotlib.pyplot as plt
 from settings import *
 
@@ -17,6 +18,12 @@ dt = np.arange(0, 15,TR)
 p = 8.6
 q = 0.547
 hrf = np.power(dt / (p * q), p) * np.exp(p - dt / q)
+
+def xcorr(a,b):
+	a = (a - np.mean(a)) / (np.std(a) * len(a))
+	b = (b - np.mean(b)) / (np.std(b))
+	c = np.correlate(a, b, 'full')
+	return c
 
 eventdict = {key:{} for key in ['timing','annotation']}
 for csv in glob.glob(segpath+'*csv'):
@@ -43,7 +50,7 @@ for v in eventdict['timing'].values():
 	nevent.append(len(v))
 ev_annot = np.asarray(ev_annot, dtype=int)
 
-counts = np.bincount(ev_annot)
+counts = np.append(np.bincount(ev_annot)[:-2],np.bincount(ev_annot)[-1])
 ev_conv = np.convolve(counts,hrf,'same')
 
 peaks = np.where(ev_conv>4)[0]
@@ -113,6 +120,67 @@ if __name__ == "__main__":
 	raw_ev_annot.set_xlabel('Time in TRs', fontsize=40)
 	raw_ev_annot.set_title('Event annotations', fontsize=40)
 	plt.savefig(ev_figpath+'ev_annots_both.png', bbox_inches='tight')
+	
+	
+	# Compare annotations "ev_conv" with HPC bumps:
+	from ISC_settings import *
+	import seaborn as sns
+	colors_age = ['#edf8fb','#b3cde3','#8c96c6','#8856a7','#810f7c']
+	xticks = [str(int(round(eqbins[i])))+\
+		  ' - '+str(int(round(eqbins[i+1])))+' y.o.' for i in range(len(eqbins)-1)]
+	xcorrx = np.concatenate([np.arange(-nTR+1,0)*TR,np.arange(nTR)*TR])
+	D,ISC_w_time,ISC_g_time = dd.io.load(ISCpath+'HPC.h5',['/D','/ISC_w_time', '/ISC_g_time'])
+	
+	bumplagdict = {'Age':[],'correlation':[],'Time lag [s]':[],'Subj':[]}
+	for b in range(nbinseq-1):
+		for subj,bumps in D[b].items():
+			xcorrt = xcorr(ev_conv,bumps)
+			xcorrt = xcorr(ev_conv,bumps)#np.correlate(ev_conv,bumps,"full")#
+			bumplagdict['Subj'].extend([subj]*len(xcorrx))
+			bumplagdict['Age'].extend([xticks[b]]*len(xcorrx))
+			bumplagdict['correlation'].extend(xcorrt)
+			bumplagdict['Time lag [s]'].extend(xcorrx)
+	dfbumplag = pd.DataFrame(data=bumplagdict)
+	sns.set_palette(colors_age)
+	fig,ax = plt.subplots(1,1,figsize=(5,5))
+	g = sns.lineplot(x='Time lag [s]', y='correlation',
+                hue='Age', ax=ax, data=dfbumplag[abs(dfbumplag['Time lag [s]'])<20], ci='sd')
+	ax.legend(loc='center', bbox_to_anchor=(0.5, -0.3))
+	plt.savefig(figurepath+'HPC/bump_xcorr_ev_conv.png', bbox_inches='tight')
+	
+	wlagdict = {'Age':[],'correlation':[],'Time lag [s]':[],'s':[]}
+	for b in range(nbinseq-1):
+		for s in range(ISC_w_time.shape[1]):
+			xcorrt = xcorr(ev_conv,ISC_w_time[2,s,b])#np.correlate(ev_conv,ISC_w_time[2,s,b],"full")#
+			wlagdict['Age'].extend([xticks[b]]*len(xcorrx))
+			wlagdict['s'].extend([s]*len(xcorrx))
+			wlagdict['correlation'].extend(xcorrt)
+			wlagdict['Time lag [s]'].extend(xcorrx)
+	dfelag = pd.DataFrame(data=wlagdict)
+	sns.set_palette(colors_age)
+	fig,ax = plt.subplots(1,1,figsize=(5,5))
+	g = sns.lineplot(x='Time lag [s]', y='correlation',
+                hue='Age', ax=ax, data=dfelag[abs(dfelag['Time lag [s]'])<20], ci='sd')
+	ax.legend(loc='center', bbox_to_anchor=(0.5, -0.3))
+	plt.savefig(figurepath+'HPC/ISC_xcorr_within_ev_conv.png', bbox_inches='tight')
+
+	import itertools
+	glagdict = {'Age Pair':[],'correlation':[],'Time lag [s]':[],'s':[]}
+	for p in itertools.combinations(range(nbinseq),2):
+		if 4 in p:
+			for s in range(len(ISC_g_time['splithalf'].keys())):
+				ISC = ISC_g_time['splithalf'][s][str(p[0])+'_'+str(p[1])]
+				xcorrt = xcorr(ev_conv,ISC)#np.correlate(ISC,ISC,'full')#
+				glagdict['Age Pair'].extend([xticks[p[0]]+' with '+xticks[p[1]]]*len(xcorrx))
+				glagdict['s'].extend([s]*len(xcorrx))
+				glagdict['correlation'].extend(xcorrt)
+				glagdict['Time lag [s]'].extend(xcorrx)
+	dfglag = pd.DataFrame(data=glagdict)
+	fig,ax = plt.subplots(1,1,figsize=(5,5))
+	g = sns.lineplot(x='Time lag [s]', y='correlation',
+                hue='Age Pair', ax=ax, data=dfglag[abs(dfglag['Time lag [s]'])<20], ci='sd')
+	ax.legend(loc='center', bbox_to_anchor=(0.5, -0.3))
+	plt.savefig(figurepath+'HPC/ISC_xcorr_g_ev_conv.png', bbox_inches='tight')
 
 
 	

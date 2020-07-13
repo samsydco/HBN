@@ -13,8 +13,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.stats as ss
 from HMM_settings import *
-event_list = [e for e in event_list if e+TW//2<n_time]
-nevent = len(event_list)
 
 # Remove subjects over max(eqbins) age:
 incl_idx = [a<eqbins[-1] for a in agel]
@@ -35,6 +33,8 @@ xstim = np.arange(n_time)*TR
 xticks = [str(int(round(eqbins[i])))+\
 		  ' - '+str(int(round(eqbins[i+1])))+' y.o.' for i in range(len(eqbins)-1)]
 xcorrx = np.concatenate([np.arange(-n_time+1,0)*TR,np.arange(n_time)*TR])
+event_list = [e for e in event_list if e+TW//2<n_time]
+nevent = len(event_list)
 
 # ISC: within and between
 D = {key:{} for key in range(nbinseq)}
@@ -292,10 +292,10 @@ for p in itertools.combinations(range(nbinseq),2):
 	if 4 in p:
 		for s in range(nsh):
 			ISC = ISC_g_time['splithalf'][s][str(p[0])+'_'+str(p[1])]
-			xcorr = np.correlate(ISC,ISC,"full")
+			xcorrt = np.correlate(ISC,ISC,'full')#xcorr(ISC,ISC)
 			glagdict['Age Pair'].extend([xticks[p[0]]+' with '+xticks[p[1]]]*len(xcorrx))
 			glagdict['s'].extend([s]*len(xcorrx))
-			glagdict['correlation'].extend(xcorr)
+			glagdict['correlation'].extend(xcorrt)
 			glagdict['Time lag [s]'].extend(xcorrx)
 dfglag = pd.DataFrame(data=glagdict)
 fig,ax = plt.subplots(1,1,figsize=(5,5))
@@ -307,10 +307,10 @@ plt.savefig(figurepath+'HPC/ISC_xcorr_g_nonorm.png', bbox_inches='tight')
 wlagdict = {'Age':[],'correlation':[],'Time lag [s]':[],'s':[]}
 for b in range(nbinseq-1):
 	for s in range(nsh):
-		xcorr = np.correlate(ISC_w_time[2,s,b],ISC_w_time[2,s,b],"full")
+		xcorrt = np.correlate(ISC_w_time[2,s,b],ISC_w_time[2,s,b],"full")#xcorr(ISC_w_time[2,s,b],ISC_w_time[2,s,b])
 		wlagdict['Age'].extend([xticks[b]]*len(xcorrx))
 		wlagdict['s'].extend([s]*len(xcorrx))
-		wlagdict['correlation'].extend(xcorr)
+		wlagdict['correlation'].extend(xcorrt)
 		wlagdict['Time lag [s]'].extend(xcorrx)
 dfelag = pd.DataFrame(data=wlagdict)
 sns.set_palette(colors_age)
@@ -324,9 +324,9 @@ plt.savefig(figurepath+'HPC/ISC_xcorr_within_nonorm.png', bbox_inches='tight')
 bumplagdict = {'Age':[],'correlation':[],'Time lag [s]':[]}
 for b in range(nbinseq-1):
 	bumps = np.mean([d for d in D[b].values()],axis=0)
-	xcorr = np.correlate(bumps,bumps,"full")
+	xcorrt = xcorr(bumps,bumps)#np.correlate(bumps,bumps,"full")#
 	bumplagdict['Age'].extend([xticks[b]]*len(xcorrx))
-	bumplagdict['correlation'].extend(xcorr)
+	bumplagdict['correlation'].extend(xcorrt)
 	bumplagdict['Time lag [s]'].extend(xcorrx)
 dfbumplag = pd.DataFrame(data=bumplagdict)
 sns.set_palette(colors_age)
@@ -334,7 +334,7 @@ fig,ax = plt.subplots(1,1,figsize=(5,5))
 g = sns.lineplot(x='Time lag [s]', y='correlation',
                 hue='Age', ax=ax, data=dfbumplag[abs(dfbumplag['Time lag [s]'])<10], ci='sd')
 ax.legend(loc='center', bbox_to_anchor=(0.5, -0.3))
-plt.savefig(figurepath+'HPC/bump_xcorr_nonorm.png', bbox_inches='tight')
+plt.savefig(figurepath+'HPC/bump_xcorr_norm.png', bbox_inches='tight')
 
 # Does HPC bump correlate across all time?
 for p in itertools.combinations(range(nbinseq),2):
@@ -430,15 +430,17 @@ plt.subplots_adjust(top=0.92, bottom=0.08, hspace=0.25,
 plt.savefig(figurepath+'HPC/bump_Event_group.png', bbox_inches='tight')
 
 # bump significance test:
-dfbump[['One Sample t', 'One Sample p', 'Two Sample t', 'Two Sample p', 'One Sample < 0.05', 'Two Sample < 0.05']] = pd.DataFrame([[np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]], index=dfbump.index)
+dfbump[['One Sample t', 'One Sample p', 'Two Sample t', 'Two Sample p', 'One Sample < 0.05', 'Two Sample < 0.05', 'Pre-Event Cummulative Sum', 'Post-Event Cummulative Sum', 'Exact Age']] = pd.DataFrame([[np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]], index=dfbump.index)
 for b in dfbump['Age'].unique():
 	for e in dfbump['Event'].unique():
 		bedf = dfbump[(dfbump['Age'] == b) & (dfbump['Event'] == e)]
 		subjl = bedf['Subj'].unique()
-		precumsum = [bedf[(bedf['Subj'] == s) & (bedf['Time'].between(-8,-0.5))]['Activity'].sum() for s in subjl]
-		postcumsum = [bedf[(bedf['Subj'] == s) & (bedf['Time'].between(0.5,8))]['Activity'].sum() for s in subjl]
-		t1,p1 = ss.ttest_1samp(postcumsum,0.0)
-		t2,p2 = ss.ttest_rel(postcumsum,precumsum)
+		for s in subjl:
+			dfbump['Exact Age'][dfbump['Subj'] == s] = Phenodf['Age'][Phenodf['EID'] == s.split('/')[-1].split('.')[0].split('-')[1]].values[0]
+			dfbump['Pre-Event Cummulative Sum'][(dfbump['Subj'] == s) & (dfbump['Event'] == e)] = bedf[(bedf['Subj'] == s) & (bedf['Time'].between(-8,-0.5))]['Activity'].sum()
+			dfbump['Post-Event Cummulative Sum'][(dfbump['Subj'] == s) & (dfbump['Event'] == e)] = bedf[(bedf['Subj'] == s) & (bedf['Time'].between(0.5,8))]['Activity'].sum()
+		t1,p1 = ss.ttest_1samp(dfbump['Post-Event Cummulative Sum'][(dfbump['Age'] == b) & (dfbump['Event'] == e)].unique(),0.0)
+		t2,p2 = ss.ttest_rel(dfbump['Post-Event Cummulative Sum'][(dfbump['Age'] == b) & (dfbump['Event'] == e)].unique(), dfbump['Pre-Event Cummulative Sum'][(dfbump['Age'] == b) & (dfbump['Event'] == e)].unique())
 		s1='*' if p1<0.05 else ''
 		s2='*' if p2<0.05 else ''
 		dfbump['One Sample t'][(dfbump['Age'] == b) & (dfbump['Event'] == e)] = t1
@@ -447,6 +449,17 @@ for b in dfbump['Age'].unique():
 		dfbump['Two Sample p'][(dfbump['Age'] == b) & (dfbump['Event'] == e)] = p1
 		dfbump['One Sample < 0.05'][(dfbump['Age'] == b) & (dfbump['Event'] == e)] = s1
 		dfbump['Two Sample < 0.05'][(dfbump['Age'] == b) & (dfbump['Event'] == e)] = s2
+		
+# ANOVA on cum sum:
+import statsmodels
+dfbumptemp = dfbump[dfbump['Time'] == 0]
+res = AnovaRM(dfbumptemp, 'Post-Event Cummulative Sum', 'Age', within=['Event'], aggregate_func='mean')
+print(res.fit())
+
+g = sns.FacetGrid(dfbumptemp,row='Event')
+g = g.map(plt.scatter, 'Exact Age', 'Post-Event Cummulative Sum')
+	
+	
 		
 # dfbump facetgrid with tvals, and pvals:
 sns.set()
