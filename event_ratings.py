@@ -134,8 +134,7 @@ if __name__ == "__main__":
 	bumplagdict = {'Age':[],'correlation':[],'Time lag [s]':[],'Subj':[]}
 	for b in range(nbinseq-1):
 		for subj,bumps in D[b].items():
-			xcorrt = xcorr(ev_conv,bumps)
-			xcorrt = xcorr(ev_conv,bumps)#np.correlate(ev_conv,bumps,"full")#
+			xcorrt = xcorr(bumps,ev_conv)#np.correlate(ev_conv,bumps,"full")#
 			bumplagdict['Subj'].extend([subj]*len(xcorrx))
 			bumplagdict['Age'].extend([xticks[b]]*len(xcorrx))
 			bumplagdict['correlation'].extend(xcorrt)

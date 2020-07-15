@@ -403,7 +403,7 @@ for bi in range(nbinseq):
 		ax[bi].errorbar(x, bumps[bi,ei], yerr=bumpstd[bi,ei],color=colors_ev[ei],label=lab)
 	ax[bi].errorbar(x, np.mean(bumps[bi],axis=0), yerr=np.mean(bumpstd[bi],axis=0), c='k',ls='--',label='Avg')
 lgd = ax[bi].legend(loc='lower right', bbox_to_anchor=(1.7, -0.5))
-plt.savefig(figurepath+'HPC/bump.png', bbox_inches='tight')
+#plt.savefig(figurepath+'HPC/bump.png', bbox_inches='tight')
 eseclist = np.unique(eseclist)
 
 # HPC bump plots like ISC_time plots: (Grouped by Event)
@@ -451,10 +451,66 @@ for b in dfbump['Age'].unique():
 		dfbump['Two Sample < 0.05'][(dfbump['Age'] == b) & (dfbump['Event'] == e)] = s2
 		
 # ANOVA on cum sum:
-import statsmodels
+#from statsmodels.stats.anova import AnovaRM
 dfbumptemp = dfbump[dfbump['Time'] == 0]
-res = AnovaRM(dfbumptemp, 'Post-Event Cummulative Sum', 'Age', within=['Event'], aggregate_func='mean')
-print(res.fit())
+sns.set()
+sns.set_palette(colors_age)
+sns.set_style("darkgrid", {"axes.facecolor": ".9"})
+fig, ax = plt.subplots(figsize=(5,5))
+sns.pointplot(data=dfbumptemp, x='Event', y='Post-Event Cummulative Sum', hue='Age', dodge=True, capsize=.1, errwidth=1)
+ax.legend(loc='lower right', bbox_to_anchor=(1.4, -0.3))
+plt.xticks(rotation=30,ha="right")
+plt.savefig(figurepath+'HPC/Bump_ANOVA.png', bbox_inches='tight')
+
+dfbumptemp['Post-Event Cummulative Sum mean'] = np.nan
+dfAge = dfbumptemp.groupby('Subj')['Post-Event Cummulative Sum'].mean()
+for subj in dfbumptemp['Subj'].unique():
+	dfbumptemp['Post-Event Cummulative Sum mean'][dfbumptemp['Subj'] == subj] = dfAge[subj]
+dfbumpmean = dfbumptemp[dfbumptemp['Event'] == dfbumptemp['Event'].unique()[0]]
+
+r,p = ss.pearsonr(dfbumpmean['Exact Age'],dfbumpmean["Post-Event Cummulative Sum mean"])
+fig,ax=plt.subplots()
+sns.regplot(x='Exact Age', y="Post-Event Cummulative Sum mean", data=dfbumpmean).set_title('r = '+str(np.round(r,2))+', p = '+str(np.round(p,2)))
+fig.savefig(figurepath+'HPC/Age_vs_postbump')
+
+minmax = [min(dfbumptemp['Exact Age']),max(dfbumptemp['Exact Age'])]
+sns.set(font_scale = 1)
+fig, ax = plt.subplots(nevent,figsize=(5, 22),sharex=True)
+axa = fig.add_subplot(111, frameon=False)
+axa.set_ylabel("Post-Event Cummulative Sum", fontsize=20,labelpad=70)
+axa.set_xlabel("Age", fontsize=20,labelpad=40)
+axa.set_xticks([])
+axa.set_yticks([])
+for ei,e in enumerate(dfbumptemp["Event"].unique()):
+	dftemp = dfbumptemp[dfbumptemp['Event'] == e]
+	sns.regplot(x=dftemp['Exact Age'], y=dftemp["Post-Event Cummulative Sum"], color=colors_ev[ei],ax=ax[ei])
+	r,p = ss.pearsonr(dftemp['Exact Age'],dftemp["Post-Event Cummulative Sum"])
+	ax[ei].set_title('Event at '+str(e)+' s\nr = '+str(np.round(r,2))+', p = '+str(np.round(p,2)),fontsize=20)
+	ax[ei].set_xlim(minmax)
+	ax[ei].set_ylabel('')
+	ax[ei].set_xlabel('')
+plt.subplots_adjust(top=0.92, bottom=0.08, hspace=0.55,
+                    wspace=0.35)
+fig.savefig(figurepath+'HPC/Age_vs_postbump_perevent')
+	
+
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+dfbumptemp=dfbumptemp.rename(columns={"Post-Event Cummulative Sum":'Post','Exact Age':'Age_e'})
+md = smf.mixedlm("Post ~ Age", dfbumptemp, groups=dfbumptemp["Event"])
+mdf = md.fit()
+print(mdf.summary())
+# get ANOVA table as R like output
+from statsmodels.formula.api import ols
+# Ordinary Least Squares (OLS) model
+model = ols('Post ~ C(Age)', data=dfbumptemp).fit()
+anova_table = sm.stats.anova_lm(model, typ=2)
+anova_table
+# stats f_oneway functions takes the groups as input and returns F and P-value
+fvalue, pvalue = ss.f_oneway(dfbumptemp['Post'][dfbump['Age'] == '5 - 8 y.o.'], dfbumptemp['Post'][dfbump['Age'] == '8 - 11 y.o.'], dfbumptemp['Post'][dfbump['Age'] == '11 - 13 y.o.'], dfbumptemp['Post'][dfbump['Age'] == '13 - 16 y.o.'],dfbumptemp['Post'][dfbump['Age'] == '16 - 19 y.o.'])
+print(fvalue, pvalue)
+
+
 
 g = sns.FacetGrid(dfbumptemp,row='Event')
 g = g.map(plt.scatter, 'Exact Age', 'Post-Event Cummulative Sum')
