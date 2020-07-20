@@ -9,7 +9,7 @@ from ISC_settings import *
 
 nTR=[750,250]
 bins = [0,4]
-nbins = len(nbins)
+nbins = len(bins)
 HMMdir = HMMpath+'shuff/'
 savedir = ISCpath+'shuff_Yeo/'
 nsub = 41
@@ -62,8 +62,8 @@ for roi in tqdm.tqdm(glob.glob(HMMdir+'*.h5')):
 					roidict[task]['ISC_w'][shuff,1]
 			# Now shuffle Age, and Sex in same order:
 			neword = np.random.permutation(len(Age))
-			Age = Age[neword]
-			Sex = Sex[neword]
+			Age = [Age[neword[ai]] for ai,a in enumerate(Age)]
+			Sex = [Sex[neword[ai]] for ai,a in enumerate(Sex)]
 	dd.io.save(savedir+roi_short+'.h5',roidict)
 				
 				
