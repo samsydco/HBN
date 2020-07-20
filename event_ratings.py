@@ -140,6 +140,7 @@ if __name__ == "__main__":
 			bumplagdict['correlation'].extend(xcorrt)
 			bumplagdict['Time lag [s]'].extend(xcorrx)
 	dfbumplag = pd.DataFrame(data=bumplagdict)
+	sns.set(font_scale = 1)
 	sns.set_palette(colors_age)
 	fig,ax = plt.subplots(1,1,figsize=(5,5))
 	g = sns.lineplot(x='Time lag [s]', y='correlation',
