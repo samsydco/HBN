@@ -20,10 +20,14 @@ q = 0.547
 hrf = np.power(dt / (p * q), p) * np.exp(p - dt / q)
 
 def xcorr(a,b):
-	a = (a - np.mean(a)) / (np.std(a) * len(a))
+	# This helped convince me I'm doing the right thing:
+	# https://currents.soest.hawaii.edu/ocn_data_analysis/_static/SEM_EDOF.html
+	a = (a - np.mean(a)) / (np.std(a))
 	b = (b - np.mean(b)) / (np.std(b))
-	c = np.correlate(a, b, 'full')
+	c = np.correlate(a, b, 'full')/max(len(a),len(b))
 	return c
+
+
 
 eventdict = {key:{} for key in ['timing','annotation']}
 for csv in glob.glob(segpath+'*csv'):
@@ -123,30 +127,54 @@ if __name__ == "__main__":
 	
 	
 	# Compare annotations "ev_conv" with HPC bumps:
+	# Precidence for thinking this way comes from Aya Ben-Yakov's event saliency measure
 	from ISC_settings import *
 	import seaborn as sns
+	from scipy import stats
+	from statsmodels.stats.multitest import multipletests
 	colors_age = ['#edf8fb','#b3cde3','#8c96c6','#8856a7','#810f7c']
 	xticks = [str(int(round(eqbins[i])))+\
 		  ' - '+str(int(round(eqbins[i+1])))+' y.o.' for i in range(len(eqbins)-1)]
 	xcorrx = np.concatenate([np.arange(-nTR+1,0)*TR,np.arange(nTR)*TR])
 	D,ISC_w_time,ISC_g_time = dd.io.load(ISCpath+'HPC.h5',['/D','/ISC_w_time', '/ISC_g_time'])
 	
-	bumplagdict = {'Age':[],'correlation':[],'Time lag [s]':[],'Subj':[]}
+	bumplagdict = {'Age':[],'correlation':[],'Time lag [s]':[],'Subj':[],'Exact Age':[]}
 	for b in range(nbinseq-1):
 		for subj,bumps in D[b].items():
 			xcorrt = xcorr(bumps,ev_conv)#np.correlate(ev_conv,bumps,"full")#
 			bumplagdict['Subj'].extend([subj]*len(xcorrx))
 			bumplagdict['Age'].extend([xticks[b]]*len(xcorrx))
+			bumplagdict['Exact Age'].extend([Phenodf['Age'][Phenodf['EID'] == subj.split('/')[-1].split('.')[0].split('-')[1]].values[0]]*len(xcorrx))
 			bumplagdict['correlation'].extend(xcorrt)
 			bumplagdict['Time lag [s]'].extend(xcorrx)
 	dfbumplag = pd.DataFrame(data=bumplagdict)
+	dfbumplag = dfbumplag[abs(dfbumplag['Time lag [s]'])<20]
+	
+	# Which time points post-0 are significantly different from zero?
+	dfpost = dfbumplag[dfbumplag['Time lag [s]']>=0]
+	times = dfpost['Time lag [s]'].unique()[1:]
+	tvals = np.zeros(len(times))
+	pvals = np.zeros(len(times))
+	for ti,tp in enumerate(times):
+		tvals[ti],pvals[ti] = stats.ttest_rel(dfpost[dfpost['Time lag [s]']==tp]['correlation'], dfpost[dfpost['Time lag [s]']==0.]['correlation'])
+	pvals = pvals*len(pvals) # Bonferroni correction
+	best_t = times[np.argmin(pvals)]
+	r,p = stats.pearsonr(dfpost[dfpost['Time lag [s]']==best_t]['Exact Age'],dfpost[dfpost['Time lag [s]']==best_t]['correlation'])
+	fig,ax=plt.subplots()
+	sns.set_style("darkgrid", {"axes.facecolor": ".9"})
+	sns.regplot(x='Exact Age', y="correlation", data=dfpost[dfpost['Time lag [s]']==best_t]).set_title('Delay = '+str(best_t)+'s\nr = '+str(np.round(r,2))+', p = '+str(np.round(p,2)))
+	fig.savefig(figurepath+'HPC/Age_vs_bump_xcorr_ev_conv')
+	
+	# plot timecourse of xcorr with *'s for significance
 	sns.set(font_scale = 1)
 	sns.set_palette(colors_age)
 	fig,ax = plt.subplots(1,1,figsize=(5,5))
-	g = sns.lineplot(x='Time lag [s]', y='correlation',
-                hue='Age', ax=ax, data=dfbumplag[abs(dfbumplag['Time lag [s]'])<20], ci='sd')
+	g = sns.lineplot(x='Time lag [s]', y='correlation', hue='Age', ax=ax, data=dfbumplag, ci=95)
+	ax.plot(times[pvals<0.05],[0.090]*len(times[pvals<0.05]),'k*',markersize=8)
 	ax.legend(loc='center', bbox_to_anchor=(0.5, -0.3))
 	plt.savefig(figurepath+'HPC/bump_xcorr_ev_conv.png', bbox_inches='tight')
+		
+	
 	
 	wlagdict = {'Age':[],'correlation':[],'Time lag [s]':[],'s':[]}
 	for b in range(nbinseq-1):
