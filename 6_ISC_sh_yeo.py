@@ -4,7 +4,7 @@ import glob
 import tqdm
 import numpy as np
 import deepdish as dd
-from scipy.stats import zscore
+from scipy.stats import zscore, pearsonr
 from ISC_settings import *
 
 nTR=[750,250]
@@ -19,7 +19,6 @@ for roi in tqdm.tqdm(glob.glob(HMMdir+'*.h5')):
 	h = roi_short[0]
 	roidict = {}
 	for ti,task in enumerate(['DM','TP']):
-		roidict[task] = {}
 		vall = dd.io.load(roi,'/'+'/'.join([task,'bin_0','vall']))
 		n_vox = len(vall)
 		n_time = nTR[ti]
@@ -65,6 +64,29 @@ for roi in tqdm.tqdm(glob.glob(HMMdir+'*.h5')):
 			Age = [Age[neword[ai]] for ai,a in enumerate(Age)]
 			Sex = [Sex[neword[ai]] for ai,a in enumerate(Sex)]
 	dd.io.save(savedir+roi_short+'.h5',roidict)
+	
+	
+# Do any ROIs significantly correlate with ev_conv?
+from HMM_settings import *
+sigroig = {}
+sigroie = {}
+for roi in tqdm.tqdm(glob.glob(savedir+'*.h5')):
+	roi_short = roi.split('/')[-1][:-3]
+	ISC_g_time = dd.io.load(roi,'/DM/ISC_g_time')
+	ISC_e_time = dd.io.load(roi,'/DM/ISC_w_time')[:,1]-dd.io.load(roi,'/DM/ISC_w_time')[:,0]
+	nshuff = ISC_g_time.shape[0]
+	rlg = np.zeros(nshuff)
+	rle = np.zeros(nshuff)
+	for shuff in range(nshuff):
+		rlg[shuff],p = pearsonr(np.nanmean(ISC_g_time[shuff],axis=0),ev_conv)
+		rle[shuff],p = pearsonr(np.nanmean(ISC_e_time[shuff],axis=0),ev_conv)
+	pvalg = np.sum(rlg[0]>rlg[1:])/(nshuff-1)
+	pvale = np.sum(rle[0]>rle[1:])/(nshuff-1)
+	if pvalg < 0.05:
+		sigroig[roi_short] = {'r':rlg[0],'p':pvalg}
+	if pvale < 0.05:
+		sigroie[roi_short] = {'r':rle[0],'p':pvale}
+		
 				
 				
 				
