@@ -18,6 +18,7 @@ nbins = len(bins)
 ROIl = [roi.split('/')[-1][:-3] for roi in glob.glob(ROIdir+'*')]
 nROI = len(ROIl)
 nPerm = 1000
+nsub = 41
 
 # shuffle phase:
 def phase_shuff(signal):
@@ -76,6 +77,39 @@ for ri,roi in tqdm.tqdm(enumerate(ROIl)):
 		matchz_mat[ri,b] = match_z(event_bounds[roi][b],event_list,nTR,nPerm)
 
 dd.io.save(HMMpath+'HMM_vs_hand.h5',{'event_bounds':event_bounds, 'matchz_mat':matchz_mat, 'dE_k_corr':dE_k_corr, 'dE_k_p':dE_k_p})
+
+event_bounds, matchz_mat, dE_k_corr, dE_k_p=dd.io.load(HMMpath+'HMM_vs_hand.h5',['/event_bounds', '/matchz_mat', '/dE_k_corr', '/dE_k_p'])
+# which ROIs have significant correlation with ev_conv?
+sig_corr = {}
+dE_k_age_rs = {}
+dE_k_age_change = {}
+sig_change = {}
+for ri,roi in tqdm.tqdm(enumerate(ROIl)):
+	pval = np.sum(np.mean(dE_k_corr[0,ri,:]) > np.mean(dE_k_corr[1:,ri,:],axis=1))/nPerm
+	if pval < 0.05:
+		sig_corr[roi] = {'r':np.mean(dE_k_corr[0,ri,:]),'p':pval}
+		dE_k_age_rs[roi] = np.zeros((nPerm+1,nbins))
+		dE_k_age_change[roi] = np.zeros(nPerm+1)
+		roidict = dd.io.load(ROIdir+roi+'.h5','/'+task)
+		best_k = roidict['best_k']
+		Dall = np.concatenate([roidict['bin_'+str(b)]['D'] for b in bins],axis=0)
+		binord = np.concatenate([[b]*nsub for b in range(nbins)])
+		for p in range(nPerm+1):
+			D = [np.mean(Dall[binord==b],axis=0).T for b in bins]
+			hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
+			hmm.fit(D)
+			for b in bins:
+				# Compare derivative of E_k to ev_conv:
+				ev_conv = ev_conv_perm
+				dE_k = np.diff(np.dot(hmm.segments_[b], np.arange(best_k)+1))
+				dE_k_age_rs[roi][p,b],_ = pearsonr(dE_k,ev_conv)
+			dE_k_age_change[roi][p],_ = pearsonr(bins,dE_k_age_rs[roi][p])
+		pval2 = np.sum(abs(dE_k_age_change[roi][0]) > abs(dE_k_age_change[roi][1:]))/nPerm
+		if pval2 < 0.05:
+			sig_change[roi] = {'r':dE_k_age_change[roi][0],'p':pval2}
+			
+dd.io.save(HMMpath+'HMM_vs_hand.h5',{'event_bounds':event_bounds, 'matchz_mat':matchz_mat, 'dE_k_corr':dE_k_corr, 'dE_k_p':dE_k_p, 'sig_corr':sig_corr, 'dE_k_age_rs':dE_k_age_rs, 'dE_k_age_change':dE_k_age_change, 'sig_change':sig_change})
+	
 
 #corrmean = np.mean(dE_k_corr,axis=1)
 
