@@ -156,7 +156,7 @@ if __name__ == "__main__":
 	tvals = np.zeros(len(times))
 	pvals = np.zeros(len(times))
 	for ti,tp in enumerate(times):
-		tvals[ti],pvals[ti] = stats.ttest_rel(dfpost[dfpost['Time lag [s]']==tp]['correlation'], dfpost[dfpost['Time lag [s]']==0.]['correlation'])
+		tvals[ti],pvals[ti] = stats.ttest_1samp(dfpost[dfpost['Time lag [s]']==tp]['correlation'], 0)#stats.ttest_rel(dfpost[dfpost['Time lag [s]']==tp]['correlation'],dfpost[dfpost['Time lag [s]']==0.]['correlation'])
 	pvals = pvals*len(pvals) # Bonferroni correction
 	best_t = times[np.argmin(pvals)]
 	r,p = stats.pearsonr(dfpost[dfpost['Time lag [s]']==best_t]['Exact Age'],dfpost[dfpost['Time lag [s]']==best_t]['correlation'])
