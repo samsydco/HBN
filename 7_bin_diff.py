@@ -13,7 +13,7 @@ from ISC_settings import *
 agediffroidir = path+'ROIs/SfN_2019/Fig2_'#'ROIs/agediff/'
 
 # what voxels change in ISC with age, and in which direction?
-iscf = ISCpath + 'ISC_2019-09-06_age_2.h5'#'ISC_2019-08-13_age_2.h5'
+iscf = ISCpath+'old_ISC/' + 'ISC_2019-09-06_age_2.h5'#'ISC_2019-08-13_age_2.h5'
 
 plt.rcParams.update({'font.size': 15})
 xticks = [str(int(round(eqbins[i])))+\
