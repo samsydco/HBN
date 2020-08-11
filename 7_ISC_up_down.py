@@ -4,9 +4,11 @@
 # Like SfN Poster Figure 2
 # But now for all ROIs in Yeo atlas
 
+import tqdm
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+from scipy.stats import zscore
 from ISC_settings import *
 
 ROIpath = ISCpath+'shuff_Yeo/'
@@ -52,14 +54,14 @@ for roi in tqdm.tqdm(glob.glob(ROIpath+'*h5')):
 	dd.io.save(roi,roidict)
 	fdict = {'Age':[],'ISC':[],'vox':[],'corr':[],'null':[]}
 	for vi in range(len(vall)):
-		for b in range(bins):
-			fdict['null'].extend(np.mean(roidict[task]['ISC_w'][1:,:,vi]))
-			fdict['Age'].extend([xticks[b]])
-			fdict['ISC'].extend(ISC_w[b,vi])
-			fdict['vox'].extend(vi)
-			fdict['corr'].extend(np.corrcoef([e+agespan/2 for e in eqbins[:-1]],ISC_w[:,vi])[0,1])
+		for b in bins:
+			fdict['null'].append(np.mean(roidict[task]['ISC_w'][1:,:,vi]))
+			fdict['Age'].append(xticks[b])
+			fdict['ISC'].append(ISC_w[b,vi])
+			fdict['vox'].append(vi)
+			fdict['corr'].append(np.corrcoef([e+agespan/2 for e in eqbins[:-1]],ISC_w[:,vi])[0,1])
 	color = 'tab:red' if np.mean(fdict['corr'])>0 else 'royalblue'
-	nullmean = fdict['null'].mean()
+	nullmean = np.mean(fdict['null'])
 	nullstd = np.std(fdict['null'],ddof=1).mean()
 	df = pd.DataFrame(data=fdict)
 	fig = plt.fill_between(np.arange(nbinseq+1)-0.5,
