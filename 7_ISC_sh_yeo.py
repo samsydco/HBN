@@ -17,7 +17,7 @@ nshuff2=1000
 
 def p_calc(ISC):
 	nshuff = ISC.shape[0]-1
-	p = np.sum(abs(np.mean(ISC[0]))<np.mean(ISC[1:],axis=1))/nshuff
+	p = np.sum(abs(np.nanmean(ISC[0]))<np.nanmean(ISC[1:],axis=1))/nshuff
 	return p,nshuff
 
 def load_D(roil,task,bins):
