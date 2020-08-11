@@ -61,35 +61,36 @@ for ti,task in enumerate(['DM','TP']):
 				D[sidx+sub_] = dd.io.load(sub,['/'+task+'/'+hem])[0]
 		Ageperm = Age
 		for vi,voxl in tqdm.tqdm(SLs.items()):
-			badvox = np.unique(np.where(np.isnan(D[:,voxl,:]))[1])
-			voxl_tmp = np.array([v for i,v in enumerate(voxl) if not any(b==i for b in badvox)])
-			n_vox = len(voxl_tmp)
-			etcdict[vi]['voxl'] = voxl_tmp
-			voxcount[voxl_tmp] += 1
-			Dsl = D[:,voxl_tmp,:]
+			n_vox = len(voxl)
+			etcdict[vi]['voxl'] = voxl
+			voxcount[voxl] += 1
+			Dsl = D[:,voxl,:]
 			Age = Ageperm
 			for shuff in range(nshuff+1):
 				shuffstr = 'shuff_'+str(shuff)
-				etcdict[shuffstr] = {'ISC_w':[],'ISC_b':[]}
+				etcdict[vi][shuffstr] = {'ISC_w':[],'ISC_b':[]}
 				subh = even_out(Age,Sex)
 				groups = np.zeros((2,2,n_vox,n_time),dtype='float16')
 				for h in [0,1]:
 					for htmp in [0,1]:
 						group = np.zeros((n_vox,n_time),dtype='float16')
+						groupn = np.ones((n_vox,n_time),dtype='int')*nsub//2
 						for i in subh[h][htmp]:
 							group = np.nansum(np.stack((group,Dsl[i])),axis=0)
-						groups[h,htmp] = zscore(group/(nsub//2),axis=1)
-					etcdict[shuffstr]['ISC_w'].append(np.sum(np.multiply(groups[h,0],groups[h,1]),axis=1)/(n_time-1))
+							nanverts = np.argwhere(np.isnan(Dsl[i,:]))
+							groupn[nanverts[:, 0],nanverts[:,1]] = groupn[nanverts[:,0],nanverts[:,1]]-1
+						groups[h,htmp] = zscore(group/groupn,axis=1)
+					etcdict[vi][shuffstr]['ISC_w'].append(np.mean(np.sum(np.multiply(groups[h,0],groups[h,1]),axis=1)/(n_time-1)))
 				for htmp1 in [0,1]:
 					for htmp2 in [0,1]:
-						etcdict[shuffstr]['ISC_b'].append(np.sum(np.multiply(groups[0,htmp1],groups[1,htmp2]),axis=1)/(n_time-1))
+						etcdict[vi][shuffstr]['ISC_b'].append(np.mean(np.sum(np.multiply(groups[0,htmp1],groups[1,htmp2]),axis=1)/(n_time-1)))
 				# Now calculate g_diff and e_diff
-				e_diff = np.nanmean(ISCe_calc(etcdict[shuffstr]))
-				g_diff = np.nanmean(ISCg_calc(etcdict[shuffstr]))
+				e_diff = np.nanmean(ISCe_calc(etcdict[vi][shuffstr]))
+				g_diff = np.nanmean(ISCg_calc(etcdict[vi][shuffstr]))
 				SLdict['e_diff'][shuff].append(e_diff)
-				voxdict['e_diff'] += e_diff
+				voxdict['e_diff'][shuff,voxl] += e_diff
 				SLdict['g_diff'][shuff].append(g_diff)
-				voxdict['g_diff'] += g_diff
+				voxdict['g_diff'][shuff,voxl] += g_diff
 				# Now shuffle Age:
 				random.shuffle(Age)
 			dd.io.save(subsavedir+'_'.join([task,hem,str(vi)])+'.h5',\

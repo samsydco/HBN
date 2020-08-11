@@ -87,7 +87,7 @@ for roi in tqdm.tqdm(glob.glob(savedir+'*.h5')):
 	if pvale < 0.05:
 		sigroie[roi_short] = {'r':rle[0],'p':pvale}
 		
-				
+
 				
 				
 			
