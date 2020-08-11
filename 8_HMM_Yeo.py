@@ -27,12 +27,8 @@ for roi in tqdm.tqdm(glob.glob(HMMdir+'*.h5')):
 		k = ROIsHMM[task]['best_k']
 		D = [ROIsHMM[task]['bin_'+str(b)]['D'] for b in bins]
 		hmm = brainiak.eventseg.event.EventSegment(n_events=k)
-		if 'all' in HMMdir:
-			hmm.fit(np.mean(np.concatenate(D),axis=0).T)
-		elif '04' in HMMdir:
-			hmm.fit([np.mean(D[0],axis=0).T,np.mean(D[-1],axis=0).T]) 
-		else:
-			hmm.fit([np.mean(d,axis=0).T for d in D])
+		bin_tmp = bins if 'all' in HMMdir else [0,4]
+		hmm.fit([np.mean(d,axis=0).T for d in [D[bi] for bi in bin_tmp]])
 		kl = np.arange(k)+1
 		fig, ax = plt.subplots(figsize=(10, 10))
 		ax.set_title(roi_short+' '+task, fontsize=50)
