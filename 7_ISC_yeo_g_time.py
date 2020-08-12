@@ -3,6 +3,7 @@
 # plot Yeo ROIs that correspond with TPJ
 # determine what is going on at times with low g_diff
 
+import tqdm
 import matplotlib.pyplot as plt
 from HMM_settings import *
 from scipy.stats import pearsonr
@@ -32,14 +33,15 @@ ps = {key:[] for key in ROIs}
 gall = []
 gt = []
 ISCall = []
-for ri,roi in enumerate(ROIs):
-	ISC = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)
-	ISCall.append(hamconv((ISC[0]-np.nanmean(ISC[1:],axis=0))/np.nanstd(ISC[1:],axis=0),ham))
-	rs[roi],ps[roi] = pearsonr(ISCall[ri],ev_conv)
-	#lab = roi+', r = '+str(np.round(r,2)) if p< 0.05 else roi
-	#gt.append(x[np.where(ISCall[ri]<-1)])
-	#ax.plot(x,ISCall[ri],color=colors[ri],label=lab)
-	#gall = np.intersect1d(gall,gt[ri]) if ri > 0 else gt[ri]
+for ri,roi in tqdm.tqdm(enumerate(ROIs)):
+	if roi != 'LH_SomMotB_Aud_1': # TEMPORARY problem with this one...
+		ISC = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)
+		ISCall.append(hamconv((ISC[0]-np.nanmean(ISC[1:],axis=0))/np.nanstd(ISC[1:],axis=0),ham))
+		rs[roi],ps[roi] = pearsonr(ISCall[ri],ev_conv)
+		#lab = roi+', r = '+str(np.round(r,2)) if p< 0.05 else roi
+		#gt.append(x[np.where(ISCall[ri]<-1)])
+		#ax.plot(x,ISCall[ri],color=colors[ri],label=lab)
+		#gall = np.intersect1d(gall,gt[ri]) if ri > 0 else gt[ri]
 	
 dd.io.save(savef,{'rs':rs,'ps':ps})
 	
