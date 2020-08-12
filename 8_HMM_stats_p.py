@@ -3,6 +3,7 @@
 # Add more shuffles for ROIs with low p-values:
 
 import os
+import time
 import glob
 import tqdm
 import numpy as np
@@ -21,45 +22,46 @@ nshuff2=1000
 
 
 for roi in tqdm.tqdm(glob.glob(newsavedir+'*.h5')):
-	roidict = dd.io.load(roi)
-	for task,taskv in roidict.items():
-		nshuff = len([k for k in list(taskv.keys()) if 'shuff' in k]) - 1
-		p_ll_ = np.sum(abs(taskv['shuff_0']['ll_diff'])<[abs(taskv['shuff_'+str(s)]['ll_diff']) for s in range(1,nshuff+1)])/nshuff
-		p_auc = np.sum(abs(taskv['shuff_0']['auc_diff'])<[abs(taskv['shuff_'+str(s)]['auc_diff']) for s in range(1,nshuff+1)])/nshuff
-		if p_ll_<0.05 or p_auc<0.05:
-			print(roi,task)
-			bin_tmp = bins if 'all' in newsavedir else [0,4]
-			D = [taskv['bin_'+str(b)]['D'] for b in bins]
-			nsub,_,nTR_ = D[0].shape
-			best_k = taskv['best_k']
-			tune_seg = np.append(taskv['tune_seg_perm'],np.zeros((nshuff2-nshuff,nbins,nsplit,nTR_,best_k)),axis=0)
-			tune_ll = np.append(taskv['tune_ll_perm'],np.zeros((nshuff2-nshuff,nbins,nsplit)),axis=0)
-			for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
-				Dtrain = [np.mean(d[Ls[0]],axis=0).T for d in [D[bi] for bi in bin_tmp]]
-				Dtest_all  = np.concatenate([d[Ls[1]] for d in D])
-				nsubLO = len(Ls[1])
-				subl = np.arange(nsubLO*nbins) # subject list to be permuted!
-				hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
-				hmm.fit(Dtrain)
+	if 'May' in time.ctime(os.path.getmtime(roi)):
+		roidict = dd.io.load(roi)
+		for task,taskv in roidict.items():
+			nshuff = len([k for k in list(taskv.keys()) if 'shuff' in k]) - 1
+			p_ll_ = np.sum(abs(taskv['shuff_0']['ll_diff'])<[abs(taskv['shuff_'+str(s)]['ll_diff']) for s in range(1,nshuff+1)])/nshuff
+			p_auc = np.sum(abs(taskv['shuff_0']['auc_diff'])<[abs(taskv['shuff_'+str(s)]['auc_diff']) for s in range(1,nshuff+1)])/nshuff
+			if p_ll_<0.05 or p_auc<0.05:
+				print(roi,task)
+				bin_tmp = bins if 'all' in newsavedir else [0,4]
+				D = [taskv['bin_'+str(b)]['D'] for b in bins]
+				nsub,_,nTR_ = D[0].shape
+				best_k = taskv['best_k']
+				tune_seg = np.append(taskv['tune_seg_perm'],np.zeros((nshuff2-nshuff,nbins,nsplit,nTR_,best_k)),axis=0)
+				tune_ll = np.append(taskv['tune_ll_perm'],np.zeros((nshuff2-nshuff,nbins,nsplit)),axis=0)
+				for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
+					Dtrain = [np.mean(d[Ls[0]],axis=0).T for d in [D[bi] for bi in bin_tmp]]
+					Dtest_all  = np.concatenate([d[Ls[1]] for d in D])
+					nsubLO = len(Ls[1])
+					subl = np.arange(nsubLO*nbins) # subject list to be permuted!
+					hmm = brainiak.eventseg.event.EventSegment(n_events=best_k)
+					hmm.fit(Dtrain)
+					for shuff in np.arange(nshuff+1,nshuff2):
+						# RANDOMIZE
+						subl = np.random.permutation(nsubLO*nbins)
+						for bi in range(nbins):
+							idx = np.arange(bi*nsubLO,(bi+1)*nsubLO)
+							Dtest = np.mean(Dtest_all[subl[idx]],axis=0).T
+							tune_seg[shuff,bi,split], tune_ll[shuff,bi,split] = hmm.find_events(Dtest)		
+				roidict[task]['tune_ll_perm'] = tune_ll
+				roidict[task]['tune_seg_perm'] = tune_seg
 				for shuff in np.arange(nshuff+1,nshuff2):
-					# RANDOMIZE
-					subl = np.random.permutation(nsubLO*nbins)
+					shuffstr = 'shuff_'+str(shuff)
+					roidict[task][shuffstr] = {}
+					E_k = []
+					auc = []
 					for bi in range(nbins):
-						idx = np.arange(bi*nsubLO,(bi+1)*nsubLO)
-						Dtest = np.mean(Dtest_all[subl[idx]],axis=0).T
-						tune_seg[shuff,bi,split], tune_ll[shuff,bi,split] = hmm.find_events(Dtest)		
-			roidict[task]['tune_ll_perm'] = tune_ll
-			roidict[task]['tune_seg_perm'] = tune_seg
-			for shuff in np.arange(nshuff+1,nshuff2):
-				shuffstr = 'shuff_'+str(shuff)
-				roidict[task][shuffstr] = {}
-				E_k = []
-				auc = []
-				for bi in range(nbins):
-					E_k.append(np.dot(np.mean(tune_seg[shuff,bi],axis=0), np.arange(best_k)+1))
-					auc.append(E_k[bi].sum())
-				roidict[task][shuffstr]['E_k'] = E_k
-				roidict[task][shuffstr]['auc'] = auc
-				roidict[task][shuffstr]['auc_diff'] = ((auc[-1]-auc[0])/best_k)*TR
-				roidict[task][shuffstr]['ll_diff'] = np.mean(np.diff(np.mean(tune_ll[shuff],axis=1)))/nTR_
-			dd.io.save(roi,roidict)
+						E_k.append(np.dot(np.mean(tune_seg[shuff,bi],axis=0), np.arange(best_k)+1))
+						auc.append(E_k[bi].sum())
+					roidict[task][shuffstr]['E_k'] = E_k
+					roidict[task][shuffstr]['auc'] = auc
+					roidict[task][shuffstr]['auc_diff'] = ((auc[-1]-auc[0])/best_k)*TR
+					roidict[task][shuffstr]['ll_diff'] = np.mean(np.diff(np.mean(tune_ll[shuff],axis=1)))/nTR_
+				dd.io.save(roi,roidict)

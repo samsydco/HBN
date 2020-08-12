@@ -45,7 +45,7 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 	print(hemi)
 	lab = free.read_annot(hemi)
 	h = hemi.split('/')[-1][0].capitalize()
-	for ri,roi_tmp in tqdm.tqdm(enumerate(lab[2])):
+	for roi_tmp in tqdm.tqdm(lab[2]):
 		roi_short=roi_tmp.decode("utf-8")[11:]
 		roidict = {t:{'bin_'+str(b):{} for b in bins} for t in tasks}
 		if os.path.isfile(oldsavedir+roi_short+'.h5'):
