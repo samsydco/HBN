@@ -13,6 +13,8 @@ from ISC_settings import *
 
 ROIpath = ISCpath+'shuff_Yeo/'
 figdir = figurepath+'up_down/'
+ROIl = [roi for roi in glob.glob(ROIpath+'*h5') if roi.split('/')[-1][:-3] not in [fig.split('/')[-1][:-4] for fig in glob.glob(figdir+'*png')]]
+
 task = 'DM'
 n_time = 750
 bins = np.arange(nbinseq)
@@ -22,7 +24,7 @@ plt.rcParams.update({'font.size': 15})
 xticks = [str(int(round(eqbins[i])))+\
 		  ' - '+str(int(round(eqbins[i+1])))+' y.o.' for i in range(len(eqbins)-1)]
 
-for roi in tqdm.tqdm(glob.glob(ROIpath+'*h5')):
+for roi in tqdm.tqdm(ROIl):
 	roi_short = roi.split('/')[-1][:-3]
 	roidict = dd.io.load(roi)
 	vall = roidict[task]['vall']
@@ -72,8 +74,10 @@ for roi in tqdm.tqdm(glob.glob(ROIpath+'*h5')):
 	plt.xticks(rotation=30,ha="right")
 	plt.tight_layout()
 	plt.show()
-	fig.figure.savefig(figdir+roi_short+'.png')
-	fig.figure.savefig(figdir+roi_short+'.eps')
+	b1mean = np.mean(df.loc[df['Age']==xticks[0]]['ISC'])
+	sig = '*' if nullmean-nullstd>b1mean or nullmean+nullstd<b1mean else ''
+	fig.figure.savefig(figdir+roi_short+sig+'.png')
+	fig.figure.savefig(figdir+roi_short+sig+'.eps')
 	
 	
 	
