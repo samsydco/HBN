@@ -15,9 +15,12 @@ HMMdir = HMMpath+'shuff/'
 savedir = ISCpath+'shuff_Yeo/'
 nshuff2=1000
 
-def p_calc(ISC):
+def p_calc(ISC,ISCtype='e'):
 	nshuff = ISC.shape[0]-1
-	p = np.sum(abs(np.nanmean(ISC[0]))<np.nanmean(ISC[1:],axis=1))/nshuff
+	if ISCtype == 'e':
+		p = np.sum(abs(np.nanmean(ISC[0]))<abs(np.nanmean(ISC[1:],axis=1)))/nshuff
+	else:
+		p = np.sum(np.nanmean(ISC[0])>np.nanmean(ISC[1:],axis=1))/nshuff
 	return p,nshuff
 
 def load_D(roil,task,bins):
