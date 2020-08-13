@@ -34,7 +34,7 @@ from HMM_settings import *
 
 ROInow = ROIopts[1]
 oldsavedir = HMMpath+'shuff_5bins/'
-newsavedir = HMMpath+'shuff_5bins_trainall/'#'shuff_5bins_train04/'#'shuff_5bins_train04/'#
+newsavedir = HMMpath+'shuff_5bins_train04/'#'shuff_5bins_trainall/'#'shuff_5bins_train04/'#
 nsub= 41
 y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit))+1)
 kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
