@@ -16,7 +16,6 @@ nsub = 41
 
 for roi in tqdm.tqdm(glob.glob(HMMdir+'*.h5')):
 	roi_short = roi.split('/')[-1][:-3]
-	h = roi_short[0]
 	roidict = {}
 	for ti,task in enumerate(['DM','TP']):
 		vall = dd.io.load(roi,'/'+'/'.join([task,'bin_0','vall']))
