@@ -20,7 +20,7 @@ kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
 bins = [0,4]
 nbins = len(bins)
 
-for roi in glob.glob(sametimedir+'*h5'):
+for roi in tqdm.tqdm(glob.glob(sametimedir+'*h5')):
 	roi_short = roi.split('/')[-1][:-3]
 	roidict = {t:{b:{} for b in bins} for t in tasks}
 	for ti,task in enumerate(tasks):
@@ -33,5 +33,12 @@ for roi in glob.glob(sametimedir+'*h5'):
 				Dtrain = np.mean(roidict[task][b]['D'][Ls[0]],axis=0).T
 				Dtest  = np.mean(roidict[task][b]['D'][Ls[1]],axis=0).T
 				for ki,k in enumerate(k_list):
+					hmm = brainiak.eventseg.event.EventSegment(n_events=k)
+					hmm.fit(Dtrain)
+					_, tune_ll[split,ki] = hmm.find_events(Dtest)
+			roidict[task][b]['tune_ll'] = tune_ll
+			roidict[task][b]['best_k'] = k_list[np.argmax(np.mean(tune_ll,0))]
+	dd.io.save(nkdir+roi_short+'.h5')
+		
 					
 	
