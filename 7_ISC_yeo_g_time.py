@@ -33,11 +33,13 @@ ps = {key:[] for key in ROIs}
 gall = []
 gt = []
 ISCall = []
+rri=0
 for ri,roi in tqdm.tqdm(enumerate(ROIs)):
-	if roi != 'LH_SomMotB_Aud_1': # TEMPORARY problem with this one...
+	if roi != 'LH_DorsAttnA_SPL_1': # TEMPORARY problem with this one...
 		ISC = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)
 		ISCall.append(hamconv((ISC[0]-np.nanmean(ISC[1:],axis=0))/np.nanstd(ISC[1:],axis=0),ham))
-		rs[roi],ps[roi] = pearsonr(ISCall[ri],ev_conv)
+		rs[roi],ps[roi] = pearsonr(ISCall[rri],ev_conv)
+		rri+=rri
 		#lab = roi+', r = '+str(np.round(r,2)) if p< 0.05 else roi
 		#gt.append(x[np.where(ISCall[ri]<-1)])
 		#ax.plot(x,ISCall[ri],color=colors[ri],label=lab)
