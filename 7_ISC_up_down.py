@@ -73,7 +73,7 @@ for roi in tqdm.tqdm(ROIl):
 	fig = sns.pointplot(x="Age", y="ISC", data=df,markers='+',join=False,color='k',ci='sd',capsize=.1, zorder=100)
 	plt.xticks(rotation=30,ha="right")
 	plt.tight_layout()
-	plt.show()
+	#plt.show()
 	b1mean = np.mean(df.loc[df['Age']==xticks[0]]['ISC'])
 	sig = '*' if nullmean-nullstd>b1mean or nullmean+nullstd<b1mean else ''
 	fig.figure.savefig(figdir+roi_short+sig+'.png')
