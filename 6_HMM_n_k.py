@@ -25,9 +25,10 @@ for roi in tqdm.tqdm(glob.glob(sametimedir+'*h5')):
 	roidict = {t:{b:{} for b in bins} for t in tasks}
 	for ti,task in enumerate(tasks):
 		nTR_ = nTR[ti]
-		roidict[task]['vall'] = dd.io.load(roi,'/'+task+'/vall')
+		taskv = dd.io.load(roi,'/'+task)
+		roidict[task]['vall'] = taskv['vall']
 		for b in bins:
-			roidict[task][b]['D'] = dd.io.load(roi,'/'+task+'/bin_'+str(b)+'/D')
+			roidict[task][b]['D'] = taskv['bin_'+str(b)]['D']
 			tune_ll = np.zeros((nsplit,len(k_list)))
 			for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
 				Dtrain = np.mean(roidict[task][b]['D'][Ls[0]],axis=0).T
@@ -38,7 +39,7 @@ for roi in tqdm.tqdm(glob.glob(sametimedir+'*h5')):
 					_, tune_ll[split,ki] = hmm.find_events(Dtest)
 			roidict[task][b]['tune_ll'] = tune_ll
 			roidict[task][b]['best_k'] = k_list[np.argmax(np.mean(tune_ll,0))]
-	dd.io.save(nkdir+roi_short+'.h5')
+	dd.io.save(nkdir+roi_short+'.h5',roidict)
 		
 					
 	
