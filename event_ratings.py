@@ -160,10 +160,13 @@ if __name__ == "__main__":
 	pvals = pvals*len(pvals) # Bonferroni correction
 	best_t = times[np.argmin(pvals)]
 	r,p = stats.pearsonr(dfpost[dfpost['Time lag [s]']==best_t]['Exact Age'],dfpost[dfpost['Time lag [s]']==best_t]['correlation'])
-	fig,ax=plt.subplots()
-	sns.set_style("darkgrid", {"axes.facecolor": ".9"})
-	sns.regplot(x='Exact Age', y="correlation", data=dfpost[dfpost['Time lag [s]']==best_t]).set_title('Delay = '+str(best_t)+'s\nr = '+str(np.round(r,2))+', p = '+str(np.round(p,2)))
-	fig.savefig(figurepath+'HPC/Age_vs_bump_xcorr_ev_conv')
+	sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
+	fig,ax=plt.subplots(figsize=(7,5))
+	sns.regplot(x='Exact Age', y="correlation", data=dfpost[dfpost['Time lag [s]']==best_t],color=colors_age[3])#.set_title('Delay = '+str(best_t)+'s\nr = '+str(np.round(r,2))+', p = '+str(np.round(p,2)))
+	ax.set_xlabel('Age')
+	ax.set_ylabel('Hippocampus-to-event\ncorrelation')
+	plt.rcParams['axes.xmargin'] = 0
+	fig.savefig(figurepath+'HPC/Age_vs_bump_xcorr_ev_conv.png', bbox_inches='tight', dpi=300)
 	
 	# plot timecourse of xcorr with *'s for significance
 	grey = 211/256
