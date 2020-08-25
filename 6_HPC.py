@@ -111,6 +111,8 @@ for bootidx,bootv in enumerate(bootvs):
 			
 dd.io.save(ISCpath+'HPC.h5',{'D':D,'subla':subla, 'ISC_w_time':ISC_w_time, 'ISC_w':ISC_w, 'ISC_b_time':ISC_b_time, 'ISC_b':ISC_b, 'ISC_g_time':ISC_g_time, 'gdict':gdict})
 
+D, subla, ISC_w_time, ISC_w, ISC_b_time, ISC_b, ISC_g_timoe, gdict = dd.io.load(ISCpath+'HPC.h5',['/D','/subla', '/ISC_w_time', '/ISC_w', '/ISC_b_time', '/ISC_b', '/ISC_g_time', '/gdict'])
+
 # Are within ISCs significantly greater than 0?
 p_within_greater_zero = []
 for b in range(nbinseq):
@@ -431,7 +433,7 @@ plt.savefig(figurepath+'HPC/bump_Event_group.png', bbox_inches='tight')
 
 # bump significance test:
 dfbump[['One Sample t', 'One Sample p', 'Two Sample t', 'Two Sample p', 'One Sample < 0.05', 'Two Sample < 0.05', 'Pre-Event Cummulative Sum', 'Post-Event Cummulative Sum', 'Exact Age']] = pd.DataFrame([[np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]], index=dfbump.index)
-for b in dfbump['Age'].unique():
+for b in tqdm.tqdm(dfbump['Age'].unique()):
 	for e in dfbump['Event'].unique():
 		bedf = dfbump[(dfbump['Age'] == b) & (dfbump['Event'] == e)]
 		subjl = bedf['Subj'].unique()
@@ -449,6 +451,8 @@ for b in dfbump['Age'].unique():
 		dfbump['Two Sample p'][(dfbump['Age'] == b) & (dfbump['Event'] == e)] = p1
 		dfbump['One Sample < 0.05'][(dfbump['Age'] == b) & (dfbump['Event'] == e)] = s1
 		dfbump['Two Sample < 0.05'][(dfbump['Age'] == b) & (dfbump['Event'] == e)] = s2
+		
+dd.io.save(ISCpath+'HPC.h5',{'D':D,'subla':subla, 'ISC_w_time':ISC_w_time, 'ISC_w':ISC_w, 'ISC_b_time':ISC_b_time, 'ISC_b':ISC_b, 'ISC_g_time':ISC_g_time, 'gdict':gdict, 'dfbump':dfbump})
 		
 # ANOVA on cum sum:
 #from statsmodels.stats.anova import AnovaRM
