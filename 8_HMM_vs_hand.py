@@ -21,7 +21,7 @@ nROI = len(ROIl)
 
 nsub = 41
 
-circ = False#True # Doing circular time shift vs phase shuffle for significant correlation
+circ = True#False#True # Doing circular time shift vs phase shuffle for significant correlation
 savefile = HMMpath+'HMM_vs_hand.h5'
 if circ == True: 
 	savefile = savefile[:-3]+'_circ.h5'
@@ -105,7 +105,7 @@ dE_k_age_rs = {}
 dE_k_age_change = {}
 sig_change = {}
 for ri,roi in tqdm.tqdm(enumerate(ROIl)):
-	pval = np.sum(np.mean(dE_k_corr[0,ri,:]) > np.mean(dE_k_corr[1:,ri,:],axis=1))/nPerm1
+	pval = np.sum(np.mean(dE_k_corr[0,ri,:]) < np.mean(dE_k_corr[1:,ri,:],axis=1))/nPerm1
 	if pval < 0.05:
 		sig_corr[roi] = {'r':np.mean(dE_k_corr[0,ri,:]),'p':pval}
 		dE_k_age_rs[roi] = np.zeros((nPerm2+1,nbins))
@@ -124,7 +124,9 @@ for ri,roi in tqdm.tqdm(enumerate(ROIl)):
 				dE_k = np.diff(np.dot(hmm.segments_[b], np.arange(best_k)+1))
 				dE_k_age_rs[roi][p,b],_ = pearsonr(dE_k,ev_conv)
 			dE_k_age_change[roi][p],_ = pearsonr(bins,dE_k_age_rs[roi][p])
-		pval2 = np.sum(abs(dE_k_age_change[roi][0]) > abs(dE_k_age_change[roi][1:]))/nPerm2
+			# shuffle binord:
+			binord = np.random.permutation(binord)
+		pval2 = np.sum(abs(dE_k_age_change[roi][0]) < abs(dE_k_age_change[roi][1:]))/nPerm2
 		if pval2 < 0.05:
 			sig_change[roi] = {'r':dE_k_age_change[roi][0],'p':pval2}
 			
