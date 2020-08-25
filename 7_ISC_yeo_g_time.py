@@ -28,6 +28,8 @@ TPJ_ROIs = ['RH_DefaultA_IPL_1', 'LH_DefaultB_IPL_1', 'LH_SalVentAttnA_ParOper_1
 colors = ['#1b9e77','#d95f02','#7570b3','#e7298a','#66a61e']
 
 #fig,ax = plt.subplots()
+TW = 10 # For circular time shuffle
+nPerm = len(ev_conv)-TW*2
 rs = {key:[] for key in ROIs}
 ps = {key:[] for key in ROIs}
 gall = []
@@ -35,18 +37,38 @@ gt = []
 ISCall = []
 rri=0
 for ri,roi in tqdm.tqdm(enumerate(ROIs)):
-	if roi != 'LH_DorsAttnA_SPL_1': # TEMPORARY problem with this one...
-		ISC = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)
-		ISCall.append(hamconv((ISC[0]-np.nanmean(ISC[1:],axis=0))/np.nanstd(ISC[1:],axis=0),ham))
-		rs[roi],ps[roi] = pearsonr(ISCall[rri],ev_conv)
-		rri+=rri
+	ISC = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)
+	zscoreISC = hamconv((ISC[0]-np.nanmean(ISC[1:], axis=0))/np.nanstd(ISC[1:], axis=0), ham)
+	rperm = np.zeros(nPerm)
+	for p in range(nPerm):
+		rperm[p],_ = pearsonr(zscoreISC,ev_conv)
+		ev_conv = np.concatenate((ev_conv[p+TW:],ev_conv[:p+TW]))
+	rs[roi] = rperm[0]
+	ps[roi] = np.sum(abs(rperm[0])<abs(rperm[1:]))/nPerm
+	if ps[roi] < 0.05:
+		print(roi,rs[roi],ps[roi])
 		#lab = roi+', r = '+str(np.round(r,2)) if p< 0.05 else roi
 		#gt.append(x[np.where(ISCall[ri]<-1)])
 		#ax.plot(x,ISCall[ri],color=colors[ri],label=lab)
 		#gall = np.intersect1d(gall,gt[ri]) if ri > 0 else gt[ri]
 	
 dd.io.save(savef,{'rs':rs,'ps':ps})
-	
+
+# For FLUX poster:
+roi = 'RH_DefaultA_IPL_1'
+ISCt = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)[0]
+fig,ax=plt.subplots(figsize=(10,1))
+ax.plot(x,ISCt,'k')		
+ax.set_xticks(xhun)
+ax.set_xticklabels(xtxt)
+ax.set_xlabel('Time [s]')
+ax.set_ylabel('group ISC difference')
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+plt.tight_layout()
+fig.savefig(figpath+'FLUX_g_diff.png',dpi=300, bbox_inches = "tight")
+
+
 ax.plot(x,ev_conv*-1,'k',alpha=0.1,label='-1*Hand-Labeled Events')
 ax.legend(loc='lower right')	
 for e in event_list:
