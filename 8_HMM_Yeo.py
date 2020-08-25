@@ -10,7 +10,7 @@ import brainiak.eventseg.event
 import matplotlib.pyplot as plt
 from HMM_settings import *
 
-HMMdir = HMMpath+'shuff_5bins_trainall/'#'shuff_5bins_train04/'#'shuff_5bins/'
+HMMdir = HMMpath+'shuff_5bins_train04/'#'shuff_5bins_trainall/'#'shuff_5bins_train04/'#'shuff_5bins/'
 figdirend = HMMdir.split('/')[-2][5:]+'/'
 bins = np.arange(nbinseq)
 nbins = len(bins)
@@ -90,5 +90,37 @@ for roi in tqdm.tqdm(glob.glob(HMMdir+'*.h5')):
 	fig.tight_layout()
 	#plt.show()
 	fig.savefig(figurepath+'HMM/tune_ll_Yeo'+figdirend+roi_short+'.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
+	
+plt.rcParams.update({'font.size': 20})
+# plot age vs ll, only at best k
+for ti,task in enumerate(['DM']):
+	nTR_ = nTR[ti]	
+	for roi in tqdm.tqdm(glob.glob(HMMdir+'*.h5')):
+		roi_short = roi.split('/')[-1][:-3]
+		HMMtask = dd.io.load(roi,'/'+task)
+		nshuff = len([k for k in list(HMMtask.keys()) if 'shuff' in k]) - 1
+		p_ll_ = np.sum(abs(HMMtask['shuff_0']['ll_diff'])<[abs(HMMtask['shuff_'+str(s)]['ll_diff']) for s in range(1,nshuff+1)])/nshuff
+		if p_ll_<0.05:
+			print(roi_short)
+			nullmean = np.mean(HMMtask['tune_ll_perm'][1:])/nTR_
+			nullstd = np.std(HMMtask['tune_ll_perm'][1:])/nTR_
+			fig,ax = plt.subplots()
+			ax.fill_between(np.arange(nbinseq+1)-0.5,
+							nullmean-nullstd, nullmean+nullstd,
+							alpha=0.2, edgecolor='none', facecolor='grey')
+			ax.axes.errorbar(np.arange(len(lgd)),
+						 np.mean(HMMtask['tune_ll_perm'][0],axis=1)/nTR_, 
+						 yerr = np.std(HMMtask['tune_ll_perm'][0],axis=1)/nTR_, 
+						 xerr = None, ls='none',capsize=10, elinewidth=1,fmt='.k',
+						 markeredgewidth=1) 
+			ax.set_xticks(np.arange(len(lgd)))
+			ax.set_xticklabels(lgd,rotation=45, fontsize=20)
+			ax.set_xlabel('Age',labelpad=20, fontsize=20)
+			ax.set_ylabel('Log likelihood\nPer TR',labelpad=20, fontsize=20)
+			plt.show()
+			fig.savefig(figurepath+'HMM/ll_FLUX/'+roi_short+'.png', bbox_inches='tight')
+			
+			
+		
 	
 	
