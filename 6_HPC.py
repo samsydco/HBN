@@ -111,7 +111,7 @@ for bootidx,bootv in enumerate(bootvs):
 			
 dd.io.save(ISCpath+'HPC.h5',{'D':D,'subla':subla, 'ISC_w_time':ISC_w_time, 'ISC_w':ISC_w, 'ISC_b_time':ISC_b_time, 'ISC_b':ISC_b, 'ISC_g_time':ISC_g_time, 'gdict':gdict})
 
-D, subla, ISC_w_time, ISC_w, ISC_b_time, ISC_b, ISC_g_timoe, gdict = dd.io.load(ISCpath+'HPC.h5',['/D','/subla', '/ISC_w_time', '/ISC_w', '/ISC_b_time', '/ISC_b', '/ISC_g_time', '/gdict'])
+D, subla, ISC_w_time, ISC_w, ISC_b_time, ISC_b, ISC_g_timoe, gdict, dfbump = dd.io.load(ISCpath+'HPC.h5',['/D','/subla', '/ISC_w_time', '/ISC_w', '/ISC_b_time', '/ISC_b', '/ISC_g_time', '/gdict','/dfbump'])
 
 # Are within ISCs significantly greater than 0?
 p_within_greater_zero = []
