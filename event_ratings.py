@@ -139,7 +139,7 @@ if __name__ == "__main__":
 	D,ISC_w_time,ISC_g_time = dd.io.load(ISCpath+'HPC.h5',['/D','/ISC_w_time', '/ISC_g_time'])
 	
 	bumplagdict = {'Age':[],'correlation':[],'Time lag [s]':[],'Subj':[],'Exact Age':[]}
-	for b in range(nbinseq-1):
+	for b in range(nbinseq):
 		for subj,bumps in D[b].items():
 			xcorrt = xcorr(bumps,ev_conv)#np.correlate(ev_conv,bumps,"full")#
 			bumplagdict['Subj'].extend([subj]*len(xcorrx))
@@ -166,13 +166,18 @@ if __name__ == "__main__":
 	fig.savefig(figurepath+'HPC/Age_vs_bump_xcorr_ev_conv')
 	
 	# plot timecourse of xcorr with *'s for significance
-	sns.set(font_scale = 1)
+	grey = 211/256
+	sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
 	sns.set_palette(colors_age)
-	fig,ax = plt.subplots(1,1,figsize=(5,5))
+	fig,ax = plt.subplots(1,1,figsize=(7,7))
 	g = sns.lineplot(x='Time lag [s]', y='correlation', hue='Age', ax=ax, data=dfbumplag, ci=95)
-	ax.plot(times[pvals<0.05],[0.090]*len(times[pvals<0.05]),'k*',markersize=8)
-	ax.legend(loc='center', bbox_to_anchor=(0.5, -0.3))
-	plt.savefig(figurepath+'HPC/bump_xcorr_ev_conv.png', bbox_inches='tight')
+	ax.plot(times[pvals<0.05],[0.090]*len(times[pvals<0.05]),'k*',markersize=15)
+	ax.set_xticks([-20,-10,0,10,20])
+	ax.set_xlabel('Time (seconds)')
+	ax.set_ylabel('Hippocampus-to-event\ncorrelation')
+	ax.legend(loc='center', bbox_to_anchor=(0.5, -0.5))
+	ax.margins(x=0)
+	plt.savefig(figurepath+'HPC/bump_xcorr_ev_conv.png', bbox_inches='tight',dpi=300)
 		
 	
 	
