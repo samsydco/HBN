@@ -104,10 +104,10 @@ for i,s in enumerate(['Male','Female']):
 	goodhist = sns.distplot(gooddf.loc[gooddf['Sex'] == i]['Age'], kde=False,label=s)
 goodhist.legend()
 goodhist.set_ylabel("Frequency")
-goodhist.axvline(x=med,color=[0.5,0.5,0.5],linestyle='--')
+#goodhist.axvline(x=med,color=[0.5,0.5,0.5],linestyle='--')
 plt.tight_layout()
 plt.show()
-goodhist.get_figure().savefig(figurepath+'SfN_2019/Age_hist.png')
+goodhist.get_figure().savefig(figurepath+'FLUX_2020/Age_hist.png')
 
 df['Total'][df['Total']>60].count()
 
