@@ -30,6 +30,7 @@ colors = ['#1b9e77','#d95f02','#7570b3','#e7298a','#66a61e']
 #fig,ax = plt.subplots()
 TW = 10 # For circular time shuffle
 nPerm = len(ev_conv)-TW*2
+rperm = {key:np.zeros(nPerm) for key in ROIs}
 rs = {key:[] for key in ROIs}
 ps = {key:[] for key in ROIs}
 gall = []
@@ -38,24 +39,25 @@ ISCall = []
 rri=0
 for ri,roi in tqdm.tqdm(enumerate(ROIs)):
 	ISC = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)
-	zscoreISC = hamconv((ISC[0]-np.nanmean(ISC[1:], axis=0))/np.nanstd(ISC[1:], axis=0), ham)
-	rperm = np.zeros(nPerm)
+	zscoreISC = (ISC[0]-np.nanmean(ISC[1:], axis=0))/np.nanstd(ISC[1:], axis=0)
 	for p in range(nPerm):
-		rperm[p],_ = pearsonr(zscoreISC,ev_conv)
+		rperm[roi][p],_ = pearsonr(zscoreISC,ev_conv)
 		ev_conv = np.concatenate((ev_conv[p+TW:],ev_conv[:p+TW]))
-	rs[roi] = rperm[0]
-	ps[roi] = np.sum(abs(rperm[0])<abs(rperm[1:]))/nPerm
+	rs[roi] = rperm[roi][0]
+	ps[roi] = np.sum(abs(rperm[roi][0])<abs(rperm[roi][1:]))/nPerm
 	if ps[roi] < 0.05:
-		print(roi,rs[roi],ps[roi])
+		print(roi,np.round(rs[roi],2),np.round(ps[roi],2))
 		#lab = roi+', r = '+str(np.round(r,2)) if p< 0.05 else roi
 		#gt.append(x[np.where(ISCall[ri]<-1)])
 		#ax.plot(x,ISCall[ri],color=colors[ri],label=lab)
 		#gall = np.intersect1d(gall,gt[ri]) if ri > 0 else gt[ri]
 	
-dd.io.save(savef,{'rs':rs,'ps':ps})
+dd.io.save(savef,{'rperm':rperm,'rs':rs,'ps':ps})
 
 # For FLUX poster:
 roi = 'RH_DefaultA_IPL_1'
+ISC = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)
+zscoreISC = (ISC[0]-np.nanmean(ISC[1:], axis=0))/np.nanstd(ISC[1:], axis=0)
 ISCt = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)[0]
 fig,ax=plt.subplots(figsize=(10,1))
 ax.plot(x,ISCt,'k')		
