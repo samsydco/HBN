@@ -68,7 +68,7 @@ for roi in tqdm.tqdm(glob.glob(savedir+'*.h5')):
 		e_p,nshuff_e = p_calc(taskv['ISC_e'],'e')
 		g_p,nshuff_g = p_calc(taskv['ISC_g'],'g')
 		# e_diff test:
-		if e_p < 0.05:
+		if e_p < 0.05 and nshuff_e<nshuff2:
 			print('e_diff')
 			D,Age,Sex = load_D(roil,task,bins)
 			nsub_,n_vox,n_time = D.shape
@@ -79,7 +79,7 @@ for roi in tqdm.tqdm(glob.glob(savedir+'*.h5')):
 				subh = even_out(Age,Sex)
 				ISC_w,_ = ISC_w_calc(D,n_vox,n_time,nsub,subh)
 				roidict[task]['ISC_e'][shuff] = ISC_w[0] - ISC_w[1]
-		if g_p < 0.05:
+		if g_p < 0.05 and nshuff_g<nshuff2:
 			print('g_diff')
 			D,Age,Sex = load_D(roil,task,bins)
 			nsub_,n_vox,n_time = D.shape
