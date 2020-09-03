@@ -19,26 +19,36 @@ y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit))+1)
 kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
 bins = [0,4]
 nbins = len(bins)
+nshuff=1000
 
 for roi in tqdm.tqdm(glob.glob(sametimedir+'*h5')):
 	roi_short = roi.split('/')[-1][:-3]
-	roidict = {t:{b:{} for b in bins} for t in tasks}
+	roidict = {t:{str(b):{} for b in bins} for t in tasks}
 	for ti,task in enumerate(tasks):
 		nTR_ = nTR[ti]
 		taskv = dd.io.load(roi,'/'+task)
 		roidict[task]['vall'] = taskv['vall']
 		for b in bins:
 			roidict[task][b]['D'] = taskv['bin_'+str(b)]['D']
-			tune_ll = np.zeros((nsplit,len(k_list)))
-			for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
-				Dtrain = np.mean(roidict[task][b]['D'][Ls[0]],axis=0).T
-				Dtest  = np.mean(roidict[task][b]['D'][Ls[1]],axis=0).T
-				for ki,k in enumerate(k_list):
-					hmm = brainiak.eventseg.event.EventSegment(n_events=k)
-					hmm.fit(Dtrain)
-					_, tune_ll[split,ki] = hmm.find_events(Dtest)
+		Dall = np.concatenate((roidict[task][0]['D'],roidict[task][4]['D']),axis=0)
+		for b in bins:
+			best_k = np.zeros(nshuff)
+			tune_ll = np.zeros((nshuff+1,nsplit,len(k_list)))
+			subl = np.concatenate([np.zeros(nsub),4*np.ones(nsub)])
+			for shuff in nshuff+1:
+				D = Dall[np.where(subl==b)[0]]
+				for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
+					Dtrain = np.mean(D[Ls[0]],axis=0).T
+					Dtest  = np.mean(D[Ls[1]],axis=0).T
+					for ki,k in enumerate(k_list):
+						hmm = brainiak.eventseg.event.EventSegment(n_events=k)
+						hmm.fit(Dtrain)
+						_, tune_ll[shuff,split,ki] = hmm.find_events(Dtest)
+				# RANDOMIZE
+				subl = np.random.permutation(subl)
+				best_k[shuff] = k_list[np.argmax(np.mean(tune_ll[shuff],0))]
 			roidict[task][b]['tune_ll'] = tune_ll
-			roidict[task][b]['best_k'] = k_list[np.argmax(np.mean(tune_ll,0))]
+			roidict[task][b]['best_k'] = best_k
 	dd.io.save(nkdir+roi_short+'.h5',roidict)
 	
 task='DM'
@@ -50,7 +60,7 @@ for roi in tqdm.tqdm(glob.glob(nkdir+'*.h5')):
 		roidict[str(b)]['roi'].append(roi_short)
 		roidict[str(b)]['k'].append(data[b]['best_k'])
 		kidx = np.where(k_list==data[b]['best_k'])[0][0]
-		roidict[str(b)]['ll'].append(np.mean(data[b]['tune_ll'][:,kidx]))
+		roidict[str(b)]['ll'].append(np.mean(data[b]['tune_ll'][0,:,kidx]))
 
 import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
