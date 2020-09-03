@@ -95,15 +95,15 @@ for key in ['goodsubs','badsubs']:
 	fig = gbhist.get_figure()
 	fig.savefig(figurepath+key+"_Pheno_hist.png")
 
-from ISC_settings import agel
+from ISC_settings import agel, eqbins
 med = np.median(agel)
 gooddf = df.loc[df['goodbad'] == 'goodsubs']
 import seaborn as sns
 plt.rcParams.update({'font.size': 15})
 for i,s in enumerate(['Male','Female']):
-	goodhist = sns.distplot(gooddf.loc[gooddf['Sex'] == i]['Age'], kde=False,label=s)
+	goodhist = sns.distplot(gooddf.loc[gooddf['Sex'] == i]['Age'],bins=eqbins, kde=False,label=s)
 goodhist.legend()
-goodhist.set_ylabel("Frequency")
+goodhist.set_ylabel("Count")
 #goodhist.axvline(x=med,color=[0.5,0.5,0.5],linestyle='--')
 plt.tight_layout()
 plt.show()
