@@ -21,13 +21,13 @@ nROI = len(ROIl)
 
 nsub = 41
 
-circ = True#False#True # Doing circular time shift vs phase shuffle for significant correlation
+circ = False#False#True # Doing circular time shift vs phase shuffle for significant correlation
 savefile = HMMpath+'HMM_vs_hand.h5'
 if circ == True: 
 	savefile = savefile[:-3]+'_circ.h5'
 	print('Circular Time Shuffle')
 TW = 10
-nPerm = 1000 if circ == False else len(ev_conv_perm)-TW*2
+nPerm = 2000 if circ == False else len(ev_conv_perm)-TW*2
 	
 # shuffle phase:
 def phase_shuff(signal):

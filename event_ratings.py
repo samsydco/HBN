@@ -151,6 +151,7 @@ if __name__ == "__main__":
 	dfbumplag = dfbumplag[abs(dfbumplag['Time lag [s]'])<20]
 	
 	# Which time points post-0 are significantly different from zero?
+	grey = 211/256
 	dfpost = dfbumplag[dfbumplag['Time lag [s]']>=0]
 	times = dfpost['Time lag [s]'].unique()[1:]
 	tvals = np.zeros(len(times))
@@ -169,7 +170,6 @@ if __name__ == "__main__":
 	fig.savefig(figurepath+'HPC/Age_vs_bump_xcorr_ev_conv.png', bbox_inches='tight', dpi=300)
 	
 	# plot timecourse of xcorr with *'s for significance
-	grey = 211/256
 	sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
 	sns.set_palette(colors_age)
 	fig,ax = plt.subplots(1,1,figsize=(7,7))

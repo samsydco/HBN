@@ -6,6 +6,7 @@
 import tqdm
 import matplotlib.pyplot as plt
 from HMM_settings import *
+from event_ratings import counts,hrf
 from scipy.stats import pearsonr
 
 figpath = figurepath+'g_diff_time/'
@@ -23,13 +24,29 @@ def hamconv(signal,ham):
 	output = np.convolve(signal,ham,'same')
 	return output
 
+# shuffle phase:
+def phase_shuff(signal):
+	# Modified from brainiak.utils.utils.phase_randomize
+	prng = np.random.RandomState(None)
+	# for signals with odd number of time points only:
+	pos_freq = np.arange(1, (signal.shape[0] - 1) // 2 + 1)
+	neg_freq = np.arange(signal.shape[0] - 1, (signal.shape[0] - 1) // 2, -1)
+	phase_shifts = (prng.rand(len(pos_freq)) * 2 * np.math.pi)
+	fft_data = fft(signal)
+	# Shift pos and neg frequencies symmetrically, to keep signal real
+	fft_data[pos_freq] *= np.exp(1j * phase_shifts)
+	fft_data[neg_freq] *= np.exp(-1j * phase_shifts)
+	# Inverse FFT to put data back in time domain
+	signal_shuff = np.real(ifft(fft_data))
+	return signal_shuff
+
 ROIs = [r.split('/')[-1][:-3] for r in glob.glob(savedir+'*')]
 TPJ_ROIs = ['RH_DefaultA_IPL_1', 'LH_DefaultB_IPL_1', 'LH_SalVentAttnA_ParOper_1', 'RH_TempPar_3']#'RH_SalVentAttnA_ParOper_1', 
 colors = ['#1b9e77','#d95f02','#7570b3','#e7298a','#66a61e']
 
 #fig,ax = plt.subplots()
 TW = 10 # For circular time shuffle
-nPerm = len(ev_conv)-TW*2
+nPerm = 2000#len(ev_conv)-TW*2
 rperm = {key:np.zeros(nPerm) for key in ROIs}
 rs = {key:[] for key in ROIs}
 ps = {key:[] for key in ROIs}
@@ -41,8 +58,10 @@ for ri,roi in tqdm.tqdm(enumerate(ROIs)):
 	ISC = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)
 	zscoreISC = (ISC[0]-np.nanmean(ISC[1:], axis=0))/np.nanstd(ISC[1:], axis=0)
 	for p in range(nPerm):
+		ev_conv = np.convolve(counts,hrf,'same')
 		rperm[roi][p],_ = pearsonr(zscoreISC,ev_conv)
-		ev_conv = np.concatenate((ev_conv[p+TW:],ev_conv[:p+TW]))
+		counts = np.random.permutation(counts)
+		#ev_conv = np.concatenate((ev_conv[p+TW:],ev_conv[:p+TW]))
 	rs[roi] = rperm[roi][0]
 	ps[roi] = np.sum(abs(rperm[roi][0])<abs(rperm[roi][1:]))/nPerm
 	if ps[roi] < 0.05:
