@@ -93,14 +93,7 @@ for lab in ['_lab','']:
 		ax.scatter(roidict['0'][val], roidict['4'][val])
 		fig.savefig(figurepath+'n_k/'+val+lab+'.png')
 		
-		
-			
-			
-			or roidict['4'][val][i]*1.25>roidict['0'][val][i]:
-			
-		
-	fig.savefig(figurepath+'n_k/'+val+'.png')
-		
+
 		
 	
 		
