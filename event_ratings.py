@@ -133,54 +133,57 @@ if __name__ == "__main__":
 	from scipy import stats
 	from statsmodels.stats.multitest import multipletests
 	colors_age = ['#edf8fb','#b3cde3','#8c96c6','#8856a7','#810f7c']
+	grey = 211/256
 	xticks = [str(int(round(eqbins[i])))+\
 		  ' - '+str(int(round(eqbins[i+1])))+' y.o.' for i in range(len(eqbins)-1)]
 	xcorrx = np.concatenate([np.arange(-nTR+1,0)*TR,np.arange(nTR)*TR])
-	D,ISC_w_time,ISC_g_time = dd.io.load(ISCpath+'HPC.h5',['/D','/ISC_w_time', '/ISC_g_time'])
+	for HPC in ['HPC','aHPC','pHPC']:
+		D,ISC_w_time,ISC_g_time = dd.io.load(ISCpath+HPC+'.h5',['/D','/ISC_w_time', '/ISC_g_time'])
 	
-	bumplagdict = {'Age':[],'correlation':[],'Time lag [s]':[],'Subj':[],'Exact Age':[]}
-	for b in range(nbinseq):
-		for subj,bumps in D[b].items():
-			xcorrt = xcorr(bumps,ev_conv)#np.correlate(ev_conv,bumps,"full")#
-			bumplagdict['Subj'].extend([subj]*len(xcorrx))
-			bumplagdict['Age'].extend([xticks[b]]*len(xcorrx))
-			bumplagdict['Exact Age'].extend([Phenodf['Age'][Phenodf['EID'] == subj.split('/')[-1].split('.')[0].split('-')[1]].values[0]]*len(xcorrx))
-			bumplagdict['correlation'].extend(xcorrt)
-			bumplagdict['Time lag [s]'].extend(xcorrx)
-	dfbumplag = pd.DataFrame(data=bumplagdict)
-	dfbumplag = dfbumplag[abs(dfbumplag['Time lag [s]'])<20]
+		bumplagdict = {'Age':[],'correlation':[],'Time lag [s]':[],'Subj':[],'Exact Age':[]}
+		for b in range(nbinseq):
+			for subj,bumps in D[b].items():
+				if np.sum(np.isnan(bumps))!=nTR:
+					xcorrt = xcorr(bumps,ev_conv)#np.correlate(ev_conv,bumps,"full")#
+					bumplagdict['Subj'].extend([subj]*len(xcorrx))
+					bumplagdict['Age'].extend([xticks[b]]*len(xcorrx))
+					bumplagdict['Exact Age'].extend([Phenodf['Age'][Phenodf['EID'] == subj.split('/')[-1].split('.')[0].split('-')[1]].values[0]]*len(xcorrx))
+					bumplagdict['correlation'].extend(xcorrt)
+					bumplagdict['Time lag [s]'].extend(xcorrx)
+		dfbumplag = pd.DataFrame(data=bumplagdict)
+		dfbumplag = dfbumplag[abs(dfbumplag['Time lag [s]'])<20]
 	
-	# Which time points post-0 are significantly different from zero?
-	grey = 211/256
-	dfpost = dfbumplag[dfbumplag['Time lag [s]']>=0]
-	times = dfpost['Time lag [s]'].unique()[1:]
-	tvals = np.zeros(len(times))
-	pvals = np.zeros(len(times))
-	for ti,tp in enumerate(times):
-		tvals[ti],pvals[ti] = stats.ttest_1samp(dfpost[dfpost['Time lag [s]']==tp]['correlation'], 0)#stats.ttest_rel(dfpost[dfpost['Time lag [s]']==tp]['correlation'],dfpost[dfpost['Time lag [s]']==0.]['correlation'])
-	pvals = pvals*len(pvals) # Bonferroni correction
-	best_t = times[np.argmin(pvals)]
-	r,p = stats.pearsonr(dfpost[dfpost['Time lag [s]']==best_t]['Exact Age'],dfpost[dfpost['Time lag [s]']==best_t]['correlation'])
-	sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
-	fig,ax=plt.subplots(figsize=(7,5))
-	sns.regplot(x='Exact Age', y="correlation", data=dfpost[dfpost['Time lag [s]']==best_t],color=colors_age[3])#.set_title('Delay = '+str(best_t)+'s\nr = '+str(np.round(r,2))+', p = '+str(np.round(p,2)))
-	ax.set_xlabel('Age')
-	ax.set_ylabel('Hippocampus-to-event\ncorrelation')
-	plt.rcParams['axes.xmargin'] = 0
-	fig.savefig(figurepath+'HPC/Age_vs_bump_xcorr_ev_conv.png', bbox_inches='tight', dpi=300)
+		# Which time points post-0 are significantly different from zero?
+		dfpost = dfbumplag[dfbumplag['Time lag [s]']>=0]
+		times = dfpost['Time lag [s]'].unique()[1:]
+		tvals = np.zeros(len(times))
+		pvals = np.zeros(len(times))
+		for ti,tp in enumerate(times):
+			tvals[ti],pvals[ti] = stats.ttest_1samp(dfpost[dfpost['Time lag [s]']==tp]['correlation'], 0)#stats.ttest_rel(dfpost[dfpost['Time lag [s]']==tp]['correlation'],dfpost[dfpost['Time lag [s]']==0.]['correlation'])
+		pvals = pvals*len(pvals) # Bonferroni correction
+		best_t = times[np.argmin(pvals)]
+		r,p = stats.pearsonr(dfpost[dfpost['Time lag [s]']==best_t]['Exact Age'],dfpost[dfpost['Time lag [s]']==best_t]['correlation'])
+		sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
+		fig,ax=plt.subplots(figsize=(7,5))
+		sns.regplot(x='Exact Age', y="correlation", data=dfpost[dfpost['Time lag [s]']==best_t],color=colors_age[3])#.set_title('Delay = '+str(best_t)+'s\nr = '+str(np.round(r,2))+', p = '+str(np.round(p,2)))
+		ax.set_xlabel('Age')
+		ax.set_ylabel('Hippocampus-to-event\ncorrelation')
+		plt.rcParams['axes.xmargin'] = 0
+		print(HPC,', r = '+str(np.round(r,2)),', p = '+str(np.round(p,2)))
+		fig.savefig(figurepath+'HPC/'+HPC+'_Age_vs_bump_xcorr_ev_conv.png', bbox_inches='tight', dpi=300)
 	
-	# plot timecourse of xcorr with *'s for significance
-	sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
-	sns.set_palette(colors_age)
-	fig,ax = plt.subplots(1,1,figsize=(7,7))
-	g = sns.lineplot(x='Time lag [s]', y='correlation', hue='Age', ax=ax, data=dfbumplag, ci=95)
-	ax.plot(times[pvals<0.05],[0.090]*len(times[pvals<0.05]),'k*',markersize=15)
-	ax.set_xticks([-20,-10,0,10,20])
-	ax.set_xlabel('Time (seconds)')
-	ax.set_ylabel('Hippocampus-to-event\ncorrelation')
-	ax.legend(loc='center', bbox_to_anchor=(0.5, -0.5))
-	ax.margins(x=0)
-	plt.savefig(figurepath+'HPC/bump_xcorr_ev_conv.png', bbox_inches='tight',dpi=300)
+		# plot timecourse of xcorr with *'s for significance
+		sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
+		sns.set_palette(colors_age)
+		fig,ax = plt.subplots(1,1,figsize=(7,7))
+		g = sns.lineplot(x='Time lag [s]', y='correlation', hue='Age', ax=ax, data=dfbumplag, ci=95)
+		ax.plot(times[pvals<0.05],[0.090]*len(times[pvals<0.05]),'k*',markersize=15)
+		ax.set_xticks([-20,-10,0,10,20])
+		ax.set_xlabel('Time (seconds)')
+		ax.set_ylabel('Hippocampus-to-event\ncorrelation')
+		ax.legend(loc='center', bbox_to_anchor=(0.5, -0.5))
+		ax.margins(x=0)
+		plt.savefig(figurepath+'HPC/'+HPC+'_bump_xcorr_ev_conv.png', bbox_inches='tight',dpi=300)
 		
 	
 	
