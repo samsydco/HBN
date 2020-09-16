@@ -11,11 +11,16 @@ from settings import *
 
 subs = glob.glob('%ssub*.html'%(fmripreppath))
 subs = [s.replace('.html', '').replace(fmripreppath, '') for s in subs]
-subs = [sub for sub in subs if not os.path.isfile(hpcprepath + sub + '.h5') and sub not in bad_sub_dict]
+subs = [sub for sub in subs if sub not in bad_sub_dict]
+#subs = [sub for sub in subs if not os.path.isfile(hpcprepath + sub + '.h5') and sub not in bad_sub_dict]
 
 dpath = '_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz'
 mask_path = '_space-MNI152NLin2009cAsym_desc-aseg_dseg.nii.gz'
 conf_path = '_desc-confounds_regressors.tsv'
+
+psplit = 45 # voxels less then 45 are in post HPC (-21mm and less in MNI)
+asplit = 46 # voxels greater then 45 are in post HPC (-20mm and greater in MNI)
+# a/p split based on: http://www.dpmlab.org/papers/ENEURO.0178-16.2016.full.pdf
 
 for sub in subs:
 	print('Processing subject ', sub)
@@ -23,9 +28,15 @@ for sub in subs:
 		print('movie ', task)
 		fpath = fmripreppath+sub+'/func/'+sub+'_task-movie'+task
 		nii = nib.load(fpath+dpath).get_data()
-		mask = nib.load(fpath+mask_path).get_data()
+		mask = nib.load(fpath+mask_path)
+		aff = mask.affine
+		mask = mask.get_data()
 		mask = np.logical_or(mask == 17, mask == 53)
+		maskpost = np.concatenate([mask[:,:psplit,:],np.zeros(mask[:,psplit:,:].shape,dtype=bool)],axis=1)
+		maskant = np.concatenate([mask[:,asplit:,:],np.zeros(mask[:,:asplit,:].shape,dtype=bool)],axis=1)
 		hipp = nii[mask]
+		phipp = nii[maskpost]
+		ahipp = nii[maskant]
 
 		# Use regressors for:
 		# -CSF
@@ -53,10 +64,14 @@ for sub in subs:
 
 		print('      Cleaning and zscoring')
 		regr = linear_model.LinearRegression()
-		regr.fit(reg, hipp.T)
-		hipp = hipp - np.dot(regr.coef_, reg.T) - regr.intercept_[:, np.newaxis]
-		hipp = stats.zscore(hipp, axis=1)
+		rawhipp = {'HPC':hipp,'aHPC':ahipp,'pHPC':phipp}
+		prohipp = {}
+		for k,v in rawhipp.items():
+			regr.fit(reg, v.T)
+			newv = v - np.dot(regr.coef_, reg.T) - regr.intercept_[:, np.newaxis]
+			prohipp[k] = stats.zscore(newv, axis=1)
 		with h5py.File(os.path.join(hpcprepath + sub + '.h5')) as hf:
 			grp = hf.create_group(task)
-			grp.create_dataset('HPC', data=hipp)
+			for k,v in prohipp.items():
+				grp.create_dataset(k, data=v)
 			grp.create_dataset('reg',data=reg)
