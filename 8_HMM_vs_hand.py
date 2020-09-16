@@ -94,7 +94,7 @@ for ri,roi in tqdm.tqdm(enumerate(ROIl)):
 		event_bounds[roi][b] = np.where(np.diff(np.argmax(hmm.segments_[b], axis = 1)))[0]
 		matchz_mat[ri,b] = match_z(event_bounds[roi][b],event_list,nTR)
 
-dd.io.save(savefile,{'event_bounds':event_bounds, 'matchz_mat':matchz_mat, 'dE_k_corr':dE_k_corr, 'dE_k_p':dE_k_p, 'dE_k':dE_k})
+dd.io.save(savefile,{'ROIl':ROIl,'event_bounds':event_bounds, 'matchz_mat':matchz_mat, 'dE_k_corr':dE_k_corr, 'dE_k_p':dE_k_p, 'dE_k':dE_k})
 
 event_bounds, matchz_mat, dE_k_corr, dE_k_p=dd.io.load(savefile,['/event_bounds', '/matchz_mat', '/dE_k_corr', '/dE_k_p'])
 # which ROIs have significant correlation with ev_conv?
@@ -130,8 +130,10 @@ for ri,roi in tqdm.tqdm(enumerate(ROIl)):
 		if pval2 < 0.05:
 			sig_change[roi] = {'r':dE_k_age_change[roi][0],'p':pval2}
 			
-dd.io.save(savefile,{'event_bounds':event_bounds, 'matchz_mat':matchz_mat, 'dE_k_corr':dE_k_corr, 'dE_k_p':dE_k_p, 'sig_corr':sig_corr, 'dE_k_age_rs':dE_k_age_rs, 'dE_k_age_change':dE_k_age_change, 'sig_change':sig_change})
+dd.io.save(savefile,{'ROIl':ROIl,'event_bounds':event_bounds, 'matchz_mat':matchz_mat, 'dE_k_corr':dE_k_corr, 'dE_k_p':dE_k_p, 'sig_corr':sig_corr, 'dE_k_age_rs':dE_k_age_rs, 'dE_k_age_change':dE_k_age_change, 'sig_change':sig_change})
 	
 event_bounds, matchz_mat, dE_k_corr, dE_k_p, sig_corr, dE_k_age_rs, dE_k_age_change, sig_change = dd.io.load(savefile,['/event_bounds', '/matchz_mat', '/dE_k_corr', '/dE_k_p', '/sig_corr', '/dE_k_age_rs', '/dE_k_age_change', '/sig_change'])
 #corrmean = np.mean(dE_k_corr,axis=1)
+
+
 
