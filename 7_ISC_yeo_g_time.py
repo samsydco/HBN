@@ -6,8 +6,10 @@
 import tqdm
 import matplotlib.pyplot as plt
 from HMM_settings import *
+from scipy.fftpack import fft,ifft
 from event_ratings import counts,hrf
 from scipy.stats import pearsonr
+ev_conv_perm=ev_conv
 
 figpath = figurepath+'g_diff_time/'
 savedir = ISCpath+'shuff_Yeo/'
@@ -30,7 +32,7 @@ def phase_shuff(signal):
 	prng = np.random.RandomState(None)
 	# for signals with odd number of time points only:
 	pos_freq = np.arange(1, (signal.shape[0] - 1) // 2 + 1)
-	neg_freq = np.arange(signal.shape[0] - 1, (signal.shape[0] - 1) // 2, -1)
+	neg_freq = np.arange(signal.shape[0] - 1, signal.shape[0] // 2, -1)
 	phase_shifts = (prng.rand(len(pos_freq)) * 2 * np.math.pi)
 	fft_data = fft(signal)
 	# Shift pos and neg frequencies symmetrically, to keep signal real
@@ -46,50 +48,53 @@ colors = ['#1b9e77','#d95f02','#7570b3','#e7298a','#66a61e']
 
 #fig,ax = plt.subplots()
 TW = 10 # For circular time shuffle
-nPerm = 2000#len(ev_conv)-TW*2
-rperm = {key:np.zeros(nPerm) for key in ROIs}
-rs = {key:[] for key in ROIs}
-ps = {key:[] for key in ROIs}
-gall = []
-gt = []
-ISCall = []
-rri=0
+testdict = {key:{key:{key:{key:[] for key in ['rperm','rs','ps']} for key in ['ISC','zscore']} for key in ROIs} for key in ['permcount','circ','phase']}
 for ri,roi in tqdm.tqdm(enumerate(ROIs)):
 	ISC = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)
 	zscoreISC = (ISC[0]-np.nanmean(ISC[1:], axis=0))/np.nanstd(ISC[1:], axis=0)
-	for p in range(nPerm):
-		ev_conv = np.convolve(counts,hrf,'same')
-		rperm[roi][p],_ = pearsonr(zscoreISC,ev_conv)
-		counts = np.random.permutation(counts)
-		#ev_conv = np.concatenate((ev_conv[p+TW:],ev_conv[:p+TW]))
-	rs[roi] = rperm[roi][0]
-	ps[roi] = np.sum(abs(rperm[roi][0])<abs(rperm[roi][1:]))/nPerm
-	if ps[roi] < 0.05:
-		print(roi,np.round(rs[roi],2),np.round(ps[roi],2))
-		#lab = roi+', r = '+str(np.round(r,2)) if p< 0.05 else roi
-		#gt.append(x[np.where(ISCall[ri]<-1)])
-		#ax.plot(x,ISCall[ri],color=colors[ri],label=lab)
-		#gall = np.intersect1d(gall,gt[ri]) if ri > 0 else gt[ri]
+	for test in testdict.keys():
+		ev_conv=ev_conv_perm
+		nPerm=2000 if test!='circ' else len(ev_conv)-TW*2
+		for p in range(nPerm+1):
+			rperm,_ = pearsonr(zscoreISC,ev_conv)
+			testdict[test][roi]['zscore']['rperm'].append(rperm)
+			rperm,_ = pearsonr(ISC[0],ev_conv)
+			testdict[test][roi]['ISC']['rperm'].append(rperm)
+			if test=='permcount': 
+				counts = np.random.permutation(counts)
+				ev_conv = np.convolve(counts,hrf,'same')
+			if test=='circ': ev_conv = np.concatenate((ev_conv[p+TW:],ev_conv[:p+TW]))
+			if test == 'phase': ev_conv = phase_shuff(ev_conv)
+		for comp in ['ISC','zscore']:
+			testdict[test][roi][comp]['rs'] = testdict[test][roi][comp]['rperm'][0]
+			testdict[test][roi][comp]['ps'] = np.sum(abs(testdict[test][roi][comp]['rperm'][0])<abs(np.array(testdict[test][roi][comp]['rperm'][1:])))/nPerm
+		#if testdict[test][roi]['ps'] < 0.05:
+		#	print(test,roi,np.round(testdict[test][roi]['rs'],2),\
+		#		  np.round(testdict[test][roi]['ps'],2))
 	
-dd.io.save(savef,{'rperm':rperm,'rs':rs,'ps':ps})
+dd.io.save(savef,testdict)
 
 # For FLUX poster:
-roi = 'RH_DefaultA_IPL_1'
-ISC = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)
-zscoreISC = (ISC[0]-np.nanmean(ISC[1:], axis=0))/np.nanstd(ISC[1:], axis=0)
-ISCt = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)[0]
-fig,ax=plt.subplots(figsize=(10,1))
-ax.plot(x,ISCt,'k')		
-ax.set_xticks(xhun)
-ax.set_xticklabels(xtxt)
-ax.set_xlabel('Time [s]')
-ax.set_ylabel('group ISC difference')
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-plt.tight_layout()
-fig.savefig(figpath+'FLUX_g_diff.png',dpi=300, bbox_inches = "tight")
+for roi in ['LH_DorsAttnB_PostC_3','RH_DefaultA_IPL_1']:
+	ISC = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)
+	zscoreISC = (ISC[0]-np.nanmean(ISC[1:], axis=0))/np.nanstd(ISC[1:], axis=0)
+	ISCt = np.nanmean(dd.io.load(glob.glob(savedir+roi+'*')[0], '/'+task+'/ISC_g_time'), axis=1)[0]
+	fig,ax=plt.subplots(figsize=(10,1))
+	#ax.plot(x,zscoreISC,'k')
+	ax.plot(x,ISCt,'k')	
+	#ax2 = ax.twinx()
+	#ax2.plot(x,ev_conv,'k--',alpha=0.5)
+	#ax2.set_ylabel('Event Confidence')
+	ax.set_xticks(xhun)
+	ax.set_xticklabels(xtxt)
+	ax.set_xlabel('Time [s]')
+	ax.set_ylabel('group ISC difference')
+	ax.spines['top'].set_visible(False)
+	ax.spines['right'].set_visible(False)
+	plt.tight_layout()
+	fig.savefig(figpath+roi+'_g_diff.png',dpi=300, bbox_inches = "tight")
 
-
+'''
 ax.plot(x,ev_conv*-1,'k',alpha=0.1,label='-1*Hand-Labeled Events')
 ax.legend(loc='lower right')	
 for e in event_list:
@@ -117,3 +122,5 @@ ax.set_xlabel('Time [s]')
 ax.set_ylabel('z-scored group ISC difference')
 ax.set_title('TPJ vs ev_conv r = '+str(np.round(r,2))+', p = '+str(np.round(p,2)))
 fig.savefig(figpath+'TPJ_mean.png')
+'''
+
