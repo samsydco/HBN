@@ -36,80 +36,87 @@ xcorrx = np.concatenate([np.arange(-n_time+1,0)*TR,np.arange(n_time)*TR])
 event_list = [e for e in event_list if e+TW//2<n_time]
 nevent = len(event_list)
 
-# ISC: within and between
-D = {key:{} for key in range(nbinseq)}
-bootvs = ['bootstrap','shuffle','splithalf']
-boots = len(bootvs)
-subla = {key:{key:{key:[] for key in range(nbinseq)} for key in range(nsh)} for key in bootvs}
-ISC_w_time = np.zeros((boots,nsh,nbinseq,n_time))
-ISC_w = np.zeros((boots,nsh,nbinseq))
-ISC_b_time = {key:{key:{} for key in range(nsh)} for key in bootvs}
-ISC_b = {key:{key:{} for key in range(nsh)} for key in bootvs}
-ISC_g_time = {key:{key:{} for key in range(nsh)} for key in bootvs}
-gdict = {key:{key:{'Age1':[],'Age2':[],'g_diff':[]} for key in range(nsh)} for key in bootvs}
+for HPC in ['aHPC','pHPC']:#['HPC','aHPC','pHPC']:
+	# ISC: within and between
+	D = {key:{} for key in range(nbinseq)}
+	bootvs = ['bootstrap','shuffle','splithalf']
+	boots = len(bootvs)
+	subla = {key:{key:{key:[] for key in range(nbinseq)} for key in range(nsh)} for key in bootvs}
+	ISC_w_time = np.zeros((boots,nsh,nbinseq,n_time))
+	ISC_w = np.zeros((boots,nsh,nbinseq))
+	ISC_b_time = {key:{key:{} for key in range(nsh)} for key in bootvs}
+	ISC_b = {key:{key:{} for key in range(nsh)} for key in bootvs}
+	ISC_g_time = {key:{key:{} for key in range(nsh)} for key in bootvs}
+	gdict = {key:{key:{'Age1':[],'Age2':[],'g_diff':[]} for key in range(nsh)} for key in bootvs}
 
-for bootidx,bootv in enumerate(bootvs):
-	boot = True if bootv=='bootstrap' else False
-	print(bootv)
-	agel = agelperm
-	phenol = phenolperm
-	for s in tqdm.tqdm(range(nsh)): # Either permuted shuffle,  bootstrapped resample iterations, or split-half iterations
-		if bootv == 'shuffle': # randomly shuffle ages:
-			ageidx = np.random.permutation(len(agel))
-			agel = [agel[ageidx[idx]] for idx,age in enumerate(agel)]
-			phenol['sex'] = [phenol['sex'][ageidx[idx]] for idx,age in enumerate(phenol['sex'])]
-		ageeq,lenageeq,minageeq = binagesubs(agel,phenol['sex'],eqbins,subord)
-		groups = np.zeros((nbinseq,2,n_time),dtype='float16')
-		for b in range(nbinseq):
-			subl = [[],[]]
-			for i in [0,1]:
-				subg = [hpcprepath+ageeq[i][1][b][idx].split('/')[-1] for idx in np.random.choice(lenageeq[i][b],divmod(minageeq[i],2)[0]*2,replace=boot)]
-				subl[0].extend(subg[:divmod(minageeq[i],2)[0]])
-				subl[1].extend(subg[divmod(minageeq[i],2)[0]:])
-			for sub in subl[0]+subl[1]:
-				if bootv != 'shuffle' and sub not in D[b]:
-					D[b][sub] = np.mean(ss.zscore(dd.io.load(sub,['/'+task+'/HPC'])[0],axis=1),axis=0)
-				elif bootv == 'shuffle' and all(sub not in D[b_] for b_ in range(nbinseq)):
-					realbin = np.sum([agelperm[[sub.split('/')[-1] for sub in subord].index(sub.split('/')[-1])] >= e for e in eqbins]) - 1
-					D[realbin][sub] = np.mean(ss.zscore(dd.io.load(sub,['/'+task+'/HPC'])[0],axis=1),axis=0)
-			subla[bootv][s][b].append(subl)
-			for h in [0,1]: # split all or between T / F
-				group = np.zeros((n_time),dtype='float16')
-				groupn = np.ones((n_time),dtype='int')*nsub
-				for sub in subl[h]:
-					realbin = np.sum([agelperm[[sub.split('/')[-1] for sub in subord].index(sub.split('/')[-1])] >= e for e in eqbins]) - 1
-					group = np.nansum(np.stack((group,D[realbin][sub])),axis=0)
-					nanverts = np.argwhere(np.isnan(D[realbin][sub]))
-					groupn[nanverts] = groupn[nanverts]-1
-				groups[b,h] = ss.zscore(group/groupn)
-			ISC_w_time[bootidx,s,b] = np.multiply(groups[b,0],groups[b,1])
-			ISC_w[bootidx,s,b] = np.sum(ISC_w_time[bootidx,s,b])/(n_time-1)
-		for p in itertools.combinations(range(nbinseq),2):
-			p_str = str(p[0])+'_'+str(p[1])
-			ISC_g_time[bootv][s][p_str] = []
-			ISC_b_time[bootv][s][p_str] = []
-			for htmp1 in [0,1]:
-				for htmp2 in [0,1]:
-					ISC_b_time[bootv][s][p_str].append(np.multiply(groups[p[0],htmp1], groups[p[1],htmp2]))
-			ISC_b[bootv][s][p_str] = [np.sum(t)/(n_time-1) for t in ISC_b_time[bootv][s][p_str]] # correlate across bins
-			ISCg_time = np.sum(ISC_b_time[bootv][s][p_str],axis=0)	
-			ISCg = np.sum(ISC_b[bootv][s][p_str])
-			denom = np.sqrt(ISC_w[bootidx,s,p[0]])*np.sqrt(ISC_w[bootidx,s,p[1]])
-			ISC_g_time[bootv][s][p_str] = ISCg_time/4/(denom)
-			ISCg = ISCg/4/(denom)
-			#if ISCg>1: ISCg=1
-			for k in gdict[bootv][s].keys():
-				ir = [0,1] if '1' in k else [1,0]
-				if 'Age' in k:
-					for i in ir:
-						gdict[bootv][s][k].append(str(int(round(eqbins[p[i]])))+' - '+str(int(round(eqbins[p[i]+1])))+' y.o.')
-					gdict[bootv][s]['g_diff'].extend([ISCg])
-		if bootv == 'shuffle': # randomly shuffle ages:
-			ageidx = np.random.permutation(len(agel))
-			agel = [agel[ageidx[idx]] for idx,age in enumerate(agel)]
-			phenol['sex'] = [phenol['sex'][ageidx[idx]] for idx,age in enumerate(phenol['sex'])]
+	for bootidx,bootv in enumerate(bootvs):
+		boot = True if bootv=='bootstrap' else False
+		print(HPC,bootv)
+		agel = agelperm
+		phenol = phenolperm
+		for s in tqdm.tqdm(range(nsh)): # Either permuted shuffle,  bootstrapped resample iterations, or split-half iterations
+			if bootv == 'shuffle': # randomly shuffle ages:
+				ageidx = np.random.permutation(len(agel))
+				agel = [agel[ageidx[idx]] for idx,age in enumerate(agel)]
+				phenol['sex'] = [phenol['sex'][ageidx[idx]] for idx,age in enumerate(phenol['sex'])]
+			ageeq,lenageeq,minageeq = binagesubs(agel,phenol['sex'],eqbins,subord)
+			groups = np.zeros((nbinseq,2,n_time),dtype='float16')
+			for b in range(nbinseq):
+				subl = [[],[]]
+				for i in [0,1]:
+					subg = [hpcprepath+ageeq[i][1][b][idx].split('/')[-1] for idx in np.random.choice(lenageeq[i][b],divmod(minageeq[i],2)[0]*2,replace=boot)]
+					subl[0].extend(subg[:divmod(minageeq[i],2)[0]])
+					subl[1].extend(subg[divmod(minageeq[i],2)[0]:])
+				for sub in subl[0]+subl[1]:
+					if bootv != 'shuffle' and sub not in D[b]:
+						data = dd.io.load(sub,['/'+task+'/'+HPC])[0]
+						if np.sum(np.isnan(data)) > 0:
+							data = data[np.where(~np.isnan(data[:,0]))[0]]
+						D[b][sub] = np.mean(ss.zscore(data,axis=1),axis=0)
+					elif bootv == 'shuffle' and all(sub not in D[b_] for b_ in range(nbinseq)):
+						realbin = np.sum([agelperm[[sub.split('/')[-1] for sub in subord].index(sub.split('/')[-1])] >= e for e in eqbins]) - 1
+						data = dd.io.load(sub,['/'+task+'/'+HPC])[0]
+						if np.sum(np.isnan(data)) > 0:
+							data = data[np.where(~np.isnan(data[:,0]))[0]]
+						D[realbin][sub] = np.mean(ss.zscore(data,axis=1),axis=0)
+				subla[bootv][s][b].append(subl)
+				for h in [0,1]: # split all or between T / F
+					group = np.zeros((n_time),dtype='float16')
+					groupn = np.ones((n_time),dtype='int')*nsub
+					for sub in subl[h]:
+						realbin = np.sum([agelperm[[sub.split('/')[-1] for sub in subord].index(sub.split('/')[-1])] >= e for e in eqbins]) - 1
+						group = np.nansum(np.stack((group,D[realbin][sub])),axis=0)
+						nanverts = np.argwhere(np.isnan(D[realbin][sub]))
+						groupn[nanverts] = groupn[nanverts]-1
+					groups[b,h] = ss.zscore(group/groupn)
+				ISC_w_time[bootidx,s,b] = np.multiply(groups[b,0],groups[b,1])
+				ISC_w[bootidx,s,b] = np.sum(ISC_w_time[bootidx,s,b])/(n_time-1)
+			for p in itertools.combinations(range(nbinseq),2):
+				p_str = str(p[0])+'_'+str(p[1])
+				ISC_g_time[bootv][s][p_str] = []
+				ISC_b_time[bootv][s][p_str] = []
+				for htmp1 in [0,1]:
+					for htmp2 in [0,1]:
+						ISC_b_time[bootv][s][p_str].append(np.multiply(groups[p[0],htmp1], groups[p[1],htmp2]))
+				ISC_b[bootv][s][p_str] = [np.sum(t)/(n_time-1) for t in ISC_b_time[bootv][s][p_str]] # correlate across bins
+				ISCg_time = np.sum(ISC_b_time[bootv][s][p_str],axis=0)	
+				ISCg = np.sum(ISC_b[bootv][s][p_str])
+				denom = np.sqrt(ISC_w[bootidx,s,p[0]])*np.sqrt(ISC_w[bootidx,s,p[1]])
+				ISC_g_time[bootv][s][p_str] = ISCg_time/4/(denom)
+				ISCg = ISCg/4/(denom)
+				#if ISCg>1: ISCg=1
+				for k in gdict[bootv][s].keys():
+					ir = [0,1] if '1' in k else [1,0]
+					if 'Age' in k:
+						for i in ir:
+							gdict[bootv][s][k].append(str(int(round(eqbins[p[i]])))+' - '+str(int(round(eqbins[p[i]+1])))+' y.o.')
+						gdict[bootv][s]['g_diff'].extend([ISCg])
+			if bootv == 'shuffle': # randomly shuffle ages:
+				ageidx = np.random.permutation(len(agel))
+				agel = [agel[ageidx[idx]] for idx,age in enumerate(agel)]
+				phenol['sex'] = [phenol['sex'][ageidx[idx]] for idx,age in enumerate(phenol['sex'])]
 			
-dd.io.save(ISCpath+'HPC.h5',{'D':D,'subla':subla, 'ISC_w_time':ISC_w_time, 'ISC_w':ISC_w, 'ISC_b_time':ISC_b_time, 'ISC_b':ISC_b, 'ISC_g_time':ISC_g_time, 'gdict':gdict})
+	dd.io.save(ISCpath+HPC+'.h5',{'D':D,'subla':subla, 'ISC_w_time':ISC_w_time, 'ISC_w':ISC_w, 'ISC_b_time':ISC_b_time, 'ISC_b':ISC_b, 'ISC_g_time':ISC_g_time, 'gdict':gdict})
 
 D, subla, ISC_w_time, ISC_w, ISC_b_time, ISC_b, ISC_g_timoe, gdict, dfbump = dd.io.load(ISCpath+'HPC.h5',['/D','/subla', '/ISC_w_time', '/ISC_w', '/ISC_b_time', '/ISC_b', '/ISC_g_time', '/gdict','/dfbump'])
 
