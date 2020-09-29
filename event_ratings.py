@@ -55,7 +55,7 @@ for v in eventdict['timing'].values():
 ev_annot = np.asarray(ev_annot, dtype=int)
 
 counts = np.append(np.bincount(ev_annot)[:-2],np.bincount(ev_annot)[-1])
-ev_conv = np.convolve(counts,hrf,'same')
+ev_conv = np.convolve(counts,hrf)[:nTR]
 
 peaks = np.where(ev_conv>4)[0]
 
@@ -80,55 +80,105 @@ for ei,e in enumerate(event_list):
 
 if __name__ == "__main__":
 	
-	fig, (raw_ev_annot) = plt.subplots(figsize=(20, 20))
-	counts = raw_ev_annot.hist(ev_annot, bins=nTR, alpha=0.25)
+	time = np.arange(0,nTR)
+	fig, (raw_ev_annot) = plt.subplots(figsize=(60, 20))
+	counts = raw_ev_annot.hist(ev_annot, bins=nTR, linewidth=20,color='k')#,alpha=0.25)
 
-
-	xticks = list(np.arange(0, nTR, 50))
 	yticks = list(np.arange(0, max(counts[0])+1, 2))
-	plt.rcParams['xtick.labelsize']=30
-	plt.rcParams['ytick.labelsize']=30
-
-	raw_ev_annot.set_xticks(xticks)
+	raw_ev_annot.spines['right'].set_color('none')
+	raw_ev_annot.spines['top'].set_color('none')
+	raw_ev_annot.set_xticks(np.append(time[0::nTR//5],time[-1]))
+	raw_ev_annot.set_xticklabels([str(int(s*TR//60))+':'+str(int(s*TR%60))+'0' for s in time][0::nTR//5]+['10:00'], fontsize=80)
 	raw_ev_annot.set_yticks(yticks)
-	raw_ev_annot.set_ylabel('# annotations', fontsize=40)
-	raw_ev_annot.set_xlabel('Time in TRs', fontsize=40)
-	raw_ev_annot.set_title('Event annotations', fontsize=40)
+	plt.rcParams['xtick.labelsize']=50
+	plt.rcParams['ytick.labelsize']=80
+	raw_ev_annot.set_ylabel('# annotations', fontsize=80)
+	raw_ev_annot.set_xlabel('Time (minutes)', fontsize=80)
 	plt.tight_layout()
 	plt.savefig(ev_figpath+'ev_annots_hist.png', bbox_inches='tight')
 
 
 
 
-	fig, (hrf_ann) = plt.subplots(figsize=(20, 20))
-	hrf_ann.plot(np.arange(nTR), ev_conv, linewidth=5)
-	plt.rcParams['xtick.labelsize']=30
-	plt.rcParams['ytick.labelsize']=30
+	fig, (hrf_ann) = plt.subplots(figsize=(60, 20))
+	hrf_ann.plot(np.arange(nTR), ev_conv, linewidth=5,color='k')
+	hrf_ann.spines['right'].set_color('none')
+	hrf_ann.spines['top'].set_color('none')
+	plt.rcParams['xtick.labelsize']=80
+	plt.rcParams['ytick.labelsize']=80
 	hrf_ann.set_xlabel('TR (1 TR = 0.8 seconds)', fontsize=40)
 	plt.savefig(ev_figpath+'hrf_conv.png', bbox_inches='tight')
+	
+	from ISC_settings import *
+	D_ = dd.io.load(ISCpath+'HPC.h5',['/D'])[0]
+	D = np.zeros(nTR)
+	nsubj = 0
+	for b in range(nbinseq):
+		for bumps in D_[b].values():
+			D=D+bumps
+			nsubj+=1
+	D=D/nsubj
 
 
-	fig, (raw_ev_annot) = plt.subplots(figsize=(20, 20))
-	counts = raw_ev_annot.hist(ev_annot, bins=nTR, alpha=0.25)
-	raw_ev_annot.plot(np.arange(nTR), ev_conv, color='b',alpha=0.5,linewidth=5)
-	raw_ev_annot.plot(event_list,event_peak,'b*',markersize=24)
-
-	xticks = list(np.arange(0, nTR, 50))
-	yticks = list(np.arange(0, max(counts[0])+1, 2))
-	plt.rcParams['xtick.labelsize']=30
-	plt.rcParams['ytick.labelsize']=30
-
-	raw_ev_annot.set_xticks(xticks)
+	fig, (raw_ev_annot) = plt.subplots(figsize=(60, 20))
+	counts = raw_ev_annot.hist(ev_annot, bins=nTR, linewidth=20,color='k')
+	raw_ev_annot.plot(np.arange(nTR), ev_conv, color='k',alpha=0.5,linewidth=5)
+	#raw_ev_annot.plot(event_list,event_peak,'b*',markersize=24)
+	raw_ev_annot.spines['right'].set_color('none')
+	raw_ev_annot.spines['top'].set_color('none')
+	raw_ev_annot.set_xticks(np.append(time[0::nTR//5],time[-1]))
+	raw_ev_annot.set_xticklabels([str(int(s*TR//60))+':'+str(int(s*TR%60))+'0' for s in time][0::nTR//5]+['10:00'], fontsize=80)
 	raw_ev_annot.set_yticks(yticks)
-	raw_ev_annot.set_ylabel('# annotations', fontsize=40)
-	raw_ev_annot.set_xlabel('Time in TRs', fontsize=40)
-	raw_ev_annot.set_title('Event annotations', fontsize=40)
+	plt.rcParams['xtick.labelsize']=50
+	plt.rcParams['ytick.labelsize']=80
+	raw_ev_annot.set_ylabel('# annotations', fontsize=80)
+	raw_ev_annot.set_xlabel('Time (minutes)', fontsize=80)
+	plt.tight_layout()
 	plt.savefig(ev_figpath+'ev_annots_both.png', bbox_inches='tight')
+	
+	fig, (raw_ev_annot) = plt.subplots(figsize=(60, 20))
+	counts = raw_ev_annot.hist(ev_annot, bins=nTR, linewidth=20,color='k')
+	raw_ev_annot.plot(np.arange(nTR), ev_conv, color='k',alpha=0.5,linewidth=5)
+	ax2 = raw_ev_annot.twinx()
+	ax2.plot(np.arange(nTR)[5:], D[5:], color='k',linewidth=10)
+	#raw_ev_annot.plot(event_list,event_peak,'b*',markersize=24)
+	raw_ev_annot.spines['right'].set_color('none')
+	raw_ev_annot.spines['top'].set_color('none')
+	raw_ev_annot.set_xticks(np.append(time[0::nTR//5],time[-1]))
+	raw_ev_annot.set_xticklabels([str(int(s*TR//60))+':'+str(int(s*TR%60))+'0' for s in time][0::nTR//5]+['10:00'], fontsize=80)
+	raw_ev_annot.set_yticks(yticks)
+	plt.rcParams['xtick.labelsize']=50
+	plt.rcParams['ytick.labelsize']=80
+	raw_ev_annot.set_ylabel('# annotations', fontsize=80)
+	raw_ev_annot.set_xlabel('Time (minutes)', fontsize=80)
+	plt.tight_layout()
+	plt.savefig(ev_figpath+'ev_annots_HPC.png', bbox_inches='tight')
+	plt.savefig(ev_figpath+'ev_annots_HPC.eps', bbox_inches='tight')
+	
+
+			
+	fig, ax = plt.subplots(figsize=(60, 20))
+	ax.plot(np.arange(nTR)[5:], D[5:], color='k',linewidth=10)
+	#raw_ev_annot.plot(event_list,event_peak,'b*',markersize=24)
+	ax.spines['right'].set_color('none')
+	ax.spines['top'].set_color('none')
+	ax.set_xticks(np.append(time[0::nTR//5],time[-1]))
+	ax.set_xticklabels([str(int(s*TR//60)) +':'+ str(int(s*TR%60))+'0' for s in time][0::nTR//5]+['10:00'], fontsize=80)
+	#raw_ev_annot.set_yticks(yticks)
+	plt.rcParams['xtick.labelsize']=50
+	#plt.rcParams['ytick.labelsize']=80
+	#raw_ev_annot.set_ylabel('# annotations', fontsize=80)
+	ax.set_xlabel('Time (minutes)', fontsize=80)
+	plt.tight_layout()
+	plt.savefig(figurepath+'HPC/HPC_timecourse.png', bbox_inches='tight')
 	
 	
 	# Compare annotations "ev_conv" with HPC bumps:
 	# Precidence for thinking this way comes from Aya Ben-Yakov's event saliency measure
 	from ISC_settings import *
+	sizedict = dd.io.load(ISCpath+'HPC_vol.h5')
+	sizedf = pd.DataFrame(data=sizedict)
+	import statsmodels.api as sm
 	import seaborn as sns
 	from scipy import stats
 	from statsmodels.stats.multitest import multipletests
@@ -144,7 +194,7 @@ if __name__ == "__main__":
 		for b in range(nbinseq):
 			for subj,bumps in D[b].items():
 				if np.sum(np.isnan(bumps))!=nTR:
-					xcorrt = xcorr(bumps,ev_conv)#np.correlate(ev_conv,bumps,"full")#
+					xcorrt = xcorr(bumps,ev_conv)#counts)#np.correlate(ev_conv,bumps,"full")#
 					bumplagdict['Subj'].extend([subj]*len(xcorrx))
 					bumplagdict['Age'].extend([xticks[b]]*len(xcorrx))
 					bumplagdict['Exact Age'].extend([Phenodf['Age'][Phenodf['EID'] == subj.split('/')[-1].split('.')[0].split('-')[1]].values[0]]*len(xcorrx))
@@ -155,30 +205,75 @@ if __name__ == "__main__":
 	
 		# Which time points post-0 are significantly different from zero?
 		dfpost = dfbumplag[dfbumplag['Time lag [s]']>=0]
-		times = dfpost['Time lag [s]'].unique()[1:]
+		dfpost=dfbumplag
+		times = dfpost['Time lag [s]'].unique()#[1:]
 		tvals = np.zeros(len(times))
 		pvals = np.zeros(len(times))
 		for ti,tp in enumerate(times):
 			tvals[ti],pvals[ti] = stats.ttest_1samp(dfpost[dfpost['Time lag [s]']==tp]['correlation'], 0)#stats.ttest_rel(dfpost[dfpost['Time lag [s]']==tp]['correlation'],dfpost[dfpost['Time lag [s]']==0.]['correlation'])
 		pvals = pvals*len(pvals) # Bonferroni correction
-		best_t = times[np.argmin(pvals)]
-		r,p = stats.pearsonr(dfpost[dfpost['Time lag [s]']==best_t]['Exact Age'],dfpost[dfpost['Time lag [s]']==best_t]['correlation'])
+		best_t_i = times[np.argmin(pvals)]
+		best_t = 0 # Set from whole HPC
+		tempdf = dfpost[dfpost['Time lag [s]']==best_t]
+		tempsize = tempdf.merge(sizedf, on='Subj')
+		r,p = stats.pearsonr(tempdf['Exact Age'],tempdf['correlation'])
+		# no correlation between size and event-response!!
+		r2,p2 = stats.pearsonr(tempsize[HPC],tempsize['correlation'])
+		
+		
+		OLS_model = sm.OLS(tempsize['correlation'],tempsize[HPC]).fit()  # training the model
+		residual_values = OLS_model.resid # residual values
+		r,p = stats.pearsonr(tempsize['Exact Age'],tempsize['correlation'])
+		
+		X = sm.add_constant(tempsize[['Exact Age',HPC]]) # adding a constant
+		model = sm.OLS(tempsize['correlation'], X).fit()
+		predictions = model.predict(X)
+		print_model = model.summary()
+		print(print_model)
+		
 		sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
 		fig,ax=plt.subplots(figsize=(7,5))
-		sns.regplot(x='Exact Age', y="correlation", data=dfpost[dfpost['Time lag [s]']==best_t],color=colors_age[3])#.set_title('Delay = '+str(best_t)+'s\nr = '+str(np.round(r,2))+', p = '+str(np.round(p,2)))
+		sns.regplot(x='Exact Age', y="correlation", data=tempdf,color=colors_age[3])#.set_title('Delay = '+str(best_t)+'s\nr = '+str(np.round(r,2))+', p = '+str(np.round(p,2)))
 		ax.set_xlabel('Age')
 		ax.set_ylabel('Hippocampus-to-event\ncorrelation')
 		plt.rcParams['axes.xmargin'] = 0
-		print(HPC,', r = '+str(np.round(r,2)),', p = '+str(np.round(p,2)))
+		print(HPC,', r = '+str(np.round(r,2)),', p = '+str(np.round(p,5)))
 		fig.savefig(figurepath+'HPC/'+HPC+'_Age_vs_bump_xcorr_ev_conv.png', bbox_inches='tight', dpi=300)
+		
+		# plot indicating size
+		fig,ax=plt.subplots(figsize=(7,5))
+		sns.scatterplot(x='Exact Age', y="correlation", hue=HPC, size=HPC,
+                linewidth=0,alpha=.5, 
+                data=tempsize, ax=ax)
+		#sns.relplot(x='Exact Age', y="correlation", hue=HPC, size=HPC,
+		#			alpha=.5, color=colors_age[3],#palette="purple",
+		#			data=tempsize)
+		ax.set_xlabel('Age')
+		ax.set_ylabel('Hippocampus-to-event\ncorrelation')
+		plt.rcParams['axes.xmargin'] = 0
+		ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+		print(HPC,', r = '+str(np.round(r,2)),', p = '+str(np.round(p,5)))
+		fig.savefig(figurepath+'HPC/'+HPC+'_Age_vs_bump_size.png', bbox_inches='tight', dpi=300)
+		
+		# plot all ages together
+		sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
+		sns.set_palette(colors_age)
+		fig,ax = plt.subplots(1,1,figsize=(7,7))
+		g = sns.lineplot(x='Time lag [s]', y='correlation', ax=ax, data=dfbumplag, ci=95,color=colors_age[3])
+		ax.set_xlim([-10,10])
+		ax.set_xlabel('Time (seconds)')
+		ax.set_ylabel('Hippocampus-to-event\ncorrelation')
+		ax.margins(x=0)
+		plt.savefig(figurepath+'HPC/'+HPC+'_bump_all.png', bbox_inches='tight',dpi=300)
 	
 		# plot timecourse of xcorr with *'s for significance
 		sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
 		sns.set_palette(colors_age)
 		fig,ax = plt.subplots(1,1,figsize=(7,7))
 		g = sns.lineplot(x='Time lag [s]', y='correlation', hue='Age', ax=ax, data=dfbumplag, ci=95)
-		ax.plot(times[pvals<0.05],[0.090]*len(times[pvals<0.05]),'k*',markersize=15)
-		ax.set_xticks([-20,-10,0,10,20])
+		#ax.plot(times[pvals<0.05],[0.090]*len(times[pvals<0.05]),'k*',markersize=15)
+		ax.set_xlim([-10,10])
+		#ax.set_xticks([-20,-10,-5,0,5,10,20])
 		ax.set_xlabel('Time (seconds)')
 		ax.set_ylabel('Hippocampus-to-event\ncorrelation')
 		ax.legend(loc='center', bbox_to_anchor=(0.5, -0.5))
