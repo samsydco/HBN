@@ -36,7 +36,8 @@ xcorrx = np.concatenate([np.arange(-n_time+1,0)*TR,np.arange(n_time)*TR])
 event_list = [e for e in event_list if e+TW//2<n_time]
 nevent = len(event_list)
 
-for HPC in ['aHPC','pHPC']:#['HPC','aHPC','pHPC']:
+for HPC in ['HPC','aHPC','pHPC']:
+	labid = 1 if 'p' in HPC else 2
 	# ISC: within and between
 	D = {key:{} for key in range(nbinseq)}
 	bootvs = ['bootstrap','shuffle','splithalf']
@@ -69,15 +70,17 @@ for HPC in ['aHPC','pHPC']:#['HPC','aHPC','pHPC']:
 					subl[1].extend(subg[divmod(minageeq[i],2)[0]:])
 				for sub in subl[0]+subl[1]:
 					if bootv != 'shuffle' and sub not in D[b]:
-						data = dd.io.load(sub,['/'+task+'/'+HPC])[0]
-						if np.sum(np.isnan(data)) > 0:
-							data = data[np.where(~np.isnan(data[:,0]))[0]]
+						data = dd.io.load(sub,['/'+task+'/HPC'])[0]
+						if HPC!='HPC':
+							lab = dd.io.load(sub,['/'+task+'/aplab'])[0]
+							data = data[lab==labid]		
 						D[b][sub] = np.mean(ss.zscore(data,axis=1),axis=0)
 					elif bootv == 'shuffle' and all(sub not in D[b_] for b_ in range(nbinseq)):
 						realbin = np.sum([agelperm[[sub.split('/')[-1] for sub in subord].index(sub.split('/')[-1])] >= e for e in eqbins]) - 1
-						data = dd.io.load(sub,['/'+task+'/'+HPC])[0]
-						if np.sum(np.isnan(data)) > 0:
-							data = data[np.where(~np.isnan(data[:,0]))[0]]
+						data = dd.io.load(sub,['/'+task+'/HPC'])[0]
+						if HPC!='HPC':
+							lab = dd.io.load(sub,['/'+task+'/aplab'])[0]
+							data = data[lab==labid]	
 						D[realbin][sub] = np.mean(ss.zscore(data,axis=1),axis=0)
 				subla[bootv][s][b].append(subl)
 				for h in [0,1]: # split all or between T / F
@@ -117,6 +120,34 @@ for HPC in ['aHPC','pHPC']:#['HPC','aHPC','pHPC']:
 				phenol['sex'] = [phenol['sex'][ageidx[idx]] for idx,age in enumerate(phenol['sex'])]
 			
 	dd.io.save(ISCpath+HPC+'.h5',{'D':D,'subla':subla, 'ISC_w_time':ISC_w_time, 'ISC_w':ISC_w, 'ISC_b_time':ISC_b_time, 'ISC_b':ISC_b, 'ISC_g_time':ISC_g_time, 'gdict':gdict})
+	
+# look at HPC volume vs age:
+sizedict = {'Subj':[],'Age':[],'HPC':[],'aHPC':[],'pHPC':[]}
+for subi,sub_ in enumerate(subord):
+	sizedict['Age'].append(agelperm[subi])
+	sub = hpcprepath+sub_.split('/')[-1]
+	sizedict['Subj'].append(sub)
+	lab = dd.io.load(sub,['/'+task+'/aplab'])[0]
+	sizedict['HPC'].append(len(lab))
+	sizedict['aHPC'].append(np.sum(lab==1))
+	sizedict['pHPC'].append(np.sum(lab==2))
+dfsize = pd.DataFrame(data=sizedict)
+dd.io.save(ISCpath+'HPC_vol.h5',sizedict)
+grey = 211/256
+for HPC in ['HPC','aHPC','pHPC']:
+	r,p = ss.pearsonr(dfsize['Age'],dfsize[HPC])
+	sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
+	fig,ax=plt.subplots(figsize=(7,5))
+	sns.regplot(x='Age', y=HPC, data=dfsize,color=colors_age[3]).set_title('r = '+str(np.round(r,2))+', p = '+str(np.round(p,2)))
+	ax.set_xlabel('Age')
+	ax.set_ylabel(HPC+' size')
+	plt.rcParams['axes.xmargin'] = 0
+	print(HPC,', r = '+str(np.round(r,2)),', p = '+str(np.round(p,2)))
+	fig.savefig(figurepath+'HPC/'+HPC+'_size_vs_age.png', bbox_inches='tight', dpi=300)
+
+
+
+
 
 D, subla, ISC_w_time, ISC_w, ISC_b_time, ISC_b, ISC_g_timoe, gdict, dfbump = dd.io.load(ISCpath+'HPC.h5',['/D','/subla', '/ISC_w_time', '/ISC_w', '/ISC_b_time', '/ISC_b', '/ISC_g_time', '/gdict','/dfbump'])
 
