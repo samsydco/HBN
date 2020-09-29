@@ -106,7 +106,7 @@ dE_k_age_change = {}
 sig_change = {}
 for ri,roi in tqdm.tqdm(enumerate(ROIl)):
 	pval = np.sum(np.mean(dE_k_corr[0,ri,:]) < np.mean(dE_k_corr[1:,ri,:],axis=1))/nPerm1
-	if pval < 0.05:
+	if pval < 0.05 or roi=='LH_DefaultB_PFCv_2':
 		sig_corr[roi] = {'r':np.mean(dE_k_corr[0,ri,:]),'p':pval}
 		dE_k_age_rs[roi] = np.zeros((nPerm2+1,nbins))
 		dE_k_age_change[roi] = np.zeros(nPerm2+1)
