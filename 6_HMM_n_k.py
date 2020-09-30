@@ -12,13 +12,13 @@ from sklearn.model_selection import KFold
 from HMM_settings import *
 
 sametimedir = HMMpath+'shuff_5bins_train04/'
-nkdir = HMMpath+'nk/'#_moreshuff/
+nkdir = HMMpath+'nk_moreshuff/'#'nk/'
 nsub= 41
 y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit))+1)
 kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
 bins = [0,4]
 nbins = len(bins)
-nshuff=1000
+nshuff=100
 task = 'DM'
 
 for roi in tqdm.tqdm(glob.glob(sametimedir+'*h5')):
@@ -59,7 +59,7 @@ for roi in tqdm.tqdm(glob.glob(nkdir+'*.h5')):
 	data = dd.io.load(roi)
 	for b in bins:
 		roidict[roi_short][str(b)] = data[str(b)]['best_k'][0]
-	roidict[roi_short]['k_diff_p'] = np.sum(abs(data['k_diff'][0])<abs(data['k_diff'][1:]))/(nshuff//2)
+	roidict[roi_short]['k_diff_p'] = np.sum(abs(data['k_diff'][0])<abs(data['k_diff'][1:]))/nshuff
 	roidict[roi_short]['sig'] = 1 if roidict[roi_short]['k_diff_p']<0.05 else 0
 		
 dd.io.save(HMMpath+'nk2.h5',roidict)
