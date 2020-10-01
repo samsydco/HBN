@@ -26,6 +26,7 @@ nsub=40
 TW = 30
 TR=0.8
 nsh = 1000 # number of split half iterations
+grey = 211/256
 colors_age = ['#edf8fb','#b3cde3','#8c96c6','#8856a7','#810f7c']
 colors_ev  = ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928']
 x = np.arange(-1*TW//2,TW//2)*TR
@@ -133,7 +134,6 @@ for subi,sub_ in enumerate(subord):
 	sizedict['pHPC'].append(np.sum(lab==2))
 dfsize = pd.DataFrame(data=sizedict)
 dd.io.save(ISCpath+'HPC_vol.h5',sizedict)
-grey = 211/256
 for HPC in ['HPC','aHPC','pHPC']:
 	r,p = ss.pearsonr(dfsize['Age'],dfsize[HPC])
 	sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
@@ -144,12 +144,40 @@ for HPC in ['HPC','aHPC','pHPC']:
 	plt.rcParams['axes.xmargin'] = 0
 	print(HPC,', r = '+str(np.round(r,2)),', p = '+str(np.round(p,2)))
 	fig.savefig(figurepath+'HPC/'+HPC+'_size_vs_age.png', bbox_inches='tight', dpi=300)
+	
+# Does autocorrelation in HPC change with age?
+for HPC in ['HPC','aHPC','pHPC']:
+	D = dd.io.load(ISCpath+HPC+'.h5','/D')
+	autocorrlagdict = {'Age':[],'correlation':[],'Time lag [s]':[],'Subj':[],'Exact Age':[]}
+	for b in range(nbinseq):
+		for subj,bumps in D[b].items():
+				xcorrt = xcorr(bumps,bumps)
+				autocorrlagdict['Subj'].extend([subj]*len(xcorrx))
+				autocorrlagdict['Age'].extend([xticks[b]]*len(xcorrx))
+				autocorrlagdict['Exact Age'].extend([Phenodf['Age'][Phenodf['EID'] == subj.split('/')[-1].split('.')[0].split('-')[1]].values[0]]*len(xcorrx))
+				autocorrlagdict['correlation'].extend(xcorrt)
+				autocorrlagdict['Time lag [s]'].extend(xcorrx)
+	dfauto = pd.DataFrame(data=autocorrlagdict)
+	dfauto = dfauto[abs(dfauto['Time lag [s]'])<20]
+	
+	sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
+	sns.set_palette(colors_age)
+	fig,ax = plt.subplots(1,1,figsize=(7,7))
+	g = sns.lineplot(x='Time lag [s]', y='correlation', hue='Age', ax=ax, data=dfauto, ci=95)
+	#ax.set_xlim([-10,10])
+	#ax.set_xticks([-20,-10,-5,0,5,10,20])
+	ax.set_xlabel('Time (seconds)')
+	ax.set_ylabel('Hippocampus-cross-correlation')
+	ax.legend(loc='center', bbox_to_anchor=(0.5, -0.5))
+	ax.margins(x=0)
+	plt.savefig(figurepath+'HPC/'+HPC+'_autocorr.png', bbox_inches='tight',dpi=300)
+			
 
 
 
 
 
-D, subla, ISC_w_time, ISC_w, ISC_b_time, ISC_b, ISC_g_timoe, gdict, dfbump = dd.io.load(ISCpath+'HPC.h5',['/D','/subla', '/ISC_w_time', '/ISC_w', '/ISC_b_time', '/ISC_b', '/ISC_g_time', '/gdict','/dfbump'])
+D, subla, ISC_w_time, ISC_w, ISC_b_time, ISC_b, ISC_g_time, gdict = dd.io.load(ISCpath+'HPC.h5',['/D','/subla', '/ISC_w_time', '/ISC_w', '/ISC_b_time', '/ISC_b', '/ISC_g_time', '/gdict'])
 
 # Are within ISCs significantly greater than 0?
 p_within_greater_zero = []
