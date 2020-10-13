@@ -179,61 +179,90 @@ if __name__ == "__main__":
 	sizedict = dd.io.load(ISCpath+'HPC_vol.h5')
 	sizedf = pd.DataFrame(data=sizedict)
 	import statsmodels.api as sm
+	import statsmodels.formula.api as sm2
 	import seaborn as sns
 	from scipy import stats
 	from statsmodels.stats.multitest import multipletests
+	from sklearn.model_selection import KFold
 	colors_age = ['#edf8fb','#b3cde3','#8c96c6','#8856a7','#810f7c']
 	grey = 211/256
 	xticks = [str(int(round(eqbins[i])))+\
 		  ' - '+str(int(round(eqbins[i+1])))+' y.o.' for i in range(len(eqbins)-1)]
 	xcorrx = np.concatenate([np.arange(-nTR+1,0)*TR,np.arange(nTR)*TR])
+	nsub = 415
+	nsplit = 20
+	y = [0]*int(np.floor(nsub/nsplit))*(nsplit-1)+[1]*int(np.floor(nsub/nsplit)+15)
+	kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
+	Dall = {}
+	bumplagdict = {'Age':[],'Time lag [s]':[],'Subj':[],'Exact_Age':[]}
 	for HPC in ['HPC','aHPC','pHPC']:
 		D,ISC_w_time,ISC_g_time = dd.io.load(ISCpath+HPC+'.h5',['/D','/ISC_w_time', '/ISC_g_time'])
+		Dall[HPC] = D
+		bumplagdict['correlation_'+HPC] = []
 	
-		bumplagdict = {'Age':[],'correlation':[],'Time lag [s]':[],'Subj':[],'Exact Age':[]}
-		for b in range(nbinseq):
-			for subj,bumps in D[b].items():
-				if np.sum(np.isnan(bumps))!=nTR:
-					xcorrt = xcorr(bumps,ev_conv)#counts)#np.correlate(ev_conv,bumps,"full")#
-					bumplagdict['Subj'].extend([subj]*len(xcorrx))
-					bumplagdict['Age'].extend([xticks[b]]*len(xcorrx))
-					bumplagdict['Exact Age'].extend([Phenodf['Age'][Phenodf['EID'] == subj.split('/')[-1].split('.')[0].split('-')[1]].values[0]]*len(xcorrx))
-					bumplagdict['correlation'].extend(xcorrt)
-					bumplagdict['Time lag [s]'].extend(xcorrx)
-		dfbumplag = pd.DataFrame(data=bumplagdict)
-		dfbumplag = dfbumplag[abs(dfbumplag['Time lag [s]'])<20]
+	for b in range(nbinseq):
+		for subj in Dall['HPC'][b].keys():
+			bumplagdict['Subj'].extend([subj]*len(xcorrx))
+			bumplagdict['Age'].extend([xticks[b]]*len(xcorrx))
+			bumplagdict['Exact_Age'].extend([Phenodf['Age'][Phenodf['EID'] == subj.split('/')[-1].split('.')[0].split('-')[1]].values[0]]*len(xcorrx))
+			for HPC in ['HPC','aHPC','pHPC']:
+				bumplagdict['correlation_'+HPC].extend(xcorr(Dall[HPC][b][subj],ev_conv))
+			bumplagdict['Time lag [s]'].extend(xcorrx)
+	dfbumplag = pd.DataFrame(data=bumplagdict)
+	dfbumplag = dfbumplag[abs(dfbumplag['Time lag [s]'])<20]
 	
-		# Which time points post-0 are significantly different from zero?
-		dfpost = dfbumplag[dfbumplag['Time lag [s]']>=0]
-		dfpost=dfbumplag
-		times = dfpost['Time lag [s]'].unique()#[1:]
-		tvals = np.zeros(len(times))
-		pvals = np.zeros(len(times))
-		for ti,tp in enumerate(times):
-			tvals[ti],pvals[ti] = stats.ttest_1samp(dfpost[dfpost['Time lag [s]']==tp]['correlation'], 0)#stats.ttest_rel(dfpost[dfpost['Time lag [s]']==tp]['correlation'],dfpost[dfpost['Time lag [s]']==0.]['correlation'])
-		pvals = pvals*len(pvals) # Bonferroni correction
-		best_t_i = times[np.argmin(pvals)]
-		best_t = 0 # Set from whole HPC
-		tempdf = dfpost[dfpost['Time lag [s]']==best_t]
-		tempsize = tempdf.merge(sizedf, on='Subj')
-		r,p = stats.pearsonr(tempdf['Exact Age'],tempdf['correlation'])
+	result = sm2.ols(formula='Exact_Age ~ correlation_aHPC + correlation_pHPC + correlation_aHPC * correlation_pHPC', data=dfbumplag).fit()
+	print(result.summary()) #no interaction!
+	
+	# Which time points post-0 are significantly different from zero?
+	dfpost = dfbumplag[dfbumplag['Time lag [s]']>=0]
+	dfpost=dfbumplag
+	times = dfpost['Time lag [s]'].unique()#[1:]
+	tvals = np.zeros(len(times))
+	pvals = np.zeros(len(times))
+	for ti,tp in enumerate(times):
+		tvals[ti],pvals[ti] = stats.ttest_1samp(dfpost[dfpost['Time lag [s]']==tp]['correlation_HPC'], 0)#stats.ttest_rel(dfpost[dfpost['Time lag [s]']==tp]['correlation'],dfpost[dfpost['Time lag [s]']==0.]['correlation'])
+	pvals = pvals*len(pvals) # Bonferroni correction
+	best_t_i = times[np.argmin(pvals)]
+	best_t = 0 # Set from whole HPC
+	tempdf = dfpost[dfpost['Time lag [s]']==best_t]
+	tempsize = tempdf.merge(sizedf, on='Subj')
+	for HPC in ['HPC','aHPC','pHPC']:
+		# test for linear vs polynomial fit of Age vs event_correlation:
+		# both line and U fit equally well!
+		sse = np.zeros((2,nsplit))
+		for degi,deg in enumerate([1,2]):
+			for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
+				coeffs = np.polyfit(tempdf['Exact_Age'].iloc[Ls[0]],
+									tempdf['correlation_'+HPC].iloc[Ls[0]],deg)
+				pred = np.polyval(coeffs, tempdf['Exact_Age'].iloc[Ls[1]])
+				sse[degi,split] = np.sum(np.square(tempdf['correlation_'+HPC].iloc[Ls[1]]-pred))
+			print('Sum of Squared Error for Age-to-'+HPC+'to event boundary correlation is: '+
+				 str(np.round(np.mean(sse[degi]),3))+'+/-'+str(np.round(np.std(sse[degi]),3))+
+				 ' for degree '+str(deg)+'.')
+		t,p = stats.ttest_rel(sse[0],sse[1])
+		print(t,p)
+		
+		
+		
+		r,p = stats.pearsonr(tempdf['Exact_Age'],tempdf['correlation_'+HPC])
 		# no correlation between size and event-response!!
-		r2,p2 = stats.pearsonr(tempsize[HPC],tempsize['correlation'])
+		r2,p2 = stats.pearsonr(tempsize[HPC],tempsize['correlation_'+HPC])
 		
 		
 		OLS_model = sm.OLS(tempsize['correlation'],tempsize[HPC]).fit()  # training the model
 		residual_values = OLS_model.resid # residual values
-		r,p = stats.pearsonr(tempsize['Exact Age'],tempsize['correlation'])
+		r,p = stats.pearsonr(tempsize['Exact_Age'],tempsize['correlation_'+HPC])
 		
-		X = sm.add_constant(tempsize[['Exact Age',HPC]]) # adding a constant
-		model = sm.OLS(tempsize['correlation'], X).fit()
+		X = sm.add_constant(tempsize[['Exact_Age',HPC]]) # adding a constant
+		model = sm.OLS(tempsize['correlation_'+HPC], X).fit()
 		predictions = model.predict(X)
 		print_model = model.summary()
 		print(print_model)
 		
 		sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
 		fig,ax=plt.subplots(figsize=(7,5))
-		sns.regplot(x='Exact Age', y="correlation", data=tempdf,color=colors_age[3])#.set_title('Delay = '+str(best_t)+'s\nr = '+str(np.round(r,2))+', p = '+str(np.round(p,2)))
+		sns.regplot(x='Exact_Age', y="correlation_"+HPC, data=tempdf,color=colors_age[3])#.set_title('Delay = '+str(best_t)+'s\nr = '+str(np.round(r,2))+', p = '+str(np.round(p,2)))
 		ax.set_xlabel('Age')
 		ax.set_ylabel('Hippocampus-to-event\ncorrelation')
 		plt.rcParams['axes.xmargin'] = 0
@@ -242,7 +271,7 @@ if __name__ == "__main__":
 		
 		# plot indicating size
 		fig,ax=plt.subplots(figsize=(7,5))
-		sns.scatterplot(x='Exact Age', y="correlation", hue=HPC, size=HPC,
+		sns.scatterplot(x='Exact Age', y="correlation_"+HPC, hue=HPC, size=HPC,
                 linewidth=0,alpha=.5, 
                 data=tempsize, ax=ax)
 		#sns.relplot(x='Exact Age', y="correlation", hue=HPC, size=HPC,
@@ -259,10 +288,10 @@ if __name__ == "__main__":
 		sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
 		sns.set_palette(colors_age)
 		fig,ax = plt.subplots(1,1,figsize=(7,7))
-		g = sns.lineplot(x='Time lag [s]', y='correlation', ax=ax, data=dfbumplag, ci=95,color=colors_age[3])
+		g = sns.lineplot(x='Time lag [s]', y='correlation_'+HPC, ax=ax, data=dfbumplag, ci=95,color=colors_age[3])
 		ax.set_xlim([-10,10])
 		ax.set_xlabel('Time (seconds)')
-		ax.set_ylabel('Hippocampus-to-event\ncorrelation')
+		ax.set_ylabel('Hippocampus-to-event\ncorrelation_'+HPC)
 		ax.margins(x=0)
 		plt.savefig(figurepath+'HPC/'+HPC+'_bump_all.png', bbox_inches='tight',dpi=300)
 	
@@ -270,7 +299,7 @@ if __name__ == "__main__":
 		sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
 		sns.set_palette(colors_age)
 		fig,ax = plt.subplots(1,1,figsize=(7,7))
-		g = sns.lineplot(x='Time lag [s]', y='correlation', hue='Age', ax=ax, data=dfbumplag, ci=95)
+		g = sns.lineplot(x='Time lag [s]', y='correlation_'+HPC, hue='Age', ax=ax, data=dfbumplag, ci=95)
 		#ax.plot(times[pvals<0.05],[0.090]*len(times[pvals<0.05]),'k*',markersize=15)
 		ax.set_xlim([-10,10])
 		#ax.set_xticks([-20,-10,-5,0,5,10,20])
