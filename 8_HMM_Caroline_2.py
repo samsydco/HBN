@@ -12,6 +12,7 @@ from HMM_settings import *
 
 HMMdir = HMMpath+'shuff_5bins_train04/'#'shuff_5bins_trainall/'#'shuff_5bins_train04/'#'shuff_5bins/'
 figdirend = HMMdir.split('/')[-2][5:]+'/'
+figdir = figurepath + 'HMM/Yeo_Caroline_5bins_train04/'#'auc_FLUX/'
 bins = np.arange(nbinseq)
 nbins = len(bins)
 lgd = [str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))+' y.o.' for b in bins]
@@ -19,11 +20,17 @@ colors = ['#edf8fb','#b3cde3','#8c96c6','#8856a7','#810f7c']
 grey = 211/256 # other options: https://www.rapidtables.com/web/color/gray-color.html
 ztw = 200
 
-qrois = ['LH_LimbicA_TempPole_2',
- 'LH_VisCent_ExStr_1',
+qrois = ['LH_VisCent_ExStr_1',
  'LH_VisCent_Striate_1',
  'LH_VisPeri_ExStrInf_1',
  'RH_DorsAttnA_TempOcc_1']
+
+
+#['LH_LimbicA_TempPole_2',
+# 'LH_VisCent_ExStr_1',
+# 'LH_VisCent_Striate_1',
+# 'LH_VisPeri_ExStrInf_1',
+# 'RH_DorsAttnA_TempOcc_1']
 ROIl = [HMMdir+roi+'.h5' for roi in qrois]
 
 task='DM'
@@ -62,10 +69,10 @@ for roi in tqdm.tqdm(ROIl):
 			ax.plot(time, E_k[bi], linewidth=5.5, alpha=0.5, color=colors[bi],label=lgd[bi])
 		if 'LH_DefaultB_PFCd_1' in roi:
 			ax.legend(prop={'size': 30},facecolor=(grey,grey,grey),edgecolor='black')
-			plt.savefig(figurepath+'HMM/auc_FLUX/legend.png', bbox_inches='tight')
+			plt.savefig(figdir+'legend.png', bbox_inches='tight')
 		else:
 			ax.set_facecolor((grey,grey,grey))
-			plt.savefig(figurepath+'HMM/auc_FLUX/'+roi_short+'.png', bbox_inches='tight')
+			plt.savefig(figdir+roi_short+'.png', bbox_inches='tight')
 		#zoomed figure
 		fig, ax = plt.subplots(figsize=(10, 10))
 		ax.set_xticks(np.append(timez[0::nTR_//5],time[-1]))
@@ -78,10 +85,10 @@ for roi in tqdm.tqdm(ROIl):
 			ax.plot(timez, E_k[bi][:ztw], linewidth=5.5, alpha=0.5, color=colors[bi],label=lgd[bi])
 		if 'LH_DefaultB_PFCd_1' in roi:
 			ax.legend(prop={'size': 30},facecolor=(grey,grey,grey),edgecolor='black')
-			plt.savefig(figurepath+'HMM/auc_FLUX/legend_zoom.png', bbox_inches='tight')
+			plt.savefig(figdir+'legend_zoom.png', bbox_inches='tight')
 		else:
 			ax.set_facecolor((grey,grey,grey))
-			plt.savefig(figurepath+'HMM/auc_FLUX/'+roi_short+'_zoom.png', bbox_inches='tight')
+			plt.savefig(figdir+roi_short+'_zoom.png', bbox_inches='tight')
 			
 #roi_example
 # display low vs high ll
@@ -89,29 +96,27 @@ for roi in tqdm.tqdm(ROIl):
 k = 3
 kl = np.arange(k)+1
 #ev_durr = [200,100,175,50,225]
-ev_durr = [50,75,75]
+ev_durr = [75,50,75]
 even = [nTR_//k]*k
 good_ll_fit = np.concatenate([i*np.ones(ev_durr[i-1]) for i in np.arange(1,k+1)],axis=0)
-for win in [10,50,100,150]:
-	inbet_ll = np.concatenate([good_ll_fit[:win],np.convolve(good_ll_fit, np.blackman(win)/np.sum(np.blackman(win)), 'same')[win:-win], good_ll_fit[-win:]])
+for win in [10,50,75]:
+	inbet_ll = np.convolve(good_ll_fit, np.blackman(win)/np.sum(np.blackman(win)))[49:200-win//2]#np.concatenate([good_ll_fit[:win],np.convolve(good_ll_fit,np.blackman(win)/np.sum(np.blackman(win)), 'same')[win:-win], good_ll_fit[-win:]])
 	fig, ax = plt.subplots(figsize=(10, 10))
 	ax.set_xticks([])
-	#ax.set_xticks(np.append(timez[0::nTR_//5],time[-1]))
-	#ax.set_xticklabels([str(int(s//60))+':'+str(int(s%60))+'0' for s in timez][0::nTR_//5]+['10:00'], fontsize=30)
 	ax.set_xlabel('Time in Movie', fontsize=35,labelpad=20)
 	klax = kl if k < 25 else kl[4::5]
 	ax.set_yticks(klax)
 	ax.set_yticklabels(klax,fontsize=30)
 	ax.set_ylabel('Events', fontsize=45)
 	ax.set_facecolor((grey,grey,grey))
-	ax.plot(timez, inbet_ll, linewidth=5.5, alpha=0.5, color=colors[3],label=lgd[3])
+	ax.plot(inbet_ll, linewidth=5.5, alpha=0.5, color=colors[3],label=lgd[3])
 	plt.savefig(figurepath+'HMM/auc_FLUX/'+'_'.join([str(k),str(win)])+'.png', bbox_inches='tight')
 	
 
 colorinv = colors[::-1]
+labs = ['Young','Old']
 fig, ax = plt.subplots(figsize=(10, 10))
-ax.set_xticks(np.append(time[0::nTR_//5],time[-1]))
-ax.set_xticklabels([str(int(s//60))+':'+str(int(s%60))+'0' for s in time][0::nTR_//5]+['10:00'], fontsize=30)
+ax.set_xticks([])
 ax.set_xlabel('Time in Movie', fontsize=35,labelpad=20)
 klax = kl if k < 25 else kl[4::5]
 ax.set_yticks(klax)
@@ -119,12 +124,13 @@ ax.set_yticklabels(klax,fontsize=30)
 ax.set_ylabel('Events', fontsize=45)
 ax.set_facecolor((grey,grey,grey))
 Ek = []
-for b in bins:
-	delay = b*np.random.randint(1,20)
-	win = np.random.randint(1,30)
+win=10
+for bi,b in enumerate([4,0]):
+	delay = b*10
 	inbet_ll = np.concatenate([good_ll_fit[:win],np.convolve(good_ll_fit, np.blackman(win)/np.sum(np.blackman(win)), 'same')[win:-win], good_ll_fit[-win:]])
 	Ek = np.concatenate([np.ones(delay+10),inbet_ll[:-delay][10:]]) if delay>0 else inbet_ll
-	ax.plot(timez, Ek, linewidth=5.5, alpha=0.5, color=colorinv[b])
+	ax.plot(Ek, linewidth=5.5, alpha=0.5, color=colorinv[b],label=labs[bi])
+ax.legend(loc='upper left',prop={'size':40})
 plt.savefig(figurepath+'HMM/auc_FLUX/'+str(k)+'_delay'+'.png', bbox_inches='tight')
 
 	
