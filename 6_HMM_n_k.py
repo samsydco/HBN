@@ -69,36 +69,44 @@ df=pd.DataFrame(roidict).T
 
 import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
-from scipy.stats import gaussian_kde
-color = '#8856a7'
+color = ['#9ebcda','#8856a7']#['#810f7c','#8856a7']
 grey=211/256
 plt.rcParams.update({'font.size': 30})
 xticks = [str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))+' y.o.' for b in bins]
+lab=''
 
 x = df['0']; y = df['4']
-r,p=pearsonr(x,y)
+x1 = df['0'][df['sig']==0]; y1 = df['4'][df['sig']==0]
+x2 = df['0'][df['sig']==1]; y2 = df['4'][df['sig']==1]
+b,m = np.polyfit(x1,y1,1)
+r,p=pearsonr(x1,y1)
 fig, ax = plt.subplots(figsize=(15,15))
 #ax.set_title('r:'+str(np.round(r,2))+', p:'+str(np.round(p,2)))
-minval = np.min(x)
-maxval = np.max(x)
-ax.plot([minval,maxval],\
-		 [minval,maxval], 'k--', linewidth=2)
+minval = np.min(x1)
+maxval = np.max(x1)
+plt.plot(np.unique(x1), np.poly1d(np.polyfit(x1, y1, 1))(np.unique(x1)),color=color[1], linewidth=5)
 ax.set_xlabel('Number of events for\n'+xticks[0]+'\'s', fontsize=35)
 ax.set_ylabel('Number of events for\n'+xticks[1]+'\'s', fontsize=35)
-ax.scatter(x,y,color=color,s=100,alpha=0.25)
+ax.scatter(x1,y1,color=color[1],s=250,alpha=0.75,label='No Signicant Difference')
+ax.scatter(x2,y2,color=color[0],s=250,label=' Signicant Difference')
+ax.legend(loc="upper left")
+#ax.set_xlim([2, 20])
+#ax.set_ylim([2, 27])
 if lab == '': ax.set_facecolor((grey,grey,grey))
 if lab == '_lab':
-	for i, txt in enumerate(list(df.index)):
-		if x[i]>y[i]:
-			ax.annotate('\n'.join(txt.split('_')[:-1]), (x[i], y[i]),
+	dftemp = df[df['sig']==1]
+	xtemp=dftemp['0']; ytemp=dftemp['4']
+	for i, txt in enumerate(list(dftemp.index)):
+		if xtemp[i]>ytemp[i]:
+			ax.annotate('\n'.join(txt.split('_')[:-1]), (xtemp[i], ytemp[i]),
 					horizontalalignment="left",
 					verticalalignment="top",color='k',fontsize=10)
-		if x[i]<y[i]:
-			ax.annotate('\n'.join(txt.split('_')[:-1]), (x[i], y[i]),
+		if xtemp[i]<ytemp[i]:
+			ax.annotate('\n'.join(txt.split('_')[:-1]), (xtemp[i], ytemp[i]),
 					horizontalalignment="right",
 					verticalalignment="bottom",color='k',fontsize=10)
 		
-#fig.savefig(figurepath+'n_k/'+val+lab+'.png')
+fig.savefig(figurepath+'n_k/'+'k'+lab+'.png')
 		
 
 		
