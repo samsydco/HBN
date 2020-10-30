@@ -46,6 +46,8 @@ for csv in glob.glob(segpath+'*csv'):
 
 nsubj = len(eventdict['timing'])
 
+sexl=['DA:F','SB:F','AR:F','FBM:M','TM:F','MT:F','MJ:F','TK:M','NR:M','CG:F','MN:M','EG:F','HC:F','HDZ:F', 'MB:M', 'SJ:F', 'MCK:F', 'FF:F', 'AS:M', 'DS:F', 'TC:F']
+
 
 nevent = []
 ev_annot = []
