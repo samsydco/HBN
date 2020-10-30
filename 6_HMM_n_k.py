@@ -64,15 +64,38 @@ for roi in tqdm.tqdm(glob.glob(nkdir+'*.h5')):
 		
 dd.io.save(HMMpath+'nk2.h5',roidict)
 roidict=dd.io.load(HMMpath+'nk2.h5')
+lldict = dd.io.load(HMMpath+'ll_diff.h5','/seperate')
 import pandas as pd
-df=pd.DataFrame(roidict).T
+df = pd.DataFrame(roidict).T.merge(pd.DataFrame(lldict).T, left_index=True, right_index=True, how='inner')
+thresh =0.002
+df=df[((df['0_2k_diff']>thresh) | (df['4_2k_diff']>thresh))]
 
 import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
-color = ['#9ebcda','#8856a7']#['#810f7c','#8856a7']
+import seaborn as sns
 grey=211/256
-plt.rcParams.update({'font.size': 30})
 xticks = [str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))+' y.o.' for b in bins]
+sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
+fig,ax=plt.subplots(figsize=(7,5))
+sns.regplot(x='0',y='4',data=df,color='#8856a7',scatter_kws={'s':50})
+ax.grid(False)
+ax.set_xlabel('Number of events in\nYoungest ('+xticks[0]+')')
+ax.set_ylabel('Number of events in\nOldest ('+xticks[1]+')')
+ax.set(xlim=(6, 19),ylim=(6, 27.5))
+#plt.rcParams['axes.xmargin'] = 1
+print('r = '+str(np.round(r,2))+', p = '+str(np.round(p,8)))
+	
+fig.savefig(figurepath+'n_k/'+'k_lim.png',bbox_inches='tight', dpi=300)
+
+
+
+
+'''
+
+color = ['#9ebcda','#8856a7']#['#810f7c','#8856a7']
+
+plt.rcParams.update({'font.size': 30})
+
 lab=''
 
 x = df['0']; y = df['4']
@@ -105,8 +128,9 @@ if lab == '_lab':
 			ax.annotate('\n'.join(txt.split('_')[:-1]), (xtemp[i], ytemp[i]),
 					horizontalalignment="right",
 					verticalalignment="bottom",color='k',fontsize=10)
+'''
 		
-fig.savefig(figurepath+'n_k/'+'k'+lab+'.png')
+
 		
 
 		
