@@ -99,17 +99,17 @@ kl = np.arange(k)+1
 ev_durr = [75,50,75]
 even = [nTR_//k]*k
 good_ll_fit = np.concatenate([i*np.ones(ev_durr[i-1]) for i in np.arange(1,k+1)],axis=0)
-for win in [10,50,75]:
-	inbet_ll = np.convolve(good_ll_fit, np.blackman(win)/np.sum(np.blackman(win)))[49:200-win//2]#np.concatenate([good_ll_fit[:win],np.convolve(good_ll_fit,np.blackman(win)/np.sum(np.blackman(win)), 'same')[win:-win], good_ll_fit[-win:]])
+for win in [10,50]:
+	inbet_ll = np.convolve(good_ll_fit, np.blackman(win)/np.sum(np.blackman(win)))[win:200-win//2]#np.concatenate([good_ll_fit[:win],np.convolve(good_ll_fit,np.blackman(win)/np.sum(np.blackman(win)), 'same')[win:-win], good_ll_fit[-win:]])
 	fig, ax = plt.subplots(figsize=(10, 10))
 	ax.set_xticks([])
-	ax.set_xlabel('Time in Movie', fontsize=35,labelpad=20)
+	ax.set_xlabel('Time in Movie', fontsize=45,labelpad=20)
 	klax = kl if k < 25 else kl[4::5]
 	ax.set_yticks(klax)
-	ax.set_yticklabels(klax,fontsize=30)
-	ax.set_ylabel('Events', fontsize=45)
+	ax.set_yticklabels(klax,fontsize=45)
+	ax.set_ylabel('Events', fontsize=45,labelpad=20)
 	ax.set_facecolor((grey,grey,grey))
-	ax.plot(inbet_ll, linewidth=5.5, alpha=0.5, color=colors[3],label=lgd[3])
+	ax.plot(inbet_ll, linewidth=9, alpha=0.5, color=colors[3])
 	plt.savefig(figurepath+'HMM/auc_FLUX/'+'_'.join([str(k),str(win)])+'.png', bbox_inches='tight')
 	
 
@@ -117,11 +117,11 @@ colorinv = colors[::-1]
 labs = ['Young','Old']
 fig, ax = plt.subplots(figsize=(10, 10))
 ax.set_xticks([])
-ax.set_xlabel('Time in Movie', fontsize=35,labelpad=20)
+ax.set_xlabel('Time in Movie', fontsize=45,labelpad=20)
 klax = kl if k < 25 else kl[4::5]
 ax.set_yticks(klax)
-ax.set_yticklabels(klax,fontsize=30)
-ax.set_ylabel('Events', fontsize=45)
+ax.set_yticklabels(klax,fontsize=45)
+ax.set_ylabel('Events', fontsize=45,labelpad=20)
 ax.set_facecolor((grey,grey,grey))
 Ek = []
 win=10
@@ -129,8 +129,9 @@ for bi,b in enumerate([4,0]):
 	delay = b*10
 	inbet_ll = np.concatenate([good_ll_fit[:win],np.convolve(good_ll_fit, np.blackman(win)/np.sum(np.blackman(win)), 'same')[win:-win], good_ll_fit[-win:]])
 	Ek = np.concatenate([np.ones(delay+10),inbet_ll[:-delay][10:]]) if delay>0 else inbet_ll
-	ax.plot(Ek, linewidth=5.5, alpha=0.5, color=colorinv[b],label=labs[bi])
-ax.legend(loc='upper left',prop={'size':40})
+	ax.plot(Ek, linewidth=9, alpha=0.5, color=colorinv[b],label=labs[bi])
+lgd = ax.legend(loc='upper left',prop={'size':40},facecolor=(grey,grey,grey),frameon = True,edgecolor='k')
+lgd.get_frame().set_linewidth(2)
 plt.savefig(figurepath+'HMM/auc_FLUX/'+str(k)+'_delay'+'.png', bbox_inches='tight')
 
 	
