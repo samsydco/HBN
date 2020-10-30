@@ -22,6 +22,31 @@ ISCf = ISCpath+'old_ISC/ISC_2019-05-28.h5'
 n_subj = len(subord)
 n_vox = 5
 
+# Some math to conver between correlation values
+def corr_convert(r,N,corrtype='sh'):
+	if corrtype == 'sh':
+		f = 2*r/(N*(1-r))
+	elif corrtype == 'pw':
+		f = r/(1-r)
+	else: 
+		f = (N*np.square(r)+np.sqrt((N**2)*np.power(r,4,dtype=np.float16)+4*np.square(r)*(N-1)*(1-np.square(r))))/(2*(N-1)*(1-np.square(r)))
+	r_pw = f/(f+1)
+	r_sh = (N*f)/(N*f+2)
+	r_loo = (np.sqrt(N-1)*f)/(np.sqrt(f+1)*np.sqrt((N-1)*f+1))
+	return r_pw,r_sh,r_loo
+	
+		
+		
+		f_llo = 
+				if g == 'Pair':
+					i['f'][s-2] = r/(1-r)
+				if g == 'SH':
+					i['f'][s-2] = 2*r/(N*(1-r))
+				if g == 'Loo':
+					i['f'][s-2] = (N*np.square(r)+ \
+					 np.sqrt((N**2)*np.power(r,4,dtype=np.float16)+4*np.square(r)*(N-1)*(1-np.square(r))))/(2*(N-1)*(1-np.square(r)))
+		r_llo = 
+
 for task in ['DM','TP']:
 	print(task)
 	non_nan_verts = np.where(~np.isnan(np.concatenate([dd.io.load(subord[0],['/'+task+'/L'])[0], dd.io.load(subord[0],['/'+task+'/R'])[0]], axis=0))[:,0])[0]
