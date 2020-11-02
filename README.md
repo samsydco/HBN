@@ -12,11 +12,13 @@ The cortical results were made from fMRIPprep 1.1.4, installed in a docker conta
 The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity image
 
 ## Settings files:
-1) settings.py: sets various paths
+1) settings.py: sets various path
+
 2) ISC_settings.py: Creates functions used later in ISC code. 
 - make_phenol: creates demographic breakdown for all subjects (Age, Sex, phenotypic PC variables - not really used)
 - even_out: creates two groups with equal sizes and equal numbers of a demographic variable (e.g. sex)
 - bottom part of code creates 5 equally sized age groups of subjects
+
 3) HMM_settings.py: sets various variables used for HMM code
 
 ## Order of code is as follows:
@@ -28,7 +30,9 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
   <li>Edited fieldmap scans names for fmriprep compatibility </li>
 </ul>
 2) 2_RA_rating.py: 
-- Allowed RA's to fill in ratings for T1 Scans
+<ul>
+<li>Allowed RA's to fill in ratings for T1 Scans</li>
+  </ul>
 
 
 
