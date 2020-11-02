@@ -11,18 +11,6 @@ for attr in attrlist:
 
 path_tmp = path+site+'/'
 
-'''
-plist = []
-for f in glob.glob(outputdr+'/fmriprep/sub*/figures/'):
-	if len(glob.glob(f+'*')) < 15:
-		plist.append(f.split('/')[-3])
-nchunk = 4 # number of items per chunk (maybe use 10?)
-pchunk = [plist[x:x+nchunk] for x in range(0,len(plist),nchunk)]
-# https://neurostars.org/t/using-use-syn-sdc-with-fieldmap-data/2592
-# This works: --use-syn-sdc --ignore fieldmaps \
-'''
-
-
 for chunk in tqdm(pchunk):
 	pstr = ' '.join([c[4:] for c in chunk])
 	for task in ['DM','TP']:
