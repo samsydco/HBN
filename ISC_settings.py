@@ -70,36 +70,6 @@ for tf1 in [0,1]:
 		for tf2 in [0,1]:
 			d2sum[tf2,tf1,h] = len([idx for idx,p in enumerate(demo2) if idx in subh[tf1][h] and p==tf2])
 '''
-# Only deploy if pc's seem interesting - trying to control for more than one pheno:
-'''
-demo2idx = [[[[], []] for i in range(2)] for i in range(2)]
-for tf1 in [0,1]:
-	for h in [0,1]:
-		idx = subh[tf1][h]
-		for tf2 in [0,1]:
-			demo2idx[tf1][tf2][h].extend([idx for idx,p in enumerate(demo2) if idx in subh[tf1][h] and p==tf2])
-			print(tf1,tf2,h,len(demo2idx[tf1][tf2][h]))
-'''
-
-def split_subj(phenol):
-	splitidx = {}
-	subdist = {}
-	subsum = {}
-	for k,v in phenol.items():
-		splitidx[k] = [[None]*2 for i in range(2)]
-		subdist[k] = dict(zip(list(phenol.keys()), [[[None]*2 for i in range(2)] for ii in range(len(phenol))]))
-		subsum[k] = dict(zip(list(phenol.keys()), [np.zeros((2,2))]*len(phenol)))
-		for h in [0,1]: # split all or between T / F
-			if k == 'all':
-				subh = np.arange(0+len(v)//2*h,len(v)//2+len(v)//2*h)
-			else:
-				subh = [idx for idx,i in enumerate(v) if i == h]
-			for htmp in [0,1]:
-				splitidx[k][h][htmp] = subh[0+len(subh)//2*htmp:len(subh)//2+len(subh)//2*htmp]
-				for kt,vt in phenol.items():
-					subdist[k][kt][h][htmp] = [p for idx,p in enumerate(vt) if idx in splitidx[k][h][htmp]]
-					subsum[k][kt][h,htmp] = np.nansum(subdist[k][kt][h][htmp])
-	return splitidx,subdist,subsum
 
 # max diff between old/young in hist bins of equal height:
 nsub = 15 # supposed number of subjects in each bin
@@ -151,20 +121,3 @@ def binagesubs(agel,sexl,eqbins,subord):
 				ageeq[i][1][[b for b in range(nbinseq) if idx in ageeq[i][0][b]][0]].append(sub)
 	return ageeq,lenageeq,minageeq
 	
-
-if plot != 'off':
-	import matplotlib.pyplot as plt
-	#%matplotlib inline
-	# Are M and F evenly dist in age
-	for i in np.unique(phenol['sex']):
-		ages = [a for idx,a in enumerate(agel) if phenol['sex'][idx]==i]
-		plt.hist(ages, bins, alpha=0.5, label=str(i))
-	plt.axvline(np.median(agel), color='k', linestyle='dashed', linewidth=1)
-	plt.legend(loc='upper right')
-	plt.title('Sex Dist by Age')
-	plt.xlabel('Ages')
-	plt.ylabel('Frequency')
-	plt.gcf().savefig(figurepath+'AgeSexDist.png')
-	plt.show()
-
-#dd.io.save(metaphenopath+'pheno_'+str(date.today())+'.h5',{'subs':subord,'ages':agel,'phenodict':phenol,'pcs':pcl})
