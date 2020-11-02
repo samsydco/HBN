@@ -20,11 +20,15 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
 3) HMM_settings.py: sets various variables used for HMM code
 
 ## Order of code is as follows:
-1) 1_aws.py: Download available HBN datasets from aws (from either Rutgers (RU) or CBCI (CitiGroup Cornell Brain Imaging Center).
-  Removed subjects who had files missing, and noted what was missing in csv file.
-  Edited jsons for fieldmap scans for fmriprep compatibility
-  Edited fieldmap scans names for fmriprep compatibility 
-2) 2_RA_rating.py: Allowed RA's to fill in ratings for T1 Scans
+1) 1_aws.py: 
+<ul>
+  <li>Download available HBN datasets from aws (from either Rutgers (RU) or CBCI (CitiGroup Cornell Brain Imaging Center).</li>
+  <li>Removed subjects who had files missing, and noted what was missing in csv file.</li>
+  <li>Edited jsons for fieldmap scans for fmriprep compatibility</li>
+  <li>Edited fieldmap scans names for fmriprep compatibility </li>
+</ul>
+2) 2_RA_rating.py: 
+- Allowed RA's to fill in ratings for T1 Scans
 
 
 
