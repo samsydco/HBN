@@ -71,25 +71,7 @@ for sub in ps:
 			with open(Missingcsv,'a') as f:
 				w = csv.writer(f)
 				w.writerow([sub_temp]+[str(i) for i in conds])
-			sp.run(["rm","-r",path+sub_temp]) # removing folder
-'''
-import pandas as pd
-df = pd.read_csv(Missingcsv)
-nFalse = 0
-for sub in glob.glob(path+'sub*'):
-    sub_temp = sub[16:]
-    conds = [True]*5
-    conds.append(750 == int(sp.check_output(('fslhd '+path+sub_temp+'/func/'+sub_temp+'_task-movieDM_bold.nii.gz').split()).split(b'dim4',1)[1].split()[0].decode("utf-8")))
-    conds.append(250 == int(sp.check_output(('fslhd '+path+sub_temp+'/func/'+sub_temp+'_task-movieTP_bold.nii.gz').split()).split(b'dim4',1)[1].split()[0].decode("utf-8")))
-    if not all(i for i in conds):
-        df.loc[df.shape[0]] = [sub_temp]+conds
-        sp.run(('mv '+path+sub_temp+'/ '+path+'bad_subs/').split())
-        nFalse = nFalse + 1
-        print(sub_temp,NFalse,conds) 
-df['DM len'] = df['DM len'].map({np.nan: np.nan, 1: True, 0: False})
-df['TP len'] = df['TP len'].map({np.nan: np.nan, 1: True, 0: False})
-df.to_csv(Missingcsv, index=False)
-'''         
+			sp.run(["rm","-r",path+sub_temp]) # removing folder       
 
 # Need to add fMRI file names to "IntendedFor" field of fmap json's
 # Remove irrelevent BOLD files
@@ -104,7 +86,6 @@ for sub in glob.glob(path+'sub*'):
 				for line in file:
 					print(line.replace('\"PatientPosition\": \"HFS\"','\"PatientPosition\": \"HFS\",\n    \"IntendedFor\": '+replacement_text),end='')
 					
-
 # New BIDS convention: (for when using singularity)
 #sub*/fmap/sub*_dir-AP_acq-fMRI_epi* -> sub*/fmap/sub*_acq-fMRI_dir-AP_epi*
 #sub*/fmap/sub*_dir-PA_acq-fMRI_epi* -> sub*/fmap/sub*_acq-fMRI_dir-PA_epi*
