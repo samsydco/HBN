@@ -27,8 +27,8 @@ for roi in tqdm.tqdm(roidict.keys()):
 		Dall = [data['0']['D'],data['4']['D']]
 		for bi,b in enumerate(bins):
 			notbi = 1 if bi==0 else 0
-			best_k = np.append(data[str(b)]['best_k'],np.zeros((nshuff2-nshuff)),axis=0)
-			tune_ll = np.append(data[str(b)]['tune_ll'],np.zeros((nshuff2-nshuff,nsplit,len(k_list))),axis=0)
+			best_k = np.append(data[b]['best_k'],np.zeros((nshuff2-nshuff)),axis=0)
+			tune_ll = np.append(data[b]['tune_ll'],np.zeros((nshuff2-nshuff,nsplit,len(k_list))),axis=0)
 			for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
 				Dtrain = np.mean(Dall[bi][Ls[0]],axis=0).T
 				Dtest_all  = np.concatenate((Dall[bi][Ls[1]],Dall[notbi][Ls[1]]),axis=0)
