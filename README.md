@@ -12,7 +12,9 @@ The cortical results were made from fMRIPprep 1.1.4, installed in a docker conta
 The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity image
 
 ## Settings files:
-1) settings.py: sets various path
+1) settings.py: 
+- sets various path
+- yesnofun: used in 2_RA_rating.py and 2_rating_comp.py
 
 2) ISC_settings.py: Creates functions used later in ISC code. 
 - make_phenol: creates demographic breakdown for all subjects (Age, Sex, phenotypic PC variables - not really used)
@@ -31,8 +33,22 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
 </ul>
 2) 2_RA_rating.py: 
 <ul>
-<li>Allowed RA's to fill in ratings for T1 Scans</li>
-  </ul>
-
+  <li>Allowed RA's to fill in ratings for T1 Scans</li>
+</ul>
+2_rating_comp.py:
+<ul>
+  <li>Compare ratings between RAs: Compile RA ratings into one csv, Manually arbitrate between instances in which one RA said "yes" and another "no." </li>
+</ul>
+3) 3_fmriprep.py and  3_run_singularity.py 
+<ul>
+  <li>3_fmriprep.py: Run fMRIPprep 1.1.4, installed in a docker container</li>
+  <li>3_run_singularity.py: Run fMRIprep 1.5.6, via a singularity image</li>
+</ul>
+4) 4_Preprocess.py and 4_Preprocess_HPC.py
+<ul>
+  <li>4_Preprocess.py: regresses out confounds found from fmriprep 1.1.4, and saves data in h5 file for cortex (one per subject).</li>
+  <li>4_Preprocess_HPC.py: regresses out confounds found from fmriprep 1.5.6, labels anterior and posterior hippocampus, and saves data in h5 file for Hippocampus (one per subject).</li>
+</ul>
+5) 
 
 
