@@ -3,7 +3,7 @@
 # HMM Settings
 from settings import *
 from ISC_settings import *
-from event_ratings import event_list,ev_conv,xcorr
+from event_ratings import ev_conv
 
 tasks = ['DM','TP']
 TR=0.8
