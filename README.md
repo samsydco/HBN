@@ -53,7 +53,7 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
   <li>3_fmriprep.py: Run fMRIPprep 1.1.4, installed in a docker container</li>
   <li>3_run_singularity.py: Run fMRIprep 1.5.6, via a singularity image</li>
 </ul>
-<li>
+</li>
 <li> 4_Preprocess.py and 4_Preprocess_HPC.py
 <ul>
   <li>4_Preprocess.py: regresses out confounds found from fmriprep 1.1.4, and saves data in h5 file for cortex (one per subject).</li>
@@ -67,7 +67,9 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
 </ol>
 
 ## Other code:
-- 6_ISC_test
-- event_annotations
+<ul>
+<li>6_ISC_test</li>
+<li>event_annotations</li>
+</ul>
 
 
