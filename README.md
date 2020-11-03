@@ -49,6 +49,6 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
   <li>4_Preprocess.py: regresses out confounds found from fmriprep 1.1.4, and saves data in h5 file for cortex (one per subject).</li>
   <li>4_Preprocess_HPC.py: regresses out confounds found from fmriprep 1.5.6, labels anterior and posterior hippocampus, and saves data in h5 file for Hippocampus (one per subject).</li>
 </ul>
-5) 7_HMM_stats.py: This will both compute HMM models in each parcel and save h5 files for each parcel containing 
+5) 5_parcellation.py: This creates h5 files for each parcel with the vertices contributing to that parcel and a matrix of size (subjects x vertices x time).
 
 
