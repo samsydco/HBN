@@ -13,17 +13,22 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
 
 ## Settings files:
 <ol>
-1) settings.py: 
-- sets various path
-- yesnofun: used in 2_RA_rating.py and 2_rating_comp.py
-
-2) ISC_settings.py: Creates functions used later in ISC code. 
-- make_phenol: creates demographic breakdown for all subjects (Age, Sex, phenotypic PC variables - not really used)
-- even_out: creates two groups with equal sizes and equal numbers of a demographic variable (e.g. sex)
-- bottom part of code creates 5 equally sized age groups of subjects
-
-3) HMM_settings.py: sets various variables used for HMM code
-
+<li> settings.py: 
+<ul>
+<li>sets various path</li>
+<li>yesnofun: used in 2_RA_rating.py and 2_rating_comp.py</li>
+</ul>
+</li>
+<li> ISC_settings.py: Creates functions used later in ISC code. 
+<ul>
+<li>make_phenol: creates demographic breakdown for all subjects (Age, Sex, phenotypic PC variables - not really used)</li>
+<li>even_out: creates two groups with equal sizes and equal numbers of a demographic variable (e.g. sex)</li>
+<li>bottom part of code creates 5 equally sized age groups of subjects</li>
+</ul>
+</li>
+<li> HMM_settings.py: sets various variables used for HMM code
+</li>
+</ol>
 ## Order of code is as follows:
 <ol type="1">
 <li> 1_aws.py: 
