@@ -25,7 +25,7 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
 3) HMM_settings.py: sets various variables used for HMM code
 
 ## Order of code is as follows:
-<ol>
+<ol type="1">
 <li> 1_aws.py: 
 <ul>
   <li>Download available HBN datasets from aws (from either Rutgers (RU) or CBCI (CitiGroup Cornell Brain Imaging Center).</li>
@@ -57,7 +57,8 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
 </li>
 <li> 5_parcellation.py: This creates h5 files for each parcel with the vertices contributing to that parcel and a matrix of size (subjects x vertices x time).
 </li>
-</li> Use vertices from 5_parcellation to calculate ISCs and HMMs in each age group: 6_ISC_sh_yeo and 6_HMM_n_k </li>
+</li> Use vertices from 5_parcellation to calculate ISCs and HMMs in each age group: 6_ISC_sh_yeo and 6_HMM_n_k 
+</li>
 </ol>
 
 ## Other code:
