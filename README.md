@@ -29,8 +29,9 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
 <li> HMM_settings.py: sets various variables used for HMM code
 </li>
 </ol>
+
 ## Order of code is as follows:
-<ol type="1">
+<ol>
 <li> 1_aws.py: 
 <ul>
   <li>Download available HBN datasets from aws (from either Rutgers (RU) or CBCI (CitiGroup Cornell Brain Imaging Center).</li>
