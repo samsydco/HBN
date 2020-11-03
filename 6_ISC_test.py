@@ -16,17 +16,18 @@ from scipy.spatial.distance import squareform
 from random import shuffle
 import matplotlib.pyplot as plt
 from settings import *
-# Only using 233 subj in most recent Data version - a bit of a hack
+# Only using 233 subj
 subord = dd.io.load(metaphenopath+'pheno_2019-05-28.h5',['/subs'])[0]
 ISCf = ISCpath+'old_ISC/ISC_2019-05-28.h5'
 n_subj = len(subord)
 n_vox = 5
+ISCversions = ['Loo','SH','Pair']
 
 # Some math to conver between correlation values
-def corr_convert(r,N,corrtype='sh'):
-	if corrtype == 'sh':
+def corr_convert(r,N,corrtype='SH'):
+	if corrtype == 'SH':
 		f = 2*r/(N*(1-r))
-	elif corrtype == 'pw':
+	elif corrtype == 'Pair':
 		f = r/(1-r)
 	else: 
 		f = (N*np.square(r)+np.sqrt((N**2)*np.power(r,4,dtype=np.float16)+4*np.square(r)*(N-1)*(1-np.square(r))))/(2*(N-1)*(1-np.square(r)))
@@ -34,25 +35,11 @@ def corr_convert(r,N,corrtype='sh'):
 	r_sh = (N*f)/(N*f+2)
 	r_loo = (np.sqrt(N-1)*f)/(np.sqrt(f+1)*np.sqrt((N-1)*f+1))
 	return r_pw,r_sh,r_loo
-	
-		
-		
-		f_llo = 
-				if g == 'Pair':
-					i['f'][s-2] = r/(1-r)
-				if g == 'SH':
-					i['f'][s-2] = 2*r/(N*(1-r))
-				if g == 'Loo':
-					i['f'][s-2] = (N*np.square(r)+ \
-					 np.sqrt((N**2)*np.power(r,4,dtype=np.float16)+4*np.square(r)*(N-1)*(1-np.square(r))))/(2*(N-1)*(1-np.square(r)))
-		r_llo = 
 
 for task in ['DM','TP']:
 	print(task)
 	non_nan_verts = np.where(~np.isnan(np.concatenate([dd.io.load(subord[0],['/'+task+'/L'])[0], dd.io.load(subord[0],['/'+task+'/R'])[0]], axis=0))[:,0])[0]
-	dictall = {'Loo':None,'SH':None,'Pair':None}
-	for key in dictall:
-		dictall[key] = {'ISC':None,'Time':None}
+	dictall = {k:{'ISC':None,'Time':None} for k in ISCversions}
 	_,n_time = dd.io.load(subord[0],['/'+task+'/L'])[0].shape
 	dictall['verts'] = non_nan_verts[np.random.choice(len(non_nan_verts),n_vox,replace=False)]
 	D = np.empty((n_vox,n_time,n_subj),dtype='float16')
@@ -111,47 +98,47 @@ for task in ['DM','TP']:
 	dictall['Pair']['ISC'] = np.column_stack(voxel_iscs)
 
 	n_it = 10
-	for g,i in dictall.items():
-		if g != 'verts':
-			i['TimeCum'] = []
-			i['ISCCum'] = np.zeros((n_subj-1,n_vox,n_it))
-			i['f'] = np.zeros((n_subj-1,n_vox,n_it))
-			for s in np.arange(2,n_subj+1):
-				i['TimeCum'].append(np.sum(i['Time'][:s]))
-				for it in range(n_it):
-					if g != 'Pair':
-						randsubjs = np.random.choice(n_subj,s,replace=False)
-						i['ISCCum'][s-2,:,it] = np.nanmean(i['ISC'][:,randsubjs],axis=1)
-					else:
-						randsubjs = np.random.choice(int((n_subj*n_subj-n_subj)/2),int((s*s-s)/2),replace=False)
-						i['ISCCum'][s-2,:,it] = np.nanmean(i['ISC'][randsubjs,:],axis=0)
-				N = n_subj
-				r = i['ISCCum'][s-2]
-				if g == 'Pair':
-					i['f'][s-2] = r/(1-r)
-				if g == 'SH':
-					i['f'][s-2] = 2*r/(N*(1-r))
-				if g == 'Loo':
-					i['f'][s-2] = (N*np.square(r)+ \
-					 np.sqrt((N**2)*np.power(r,4,dtype=np.float16)+4*np.square(r)*(N-1)*(1-np.square(r))))/(2*(N-1)*(1-np.square(r)))
+	for g in ISCversions:
+		i = dictall[g]
+		i['TimeCum'] = []
+		i['ISCCum'] = np.zeros((n_subj-1,n_vox,n_it))
+		i['f'] = np.zeros((n_subj-1,n_vox,n_it))
+		for s in np.arange(2,n_subj+1):
+			i['TimeCum'].append(np.sum(i['Time'][:s]))
+			for it in range(n_it):
+				if g != 'Pair':
+					randsubjs = np.random.choice(n_subj,s,replace=False)
+					i['ISCCum'][s-2,:,it] = np.nanmean(i['ISC'][:,randsubjs],axis=1)
+				else:
+					randsubjs = np.random.choice(int((n_subj*n_subj-n_subj)/2),int((s*s-s)/2),replace=False)
+					i['ISCCum'][s-2,:,it] = np.nanmean(i['ISC'][randsubjs,:],axis=0)
+			N = n_subj
+			r = i['ISCCum'][s-2]
+			if g == 'Pair':
+				i['f'][s-2] = r/(1-r)
+			if g == 'SH':
+				i['f'][s-2] = 2*r/(N*(1-r))
+			if g == 'Loo':
+				i['f'][s-2] = (N*np.square(r)+ \
+				 np.sqrt((N**2)*np.power(r,4,dtype=np.float16)+4*np.square(r)*(N-1)*(1-np.square(r))))/(2*(N-1)*(1-np.square(r)))
 		
-	figsubj = 25
+	figsubj = 200
 	fig = plt.figure()
 	for v in range(n_vox):
 		ax = fig.add_subplot(n_vox,1,v+1)
 		if v == 0:
 			ax.set_title(task)
-		for g,i in dictall.items():
-			if g!= 'verts':
-				# plot Time vs Accuracy:
-				final_f = np.mean(i['f'][-1,v,:])
-				y = np.mean(i['f'][:figsubj,v,:]-final_f,axis=1)
-				error = np.max(i['f'][:figsubj,v,:]-final_f,axis=1)
-				ax.plot(i['TimeCum'][:figsubj],y,label=g)
-				ax.fill_between(i['TimeCum'][:figsubj], y-error, y+error,alpha=0.2)
-				ax.set_ylabel('f acc\nvert =\n'+str(dictall['verts'][v]),size=7)
-				#if g == 'Pair':
-				#	ax.set_ylim(y[0]-error[0],y[0]+error[0])
+		for g in ISCversions:
+			i = dictall[g]
+			# plot Time vs Accuracy:
+			final_f = np.mean(i['f'][-1,v,:])
+			y = np.mean(i['f'][:figsubj,v,:]-final_f,axis=1)
+			error = np.max(i['f'][:figsubj,v,:]-final_f,axis=1)
+			ax.plot(i['TimeCum'][:figsubj],y,label=g)
+			ax.fill_between(i['TimeCum'][:figsubj], y-error, y+error,alpha=0.2)
+			ax.set_ylabel('f acc\nvert =\n'+str(dictall['verts'][v]),size=7)
+			#if g == 'Pair':
+			#	ax.set_ylim(y[0]-error[0],y[0]+error[0])
 		ax.set_xlim(min(dictall['Pair']['TimeCum'][:figsubj]),max(dictall['SH']['TimeCum'][:figsubj]))
 		if v == n_vox-1:
 			ax.legend(bbox_to_anchor=(0.7,1,0.5,3.5))
@@ -164,18 +151,18 @@ for task in ['DM','TP']:
 			ax0 = fig.add_subplot(n_vox+1,1,v+1)
 			if v == 0:
 				ax0.set_title(task)
-			for g,i in dictall.items():
-				if g!= 'verts':
-					# plot subj vs f for vox:
-					ax0.plot(np.arange(1,figsubj+1),np.mean(i['f'][:figsubj,v,:],axis=1))
-					final_f = np.mean((dictall['SH']['f'][-1,v,:]+dictall['Loo']['f'][-1,v,:]+dictall['Pair']['f'][-1,v,:])/3)
-					ax0.plot([figsubj-1,figsubj],[final_f,final_f],'k-')
-					ax0.set_ylabel('f\nvert =\n'+str(dictall['verts'][v]),size=7)
-					ax0.set_xlim(2,figsubj)
-					if v == n_vox-1:
-						ax1 = fig.add_subplot(n_vox+1,1,n_vox+1)
-						ax1.plot(np.arange(1,figsubj+1),i['TimeCum'][:figsubj],label=g) # plot subj vs compute time for vox
-						ax1.set_xlim(2,figsubj)
+			for g in ISCversions:
+				i = dictall[g]
+				# plot subj vs f for vox:
+				ax0.plot(np.arange(1,figsubj+1),np.mean(i['f'][:figsubj,v,:],axis=1))
+				final_f = np.mean((dictall['SH']['f'][-1,v,:]+dictall['Loo']['f'][-1,v,:]+dictall['Pair']['f'][-1,v,:])/3)
+				ax0.plot([figsubj-1,figsubj],[final_f,final_f],'k-')
+				ax0.set_ylabel('f\nvert =\n'+str(dictall['verts'][v]),size=7)
+				ax0.set_xlim(2,figsubj)
+				if v == n_vox-1:
+					ax1 = fig.add_subplot(n_vox+1,1,n_vox+1)
+					ax1.plot(np.arange(1,figsubj+1),i['TimeCum'][:figsubj],label=g) # plot subj vs compute time for vox
+					ax1.set_xlim(2,figsubj)
 		ax1.legend(bbox_to_anchor=(0.7,1,0.5,3.5))
 		ax1.set_xlabel('Subjects')
 		ax1.set_ylabel('Time [s]')
