@@ -44,7 +44,7 @@ for roi in tqdm.tqdm(roidict.keys()):
 				 best_k[shuff] = np.mean([k_list[np.argmax(tune_ll[shuff,ki])] for ki in range(kf.n_splits)])
 			data[str(b)]['tune_ll'] = tune_ll
 			data[str(b)]['best_k'] = best_k
-		data['k_diff'] = roidict[str(4)]['best_k'] - roidict[str(0)]['best_k']
+		data['k_diff'] = data[str(4)]['best_k'] - data[str(0)]['best_k']
 		dd.io.save(nkdir+roi_short+'.h5',data)
 		
 		

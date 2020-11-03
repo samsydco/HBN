@@ -19,7 +19,7 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 		roi_short=roi_tmp.decode("utf-8")[11:]
 		roidict = {}
 		vall = np.where(lab[0]==ri)[0]
-		roidict['hemi'] = roi_short[0]
+		roidict['hemi'] = (hemi.split('/')[-1][0]).upper()
 		for ti,task in enumerate(tasks):
 			roidict[task] = {}
 			nTR_ = nTR[ti]
