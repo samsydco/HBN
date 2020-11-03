@@ -3,17 +3,18 @@
 # make h5 files for each parcel
 # data = subjects x verticies x TRs
 
+import tqdm
 import nibabel.freesurfer.io as free
 from HMM_settings import *
 
 tasks=['DM']
 bins = np.arange(nbinseq)
-savepath = 
+savepath = ISCpath+'Yeo_parcellation/'
 
 for hemi in glob.glob(path+'ROIs/annot/*'):
 	print(hemi)
 	lab = free.read_annot(hemi)
-	for ri,roi_tmp in enumerate(lab[2]):
+	for ri,roi_tmp in tqdm.tqdm(enumerate(lab[2])):
 		roi=roi_tmp.decode("utf-8")
 		roi_short=roi_tmp.decode("utf-8")[11:]
 		roidict = {}
@@ -38,5 +39,5 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 				roidict['vall'] = vall
 				roidict[task]['bin_'+str(b)]['D'] = D
 		if len(vall) > 0:
-			dd.io.save(ISCpath+roi_short+'.h5',roidict)
+			dd.io.save(savepath+roi_short+'.h5',roidict)
 			
