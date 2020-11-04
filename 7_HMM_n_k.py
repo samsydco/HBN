@@ -45,7 +45,7 @@ for roi in tqdm.tqdm(roidict.keys()):
 			data[str(b)]['tune_ll'] = tune_ll
 			data[str(b)]['best_k'] = best_k
 		data['k_diff'] = data[str(4)]['best_k'] - data[str(0)]['best_k']
-		dd.io.save(nkdir+roi_short+'.h5',data)
+		dd.io.save(nkdir+roi+'.h5',data)
 		
 		
 
