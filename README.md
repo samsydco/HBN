@@ -65,11 +65,17 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
 </li>
 <li> Use vertices from 5_parcellation to calculate ISCs and HMMs in each age group: 6_ISC_sh_yeo and 6_HMM_n_k 
 <ul>
-  <li>6_ISC_sh_yeo</li>
-  <li>6_ISC_n_k</li>
+  <li>6_ISC_sh_yeo: Determine difference in ISC and between-group ISC for Youngest and Oldest subjects.
+    Do 100 subject-age permutations. (Follow up with 7_ISC_sh_yeo.py if necessary.)</li>
+  <li>6_ISC_n_k: Determine if there is a significant difference in the number of HMM-derived events between Youngest and Oldest groups.
+    Do 100 subject-age permutaitons. (Follow up with 7_HMM_n_k.py if necessary.)</li>
 </ul>
 </li>
-<li> 6_HMM_ll.py: find where HMM has a poor fit in either Youngest or Oldest subjects (HMM fit in 6_HMM_n_k)
+<li> 6_HMM_ll.py: 
+<ul>
+  <li>Find where HMM has a poor fit in either Youngest or Oldest subjects (HMM fit in 6_HMM_n_k).</li>
+  <li>See if there is a difference in the number of events in the remaining parcels</li>
+</ul>
 </li>
 </ol>
 
