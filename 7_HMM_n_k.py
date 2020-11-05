@@ -18,7 +18,7 @@ nbins = len(bins)
 nshuff2=1000
 task = 'DM'
 
-roidict=dd.io.load(HMMpath+'nk2.h5')
+roidict=dd.io.load(HMMpath+'nk.h5')
 
 for roi in tqdm.tqdm(roidict.keys()):
 	if roidict[roi]['k_diff_p'] <= 0.05:
