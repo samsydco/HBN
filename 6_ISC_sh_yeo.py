@@ -10,15 +10,15 @@ from ISC_settings import *
 nTR=[750,250]
 bins = [0,4]
 nbins = len(bins)
-HMMdir = HMMpath+'shuff/'
+roidir = ISCpath+'Yeo_parcellation/'
 savedir = ISCpath+'shuff_Yeo/'
 nsub = 41
 
-for roi in tqdm.tqdm(glob.glob(HMMdir+'*.h5')):
+for roi in tqdm.tqdm(glob.glob(roidir+'*.h5')):
 	roi_short = roi.split('/')[-1][:-3]
 	roidict = {}
-	for ti,task in enumerate(['DM','TP']):
-		vall = dd.io.load(roi,'/'+'/'.join([task,'bin_0','vall']))
+	for ti,task in enumerate(['DM']):
+		vall = dd.io.load(roi,'/vall')
 		n_vox = len(vall)
 		n_time = nTR[ti]
 		D = []
