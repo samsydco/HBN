@@ -64,6 +64,12 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
 <li> 5_parcellation.py: This creates h5 files for each parcel with the vertices contributing to that parcel and a matrix of size (subjects x vertices x time).
 </li>
 <li> Use vertices from 5_parcellation to calculate ISCs and HMMs in each age group: 6_ISC_sh_yeo and 6_HMM_n_k 
+<ul>
+  <li>6_ISC_sh_yeo</li>
+  <li>6_ISC_n_k</li>
+</ul>
+</li>
+<li> 6_HMM_ll.py: find where HMM has a poor fit in either Youngest or Oldest subjects (HMM fit in 6_HMM_n_k)
 </li>
 </ol>
 
