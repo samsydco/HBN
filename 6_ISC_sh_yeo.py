@@ -12,7 +12,7 @@ nTR=[750,250]
 bins = [0,4]
 nbins = len(bins)
 roidir = ISCpath+'Yeo_parcellation/'
-savedir = ISCpath+'shuff_Yeo/'
+savedir = ISCpath+'shuff_Yeo_paper/'
 nsub = 40
 nshuff2perm=1000
 
