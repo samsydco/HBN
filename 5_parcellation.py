@@ -26,6 +26,7 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 			for b in bins:
 				if len(vall) > 0:
 					roidict[task]['bin_'+str(b)] = {}
+					np.random.seed(0)
 					subl = [ageeq[i][1][b][idx] for i in [0,1] for idx in np.random.choice(lenageeq[i][b],minageeq[i],replace=False)]
 					roidict[task]['bin_'+str(b)]['subl'] = subl
 					nsub = len(subl)
