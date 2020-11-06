@@ -44,8 +44,8 @@ for roi in tqdm.tqdm(glob.glob(roidir+'*h5')):
 			shuffl = np.arange(nshuff+1)
 		for bi,b in enumerate(bins):
 			notbi = 1 if bi==0 else 0
-			best_k = np.zeros(nshuff+1)
-			tune_ll = np.zeros((nshuff+1,nsplit,len(k_list)))
+			best_k = np.zeros(len(shuffl))
+			tune_ll = np.zeros((len(shuffl),nsplit,len(k_list)))
 			for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
 				Dtrain = np.mean(Dall[bi][Ls[0]],axis=0).T
 				Dtest_all  = np.concatenate((Dall[bi][Ls[1]],Dall[notbi][Ls[1]]),axis=0)
@@ -53,14 +53,18 @@ for roi in tqdm.tqdm(glob.glob(roidir+'*h5')):
 				for ki,k in enumerate(k_list):
 					hmm = brainiak.eventseg.event.EventSegment(n_events=k)
 					hmm.fit(Dtrain)
-					for shuff in range(nshuff+1):
+					for shuff in range(len(shuffl)):
 						if shuff != 0: # RANDOMIZE
 							subl = np.random.permutation(subl)
 						_, tune_ll[shuff,split,ki] = hmm.find_events(np.mean(Dtest_all[subl==1], axis=0).T)			
-		for shuff in range(nshuff+1):
-			 best_k[shuff] = np.mean([k_list[np.argmax(tune_ll[shuff,ki])] for ki in range(kf.n_splits)])
-		roidict[str(b)]['tune_ll'] = tune_ll
-		roidict[str(b)]['best_k'] = best_k
+			for shuff in range(len(shuffl)):
+				best_k[shuff] = np.mean([k_list[np.argmax(tune_ll[shuff,ki])] for ki in range(kf.n_splits)])
+			if len(roidict[str(b)].keys())>0:
+				roidict[str(b)]['best_k'] = np.append(data[str(b)]['best_k'],best_k,axis=0)
+				roidict[str(b)]['tune_ll'] = np.append(data[str(b)]['tune_ll'], tune_ll,axis=0)
+			else:
+				roidict[str(b)]['tune_ll'] = tune_ll
+				roidict[str(b)]['best_k'] = best_k
 		roidict['k_diff'] = roidict[str(4)]['best_k'] - roidict[str(0)]['best_k']
 		dd.io.save(nkdir+roi_short+'.h5',roidict)
 	
