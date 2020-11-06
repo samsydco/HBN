@@ -14,49 +14,6 @@ nbins = len(bins)
 HMMdir = HMMpath+'shuff/'
 savedir = ISCpath+'shuff_Yeo/'
 nshuff2=1000
-
-def p_calc(ISC,ISCtype='e'):
-	nshuff = ISC.shape[0]-1
-	if ISCtype == 'e':
-		p = np.sum(abs(np.nanmean(ISC[0]))<abs(np.nanmean(ISC[1:],axis=1)))/nshuff
-	else:
-		p = np.sum(np.nanmean(ISC[0])>np.nanmean(ISC[1:],axis=1))/nshuff
-	return p,nshuff
-
-def load_D(roil,task,bins):
-	D = []
-	Age = []
-	Sex = []
-	for bi,b in enumerate(bins):
-		bstr = 'bin_'+str(b)
-		subl = dd.io.load(roil,'/'+'/'.join([task,bstr,'subl']))
-		Sex.extend([Phenodf['Sex'][Phenodf['EID'] == shortsub(sub)].iloc[0] for sub in subl])
-		Age.extend([bi]*len(subl))
-		D.append(dd.io.load(roil,'/'+'/'.join([task,bstr,'D'])))
-	D = np.concatenate(D)
-	return D,Age,Sex
-
-def shuff_demo(Age,Sex):
-	# Now shuffle Age, and Sex in same order:
-	neword = np.random.permutation(len(Age))
-	Age = [Age[neword[ai]] for ai,a in enumerate(Age)]
-	Sex = [Sex[neword[ai]] for ai,a in enumerate(Sex)]
-	return Age,Sex
-	
-def ISC_w_calc(D,n_vox,n_time,nsub,subh):
-	ISC_w = np.zeros((nbins,n_vox))
-	groups = np.zeros((nbins,2,n_vox,n_time),dtype='float16')
-	for h in [0,1]:
-		for htmp in [0,1]:
-			group = np.zeros((n_vox,n_time),dtype='float16')
-			groupn = np.ones((n_vox,n_time),dtype='int')*nsub//2
-			for i in subh[h][htmp]:
-				group = np.nansum(np.stack((group,D[i])),axis=0)
-				nanverts = np.argwhere(np.isnan(D[i,:]))
-				groupn[nanverts[:, 0],nanverts[:,1]] = groupn[nanverts[:,0],nanverts[:,1]]-1
-			groups[h,htmp] = zscore(group/groupn,axis=1)
-		ISC_w[h] = np.sum(np.multiply(groups[h,0],groups[h,1]), axis=1)/(n_time-1)
-	return ISC_w,groups
 	
 for roi in tqdm.tqdm(glob.glob(savedir+'*.h5')):
 	roi_short = roi.split('/')[-1][:-3]
