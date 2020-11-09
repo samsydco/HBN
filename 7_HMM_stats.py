@@ -1,15 +1,7 @@
 #!/usr/bin/env python3
 
-# Use ll values determined in seperate code
-# Permute subject IDs between young and old
-# At k value with best ll compute:
-# (a) ll difference between "young" and "old"
-# (b) auc difference between "young" and "old"
-# determine how fast 100 shuffs takes to determine if can run more,
-# or need to do normal distribution approximation...
-
 '''
-New Process:
+# In ROIs with similar k's and high LL's in both or one age group:
 
 1) Get patterns by HMM([Young_train, Old_train])
 2) LLs = find_events(Young_test), find_events(Old_test)
@@ -19,7 +11,6 @@ New Process:
 Permutations only for 4
 Perm: find_events(Perm1), find_events(Perm2)
 All of this train/test set loop
-
 '''
 
 import os
@@ -29,34 +20,50 @@ import numpy as np
 import deepdish as dd
 import brainiak.eventseg.event
 from sklearn.model_selection import KFold
-import nibabel.freesurfer.io as free
 from HMM_settings import *
 
-ROInow = ROIopts[1]
-oldsavedir = HMMpath+'shuff_5bins/'
-newsavedir = HMMpath+'shuff_5bins_train04/'#'shuff_5bins_trainall/'#'shuff_5bins_train04/'#
-nsub= 41
+lldict = dd.io.load(HMMpath+'ll_diff.h5')
+kdict=dd.io.load(HMMpath+'nk.h5')
+df = pd.DataFrame(kdict).T.merge(pd.DataFrame(lldict).T, left_index=True, right_index=True, how='inner')
+thresh =0.002
+df=df[((df['0_2k_diff']>thresh) | (df['4_2k_diff']>thresh))]
+ROIl = list(df.index)
+
+roidir = ISCpath+'Yeo_parcellation/'
+savedir = HMMpath+'shuff_5bins_train04/'
+nsub= 40
 y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit))+1)
 kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
 bins = np.arange(nbinseq)
 nbins = len(bins)
+tasks = ['DM']
 
+for roi_short in ROIl:
+	roif = roidir+roi_short+'.h5'
+	roidict = {t:{'bin_'+str(b):{} for b in bins} for t in tasks}
+	for ti,task in enumerate(tasks):
+		nTR_ = nTR[ti]
+		for b in bins:
+			roidict[task]['bin_'+str(b)]['D'] =  dd.io.load(roif, task+'/bin_'+str(b)+'/D')
+		D = [roidict[task]['bin_'+str(b)]['D'] for b in bins]
+		bin_tmp = [0,4]
+	
+	
 for hemi in glob.glob(path+'ROIs/annot/*'):
 	print(hemi)
 	lab = free.read_annot(hemi)
 	h = hemi.split('/')[-1][0].capitalize()
 	for roi_tmp in tqdm.tqdm(lab[2]):
 		roi_short=roi_tmp.decode("utf-8")[11:]
-		roidict = {t:{'bin_'+str(b):{} for b in bins} for t in tasks}
-		if os.path.isfile(oldsavedir+roi_short+'.h5'):
-			roidictold = dd.io.load(oldsavedir+roi_short+'.h5')
+		
+		if os.path.isfile(roidir+roi_short+'.h5'):
+			roidictold = dd.io.load(roidir+roi_short+'.h5')
 			for ti,task in enumerate(tasks):
-				nTR_ = nTR[ti]
-				roidict[task]['vall'] = roidictold[task]['bin_0']['vall']
+
 				for b in bins:
 					roidict[task]['bin_'+str(b)]['D'] = roidictold[task]['bin_'+str(b)]['D']
 				D = [roidict[task]['bin_'+str(b)]['D'] for b in bins]
-				bin_tmp = bins if 'all' in newsavedir else [0,4]
+				bin_tmp = [0,4]
 				# saving steps, variance, and training segmentation for future trouble shooting:
 				steps = np.zeros((nsplit,len(k_list)))
 				evar = np.zeros((nsplit,len(k_list)))
@@ -113,7 +120,7 @@ for hemi in glob.glob(path+'ROIs/annot/*'):
 					roidict[task][shuffstr]['auc'] = auc
 					roidict[task][shuffstr]['auc_diff'] = ((auc[-1]-auc[0])/best_k)*TR
 					roidict[task][shuffstr]['ll_diff'] = np.mean(np.diff(np.mean(tune_ll[shuff],axis=1)))/nTR_
-			dd.io.save(newsavedir+roi_short+'.h5',roidict)
+			dd.io.save(savedir+roi_short+'.h5',roidict)
 				
 			
 		
