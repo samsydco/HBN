@@ -13,8 +13,8 @@ from sklearn.model_selection import KFold
 from HMM_settings import *
 
 newsavedir = HMMpath+'shuff_5bins_train04/'
-nsub=41
-y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit))+1)
+nsub=40
+y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit)))
 kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
 bins = np.arange(nbinseq)
 nbins = len(bins)
