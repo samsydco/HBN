@@ -54,8 +54,8 @@ for roi in tqdm.tqdm(glob.glob(roidir+'*h5')):
 			for shuff in range(len(shuffl)):
 				best_k[shuff] = np.mean([k_list[np.argmax(tune_ll[shuff,ki])] for ki in range(kf.n_splits)])
 			if len(roidict[str(b)].keys())>0:
-				roidict[str(b)]['best_k'] = np.append(data[str(b)]['best_k'],best_k,axis=0)
-				roidict[str(b)]['tune_ll'] = np.append(data[str(b)]['tune_ll'], tune_ll,axis=0)
+				roidict[str(b)]['best_k'] = np.append(roidict[str(b)]['best_k'],best_k,axis=0)
+				roidict[str(b)]['tune_ll'] = np.append(roidict[str(b)]['tune_ll'], tune_ll,axis=0)
 			else:
 				roidict[str(b)]['tune_ll'] = tune_ll
 				roidict[str(b)]['best_k'] = best_k

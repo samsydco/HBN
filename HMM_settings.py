@@ -21,6 +21,7 @@ k_list = np.unique(np.round((10*60)/np.arange(TR1,TR2,TR1))).astype(int)
 nsplit = 5
 bins = [0,nbinseq-1]
 nshuff = 100
+ll_thresh = 0.002
 
 nsub= 40
 y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit)))

@@ -39,10 +39,9 @@ plt.rcParams.update({'font.size': 40})
 
 df=pd.DataFrame(lldict).T
 df=df.drop(columns=['0_ll_diff','4_ll_diff','0_ll_max','4_ll_max','0_2k','4_2k'])
-thresh = 0.002
 x = df['0'+comp]; y = df['4'+comp]
-idx1 = np.intersect1d(np.where(y<thresh)[0],np.where(x<thresh)[0])
-idx2 = np.unique(np.concatenate((np.where(y>thresh)[0],np.where(x>thresh)[0])))
+idx1 = np.intersect1d(np.where(y<ll_thresh)[0],np.where(x<ll_thresh)[0])
+idx2 = np.unique(np.concatenate((np.where(y>ll_thresh)[0],np.where(x>ll_thresh)[0])))
 x1 = x.iloc[idx1]; y1 = y.iloc[idx1]
 x2 = x.iloc[idx2]; y2 = y.iloc[idx2]
 fig, ax = plt.subplots(figsize=(15,15))
@@ -53,14 +52,13 @@ ax.set_ylim([np.min(y)-0.005,np.max(y)+0.005])
 ax.set_xlabel('Youngest '+comp[1:])
 ax.set_ylabel('Oldest '+comp[1:])
 ax.set_title('Outlier: '+df.loc[df['4'+comp]==df['4'+comp].max()].index[0])
-fig.savefig(figurepath+'HMM/ll/'+comp+'_'+str(thresh)+'.png', bbox_inches='tight')
+fig.savefig(figurepath+'HMM/ll/'+comp+'_'+str(ll_thresh)+'.png', bbox_inches='tight')
 
 
 # In Parcels above minimum ll: is there a difference in number of k's (events)?
 roidict=dd.io.load(nkh5)
 df = pd.DataFrame(roidict).T.merge(pd.DataFrame(lldict), left_index=True, right_index=True, how='inner')
-thresh =0.002
-df=df[((df['0_2k_diff']>thresh) | (df['4_2k_diff']>thresh))]
+df=df[((df['0_2k_diff']>ll_thresh) | (df['4_2k_diff']>ll_thresh))]
 
 from scipy.stats import pearsonr
 import seaborn as sns
