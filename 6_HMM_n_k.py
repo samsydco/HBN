@@ -12,9 +12,10 @@ from sklearn.model_selection import KFold
 from HMM_settings import *
 
 roidir = ISCpath+'Yeo_parcellation/'
-nkdir = HMMpath+'nk_moreshuff/'#'nk/'
+nkdir = HMMpath+'nk_moreshuff_paper/'#'nk/'
+nkh5 = HMMpath+'nk_paper.h5' #formerly nk.h5
 nsub= 40
-y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit))+1)
+y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit)))
 kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
 bins = [0,4]
 nbins = len(bins)
@@ -22,14 +23,14 @@ nshuff=100
 nshuff2perm=1000
 task = 'DM'
 
-if os.path.exists(HMMpath+'nk.h5'):
-	pdict=dd.io.load(HMMpath+'nk.h5')
+if os.path.exists(nkh5):
+	pdict=dd.io.load(nkh5)
 
 for roi in tqdm.tqdm(glob.glob(roidir+'*h5')):
 	roi_short = roi.split('/')[-1][:-3]
-	if (os.path.exists(HMMpath+'nk.h5') and pdict[roi_short]['k_diff_p'] <= 0.05) or \
-	not os.path.exists(HMMpath+'nk.h5'):
-		if os.path.exists(HMMpath+'nk.h5'):
+	if (os.path.exists(nkh5) and pdict[roi_short]['k_diff_p'] <= 0.05) or \
+	not os.path.exists(nkh5):
+		if os.path.exists(nkh5):
 			roidict = dd.io.load(nkdir+roi+'.h5')
 			nshuff_ = len(roidict['0']['best_k'])-1
 			Dall = [roidict['0']['D'],roidict['4']['D']]
@@ -79,5 +80,5 @@ for roi in tqdm.tqdm(glob.glob(nkdir+'*.h5')):
 	roidict[roi_short]['k_diff_p'] = np.sum(abs(data['k_diff'][0])<abs(data['k_diff'][1:]))/nshuff
 	roidict[roi_short]['sig'] = 1 if roidict[roi_short]['k_diff_p']<0.05 else 0
 		
-dd.io.save(HMMpath+'nk.h5',roidict)
+dd.io.save(nkh5,roidict)
 	
