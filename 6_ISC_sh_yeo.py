@@ -99,8 +99,8 @@ for roi in tqdm.tqdm(glob.glob(roidir+'*.h5')):
 			for htmp1 in [0,1]:
 				for htmp2 in [0,1]:
 					ISC_b_time.append(np.multiply(groups[0,htmp1], groups[1,htmp2]))
-					roidict[task]['ISC_b'][shuff,idx] = [np.sum(ISC_b_time[-1], axis=1)/(n_time-1)
-					idx+=1
+					roidict[task]['ISC_b'][shuff,idx] = np.sum(ISC_b_time[-1], axis=1)/(n_time-1)
+					idx += 1
 			denom = np.sqrt(roidict[task]['ISC_w'][shuff,0]) * \
 					np.sqrt(roidict[task]['ISC_w'][shuff,1])
 			roidict[task]['ISC_g_time'][shuff] = np.sum(ISC_b_time, axis=0)/4/np.tile(denom,(n_time,1)).T
