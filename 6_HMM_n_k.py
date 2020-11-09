@@ -8,15 +8,8 @@
 import os
 import tqdm
 import brainiak.eventseg.event
-from sklearn.model_selection import KFold
 from HMM_settings import *
 
-roidir = ISCpath+'Yeo_parcellation/'
-nkdir = HMMpath+'nk_moreshuff_paper/'#'nk/'
-nkh5 = HMMpath+'nk_paper.h5' #formerly nk.h5
-nsub= 40
-y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit)))
-kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
 bins = [0,4]
 nbins = len(bins)
 nshuff=100

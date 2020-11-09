@@ -9,7 +9,6 @@ import numpy as np
 import deepdish as dd
 from HMM_settings import *
 
-nkdir = HMMpath+'nk_moreshuff/'
 task= 'DM'
 nTR = nTR[0]
 
@@ -29,8 +28,8 @@ for roi in glob.glob(nkdir+'*.h5'):
 		lldict[roi_short][str(b)+'_ll_max'] - \
 		lldict[roi_short][str(b)+'_2k']
 		
-dd.io.save(HMMpath+'ll_diff.h5',lldict)
-lldict = dd.io.load(HMMpath+'ll_diff.h5')
+dd.io.save(llh5,lldict)
+lldict = dd.io.load(llh5)
 
 # eliminate parcels with ll-diff below threshold in BOTH young and old subjects:
 comp = '_2k_diff'
@@ -58,7 +57,7 @@ fig.savefig(figurepath+'HMM/ll/'+comp+'_'+str(thresh)+'.png', bbox_inches='tight
 
 
 # In Parcels above minimum ll: is there a difference in number of k's (events)?
-roidict=dd.io.load(HMMpath+'nk.h5')
+roidict=dd.io.load(nkh5)
 df = pd.DataFrame(roidict).T.merge(pd.DataFrame(lldict), left_index=True, right_index=True, how='inner')
 thresh =0.002
 df=df[((df['0_2k_diff']>thresh) | (df['4_2k_diff']>thresh))]

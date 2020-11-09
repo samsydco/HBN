@@ -19,21 +19,16 @@ import tqdm
 import numpy as np
 import deepdish as dd
 import brainiak.eventseg.event
-from sklearn.model_selection import KFold
 from HMM_settings import *
 
-lldict = dd.io.load(HMMpath+'ll_diff.h5')
-kdict=dd.io.load(HMMpath+'nk.h5')
+lldict = dd.io.load(llh5)
+kdict=dd.io.load(nkh5)
 df = pd.DataFrame(kdict).T.merge(pd.DataFrame(lldict).T, left_index=True, right_index=True, how='inner')
 thresh =0.002
 df=df[((df['0_2k_diff']>thresh) | (df['4_2k_diff']>thresh))]
 ROIl = list(df.index)
 
-roidir = ISCpath+'Yeo_parcellation/'
-savedir = HMMpath+'shuff_5bins_train04/'
-nsub= 40
-y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit)))
-kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
+savedir = HMMpath+'shuff_5bins_train04_paper/'
 bins = np.arange(nbinseq)
 nbins = len(bins)
 tasks = ['DM']
