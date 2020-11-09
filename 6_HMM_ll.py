@@ -59,7 +59,7 @@ fig.savefig(figurepath+'HMM/ll/'+comp+'_'+str(thresh)+'.png', bbox_inches='tight
 
 # In Parcels above minimum ll: is there a difference in number of k's (events)?
 roidict=dd.io.load(HMMpath+'nk.h5')
-df = pd.DataFrame(roidict).T.merge(pd.DataFrame(lldict).T, left_index=True, right_index=True, how='inner')
+df = pd.DataFrame(roidict).T.merge(pd.DataFrame(lldict), left_index=True, right_index=True, how='inner')
 thresh =0.002
 df=df[((df['0_2k_diff']>thresh) | (df['4_2k_diff']>thresh))]
 
