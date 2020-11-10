@@ -86,6 +86,12 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
   <li>Run 100 permutations initially, then continue running code, adding 1000 permutations each time until p>0.05 or p!=0</li>
 </ul>
 </li>
+<li> 8_p_check.py: 
+<ul>
+  <li></li>
+  <li></li>
+</ul>
+</li>
 </ol>
 
 ## Other code:
