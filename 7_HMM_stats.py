@@ -21,12 +21,6 @@ import deepdish as dd
 import brainiak.eventseg.event
 from HMM_settings import *
 
-lldict = dd.io.load(llh5)
-kdict=dd.io.load(nkh5)
-df = pd.DataFrame(kdict).T.merge(pd.DataFrame(lldict).T, left_index=True, right_index=True, how='inner')
-df=df[((df['0_2k_diff']>ll_thresh) | (df['4_2k_diff']>ll_thresh))]
-ROIl = list(df.index)
-
 savedir = HMMpath+'shuff_5bins_train04_paper/'
 bins = np.arange(nbinseq)
 nbins = len(bins)

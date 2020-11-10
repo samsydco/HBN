@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # HMM Settings
+import os
 from settings import *
 from ISC_settings import *
 from event_ratings import ev_conv
@@ -23,7 +24,58 @@ bins = [0,nbinseq-1]
 nshuff = 100
 ll_thresh = 0.002
 
+def FDR_p(pvals):
+    # Written by Chris Baldassano (git: cbaldassano), given permission to adapt into my code on 04/18/2019 #
+    # Port of AFNI mri_fdrize.c
+
+    # Ensure p values are valid, and not exactly equal to 0 or 1
+    assert np.all(pvals >= 0) and np.all(pvals <= 1)
+    pvals[pvals < np.finfo(np.float_).eps] = np.finfo(np.float_).eps
+    pvals[pvals == 1] = 1-np.finfo(np.float_).eps
+    n = pvals.shape[0]
+
+    # Compute q using step-down procedure
+    qvals = np.zeros((n))
+    sorted_ind = np.argsort(pvals)
+    sorted_pvals = pvals[sorted_ind]
+    qmin = 1.0
+    for i in range(n-1, -1, -1):
+        qval = (n * sorted_pvals[i])/(i+1)
+        if qval > qmin:
+            qval = qmin
+        else:
+            qmin = qval
+        qvals[sorted_ind[i]] = qval
+
+    # Estimate number of true positives m1 and adjust q
+    if n >= 233:
+        phist = np.histogram(pvals, bins=20, range=(0, 1))[0]
+        sorted_phist = np.sort(phist[3:19])
+        if np.sum(sorted_phist) >= 160:
+            median4 = n - 20*np.dot(np.array([1, 2, 2, 1]),
+                                    sorted_phist[6:10])/6
+            median6 = n - 20*np.dot(np.array([1, 2, 2, 2, 2, 1]),
+                                    sorted_phist[5:11])/10
+            m1 = min(median4, median6)
+
+            qfac = (n - m1)/n
+            if qfac < 0.5:
+                qfac = 0.25 + qfac**2
+            qvals *= qfac
+
+    return qvals
+
+if os.path.exists(llh5):
+	lldict = dd.io.load(llh5)
+	kdict=dd.io.load(nkh5)
+	df = pd.DataFrame(kdict).T.merge(pd.DataFrame(lldict).T, left_index=True, right_index=True, how='inner')
+	df=df[((df['0_2k_diff']>ll_thresh) | (df['4_2k_diff']>ll_thresh))]
+	df['k_diff_q'] = FDR_p(df['k_diff_p'])
+	ROIl = list(df.index)
+
 nsub= 40
 y = [0]*int(np.floor(nsub/nsplit))*4+[1]*(int(np.floor(nsub/nsplit)))
 kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
+
+
 
