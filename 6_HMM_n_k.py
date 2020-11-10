@@ -48,12 +48,12 @@ for roi in tqdm.tqdm(glob.glob(roidir+'*h5')):
 					hmm = brainiak.eventseg.event.EventSegment(n_events=k)
 					hmm.fit(Dtrain)
 					for shuff in range(len(shuffl)):
-						if shuff != 0: # RANDOMIZE
+						if shuff != 0 or 0 not in shuffl: # RANDOMIZE
 							subl = np.random.permutation(subl)
 						_, tune_ll[shuff,split,ki] = hmm.find_events(np.mean(Dtest_all[subl==1], axis=0).T)			
 			for shuff in range(len(shuffl)):
 				best_k[shuff] = np.mean([k_list[np.argmax(tune_ll[shuff,ki])] for ki in range(kf.n_splits)])
-			if len(roidict[str(b)].keys())>0:
+			if len(roidict[str(b)].keys())>1:
 				roidict[str(b)]['best_k'] = np.append(roidict[str(b)]['best_k'],best_k,axis=0)
 				roidict[str(b)]['tune_ll'] = np.append(roidict[str(b)]['tune_ll'], tune_ll,axis=0)
 			else:

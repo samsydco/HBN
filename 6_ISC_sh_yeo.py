@@ -68,7 +68,6 @@ for roi in tqdm.tqdm(glob.glob(roidir+'*.h5')):
 		roidict = {}
 	vall = dd.io.load(roi,'/vall')
 	n_vox = len(vall)
-	n_time = nTR[ti]
 	D,Age,Sex = load_D(roi,task,bins)
 	shuffl = 0
 	if os.path.exists(savedir+roi_short+'.h5'):
