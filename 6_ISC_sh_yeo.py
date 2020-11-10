@@ -60,7 +60,7 @@ def ISC_w_calc(D,n_vox,n_time,nsub,subh):
 		ISC_w[h] = np.sum(np.multiply(groups[h,0],groups[h,1]), axis=1)/(n_time-1)
 	return ISC_w,groups
 
-for roi in tqdm.tqdm(glob.glob(roidir+'*.h5')):
+for roi in tqdm.tqdm(glob.glob(roidir+'*.h5')[2:]):
 	roi_short = roi.split('/')[-1][:-3]
 	if os.path.exists(savedir+roi_short+'.h5'):
 		roidict = dd.io.load(savedir+roi_short+'.h5')
@@ -69,18 +69,17 @@ for roi in tqdm.tqdm(glob.glob(roidir+'*.h5')):
 	vall = dd.io.load(roi,'/vall')
 	n_vox = len(vall)
 	D,Age,Sex = load_D(roi,task,bins)
-	shuffl = 0
+	shuffl = [0]
 	if os.path.exists(savedir+roi_short+'.h5'):
-		taskv = roidict[task]
-		e_p,nshuff_ = p_calc(taskv['ISC_e'],'e')
-		g_p,nshuff_ = p_calc(taskv['ISC_g'],'g')
+		e_p,nshuff_ = p_calc(roidict[task]['ISC_e'],'e')
+		g_p,nshuff_ = p_calc(roidict[task]['ISC_g'],'g')
 		nshuff2 = nshuff2perm + nshuff_
-		if e_p < 0.05 or g_p < 0.05:
-			roidict[task]['ISC_w'] = np.append(taskv['ISC_w'], np.zeros((nshuff2-nshuff_,nbins,n_vox)), axis=0)
-			roidict[task]['ISC_e'] = np.append(taskv['ISC_e'], np.zeros((nshuff2-nshuff_,n_vox)), axis=0)
-			roidict[task]['ISC_b'] = np.append(taskv['ISC_b'], np.zeros((nshuff2-nshuff_,4,n_vox)), axis=0)
-			roidict[task]['ISC_g'] = np.append(taskv['ISC_g'], np.zeros((nshuff2-nshuff_,n_vox)), axis=0)
-			roidict[task]['ISC_g_time'] = np.append(taskv['ISC_g_time'], np.zeros((nshuff2-nshuff_,n_vox,n_time)), axis=0)
+		if ((e_p < 0.05 or g_p < 0.05) and nshuff_<nshuff2perm) or (e_p == 0 or g_p == 0):
+			roidict[task]['ISC_w'] = np.append(roidict[task]['ISC_w'], np.zeros((nshuff2-nshuff_,nbins,n_vox)), axis=0)
+			roidict[task]['ISC_e'] = np.append(roidict[task]['ISC_e'], np.zeros((nshuff2-nshuff_,n_vox)), axis=0)
+			roidict[task]['ISC_b'] = np.append(roidict[task]['ISC_b'], np.zeros((nshuff2-nshuff_,4,n_vox)), axis=0)
+			roidict[task]['ISC_g'] = np.append(roidict[task]['ISC_g'], np.zeros((nshuff2-nshuff_,n_vox)), axis=0)
+			roidict[task]['ISC_g_time'] = np.append(roidict[task]['ISC_g_time'], np.zeros((nshuff2-nshuff_,n_vox,n_time)), axis=0)
 			shuffl = np.arange(nshuff_+1,nshuff2+1)
 	else:
 		roidict[task] = {'vall':vall, 'ISC_w':np.zeros((nshuff+1,nbins,n_vox)), 'ISC_b':np.zeros((nshuff+1,4,n_vox)), 'ISC_g_time':np.zeros((nshuff+1,n_vox,n_time)), 'ISC_g':np.zeros((nshuff+1,n_vox)), 'ISC_e':np.zeros((nshuff+1,n_vox))}
