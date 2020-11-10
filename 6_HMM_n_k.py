@@ -67,11 +67,12 @@ for roi in tqdm.tqdm(glob.glob(roidir+'*h5')):
 roidict = {}
 for roi in tqdm.tqdm(glob.glob(nkdir+'*.h5')):
 	roi_short = roi.split('/')[-1][:-3]
-	roidict[roi_short] = {b:[] for b in [str(b) for b in bins]+['k_diff_p','sig']}
+	roidict[roi_short] = {b:[] for b in [str(b) for b in bins]+['k_diff_p','shuff','sig']}
 	data = dd.io.load(roi)
 	for b in bins:
 		roidict[roi_short][str(b)] = data[str(b)]['best_k'][0]
-	roidict[roi_short]['k_diff_p'] = np.sum(abs(data['k_diff'][0])<abs(data['k_diff'][1:]))/nshuff
+	roidict[roi_short]['shuff'] = data['k_diff'][1:]
+	roidict[roi_short]['k_diff_p'] = np.sum(abs(data['k_diff'][0])<abs(data['k_diff'][1:]))/len(data['k_diff'][1:])
 	roidict[roi_short]['sig'] = 1 if roidict[roi_short]['k_diff_p']<0.05 else 0
 		
 dd.io.save(nkh5,roidict)
