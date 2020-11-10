@@ -57,8 +57,9 @@ fig.savefig(figurepath+'HMM/ll/'+comp+'_'+str(ll_thresh)+'.png', bbox_inches='ti
 
 # In Parcels above minimum ll: is there a difference in number of k's (events)?
 roidict=dd.io.load(nkh5)
-df = pd.DataFrame(roidict).T.merge(pd.DataFrame(lldict), left_index=True, right_index=True, how='inner')
+df = pd.DataFrame(roidict).T.merge(pd.DataFrame(lldict).T, left_index=True, right_index=True, how='inner')
 df=df[((df['0_2k_diff']>ll_thresh) | (df['4_2k_diff']>ll_thresh))]
+df['k_diff_q'] = FDR_p(df['k_diff_p'])
 
 from scipy.stats import pearsonr
 import seaborn as sns
