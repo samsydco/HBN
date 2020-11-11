@@ -88,6 +88,9 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
 </li>
 <li> 8_p_check.py: Make an h5 file with p and q values for ISC and HMM tests. To be used for plotting on brain.
 </li>
+<li> Make Figures:
+  <li>8_HMM_Caroline_2.py: Makes AUC plots (both with data and example plots).</li>
+</li>
 </ol>
 
 ## Other code:
