@@ -14,7 +14,7 @@
 
 ## Settings files:
 <ol>
-<li> settings.py: 
+<li> <a href="https://github.com/samsydco/HBN/blob/master/settings.py">settings.py</a>: 
 <ul>
 <li>sets various path</li>
 <li>yesnofun: used in 2_RA_rating.py and 2_rating_comp.py</li>
