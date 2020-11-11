@@ -26,7 +26,11 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
 <li>bottom part of code creates 5 equally sized age groups of subjects</li>
 </ul>
 </li>
-<li> HMM_settings.py: sets various variables used for HMM code
+<li> HMM_settings.py: sets various variables used for HMM code:
+<ul>
+  <li>pandas dataframe with un-usable parcels is here (due to low log-likelihood in both age groups).</li>
+  <li>FDR_p funciton is here</li>
+</ul>
 </li>
 </ol>
 
@@ -96,10 +100,17 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
 </li>
 </ol>
 
+## Code Relevant for Hippocampus:
+<ol>
+<li>HPC.py: Gets average hippocampus trace for each subject (in both anterior and posterior hippocampus)</li>
+<li>event_ratings.py: Calculates event timecourse from behavioral raters and compares to hippocampus timecourse.</li>
+</ol>
+
 ## Other code:
 <ul>
-<li>6_ISC_test</li>
-<li>event_annotations</li>
+<li>6_ISC_test: Demonstrates that split-half ISC calculates ISC faster than Pairwise ISC or Leave-one-out ISC</li>
+<li>1__pheno.py: Calculates various phenotypic information for sample such as how many subjects were eliminated at various pre-processing steps.</li>
+<li>HMM_vs_hand.py: Compares HMM event timecourses to behavioral event timecourses</li>
 </ul>
 
 
