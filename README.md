@@ -44,16 +44,13 @@
   <li>Edited fieldmap scans names for fmriprep compatibility </li>
 </ul>
 </li>
-<li> 2_RA_rating.py: 
+<li> 2_RA_rating.py and 2_rating_comp.py:
 <ul>
-  <li>Allowed RA's to fill in ratings for T1 Scans</li>
-</ul>
-2_rating_comp.py:
-<ul>
-  <li>Compare ratings between RAs: Compile RA ratings into one csv, Manually arbitrate between instances in which one RA said "yes" and another "no." </li>
+  <li>2_RA_rating.py: Allowed RA's to fill in ratings for T1 Scans</li>
+  <li>2_rating_comp.py: Compare ratings between RAs: Compile RA ratings into one csv, Manually arbitrate between instances in which one RA said "yes" and another "no." </li>
 </ul>
 </li>
-<li> 3_fmriprep.py and  3_run_singularity.py 
+<li> 3_fmriprep.py and 3_run_singularity.py 
 <ul>
   <li>3_fmriprep.py: Run fMRIPprep 1.1.4, installed in a docker container</li>
   <li>3_run_singularity.py: Run fMRIprep 1.5.6, via a singularity image</li>
@@ -67,7 +64,7 @@
 </li>
 <li> 5_parcellation.py: This creates h5 files for each parcel with the vertices contributing to that parcel and a matrix of size (subjects x vertices x time).
 </li>
-<li> Use vertices from 5_parcellation to calculate ISCs and HMMs in each age group: 6_ISC_sh_yeo.py and 6_HMM_n_k.py
+<li> Use vertices from 5_parcellation.py to calculate ISCs and HMMs in each age group: 6_ISC_sh_yeo.py and 6_HMM_n_k.py
 <ul>
   <li>6_ISC.py: Determine difference in ISC and between-group ISC for Youngest and Oldest subjects.
     Do 100 subject-age permutations. (Repeatedly run 1000 more shuffles in parcels where p<0.05 or until p>0)</li>
@@ -108,7 +105,7 @@
 
 ## Other code:
 <ul>
-<li>6_ISC_test: Demonstrates that split-half ISC calculates ISC faster than Pairwise ISC or Leave-one-out ISC</li>
+<li>6_ISC_test.py: Demonstrates that split-half ISC calculates ISC faster than Pairwise ISC or Leave-one-out ISC</li>
 <li>1__pheno.py: Calculates various phenotypic information for sample such as how many subjects were eliminated at various pre-processing steps.</li>
 <li>HMM_vs_hand.py: Compares HMM event timecourses to behavioral event timecourses</li>
 </ul>
