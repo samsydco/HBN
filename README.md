@@ -6,7 +6,8 @@
 <p>T1 scans were manually checked using FSL 5.0.11's fsleyes (see 2_RA_rating.py for details)</p>
 
 <p>You will also need to run:</p>
-<p>pip install awscli --upgrade --user (This installs aws command line tools for your user)</p>
+<pre style="color: silver; background: black;">pip install awscli --upgrade --user</pre>
+<p>(This installs aws command line tools for your user)</p>
 
 <p>The cortical results were made from fMRIPprep 1.1.4, installed in a docker container</p>
 <p>The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity image</p>
