@@ -63,21 +63,21 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
 </li>
 <li> 5_parcellation.py: This creates h5 files for each parcel with the vertices contributing to that parcel and a matrix of size (subjects x vertices x time).
 </li>
-<li> Use vertices from 5_parcellation to calculate ISCs and HMMs in each age group: 6_ISC_sh_yeo and 6_HMM_n_k 
+<li> Use vertices from 5_parcellation to calculate ISCs and HMMs in each age group: 6_ISC_sh_yeo.py and 6_HMM_n_k.py
 <ul>
-  <li>6_ISC_sh_yeo: Determine difference in ISC and between-group ISC for Youngest and Oldest subjects.
+  <li>6_ISC.py: Determine difference in ISC and between-group ISC for Youngest and Oldest subjects.
     Do 100 subject-age permutations. (Repeatedly run 1000 more shuffles in parcels where p<0.05 or until p>0)</li>
-  <li>6_ISC_n_k: Determine if there is a significant difference in the number of HMM-derived events between Youngest and Oldest groups.
+  <li>6_HMM_n_k.py: Determine if there is a significant difference in the number of HMM-derived events between Youngest and Oldest groups.
     Do 100 subject-age permutaitons. (Repeatedly run 1000 more shuffles in parcels where p<0.05 or until p>0)</li>
 </ul>
 </li>
-<li> 6_HMM_ll.py: 
+<li> 7_HMM_ll.py: 
 <ul>
   <li>Find where HMM has a poor fit in either Youngest or Oldest subjects (HMM fit in 6_HMM_n_k).</li>
   <li>See if there is a difference in the number of events in the remaining parcels</li>
 </ul>
 </li>
-<li> 7_HMM_stats.py: In remaining parcels:
+<li> 8_HMM_stats.py: In remaining parcels:
 <ul>
   <li>Run joint-fit HMM on Youngest and Oldest ages. Test on held-out subjects in all age groups</li>
   <li>Look for significant log-likelihood difference between Youngest and Oldest ages in jointly-fit HMMs.</li>
@@ -86,11 +86,13 @@ The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity
   <li>Run 100 permutations initially, then continue running code, adding 1000 permutations each time until p>0.05 or p!=0</li>
 </ul>
 </li>
-<li> 8_p_check.py: Make an h5 file with p and q values for ISC and HMM tests. To be used for plotting on brain.
+<li> 9_p_check.py: Make an h5 file with p and q values for ISC and HMM tests. To be used for plotting on brain.
 </li>
 <li> Make Figures:
-  <li>8_HMM_Caroline_2.py: Makes AUC plots (both with data and example plots).</li>
-  <li>8_HMM_Yeo.py: Makes Log Likelihood plots in significant parcels.</li>
+<ul>
+  <li>10_HMM_AUC.py: Makes AUC plots (both with data and example plots).</li>
+  <li>10_HMM_ll.py: Makes Log Likelihood plots in significant parcels.</li>
+</ul>
 </li>
 </ol>
 
