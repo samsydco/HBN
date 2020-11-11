@@ -6,7 +6,6 @@ import glob
 import tqdm
 import numpy as np
 import deepdish as dd
-import brainiak.eventseg.event
 import matplotlib.pyplot as plt
 from HMM_settings import *
 
