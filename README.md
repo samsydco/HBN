@@ -51,15 +51,15 @@
   <li><a href="https://github.com/samsydco/HBN/blob/master/2_rating_comp.py">2_rating_comp.py</a>: Compare ratings between RAs: Compile RA ratings into one csv, Manually arbitrate between instances in which one RA said "yes" and another "no." </li>
 </ul>
 </li>
-<li><a href="https://github.com/samsydco/HBN/blob/master/3_fmriprep.py">3_fmriprep.py/a> and <a href="https://github.com/samsydco/HBN/blob/master/3_run_singularity.py">3_run_singularity.py</a>: 
+<li><a href="https://github.com/samsydco/HBN/blob/master/3_fmriprep.py">3_fmriprep.py</a> and <a href="https://github.com/samsydco/HBN/blob/master/3_run_singularity.py">3_run_singularity.py</a>: 
 <ul>
-  <li><a href="https://github.com/samsydco/HBN/blob/master/3_fmriprep.py">3_fmriprep.py/a>: Run fMRIPprep 1.1.4, installed in a docker container</li>
+  <li><a href="https://github.com/samsydco/HBN/blob/master/3_fmriprep.py">3_fmriprep.py</a>: Run fMRIPprep 1.1.4, installed in a docker container</li>
   <li><a href="https://github.com/samsydco/HBN/blob/master/3_run_singularity.py">3_run_singularity.py</a>: Run fMRIprep 1.5.6, via a singularity image</li>
 </ul>
 </li>
-<li><a href="https://github.com/samsydco/HBN/blob/master/4_Preprocess.py">4_Preprocess.py/a> and <a href="https://github.com/samsydco/HBN/blob/master/4_Preprocess_HPC.py">4_Preprocess_HPC.py</a>:
+<li><a href="https://github.com/samsydco/HBN/blob/master/4_Preprocess.py">4_Preprocess.py</a> and <a href="https://github.com/samsydco/HBN/blob/master/4_Preprocess_HPC.py">4_Preprocess_HPC.py</a>:
 <ul>
-  <li><a href="https://github.com/samsydco/HBN/blob/master/4_Preprocess.py">4_Preprocess.py/a>: regresses out confounds found from fmriprep 1.1.4, and saves data in h5 file for cortex (one per subject).</li>
+  <li><a href="https://github.com/samsydco/HBN/blob/master/4_Preprocess.py">4_Preprocess.py</a>: regresses out confounds found from fmriprep 1.1.4, and saves data in h5 file for cortex (one per subject).</li>
   <li><a href="https://github.com/samsydco/HBN/blob/master/4_Preprocess_HPC.py">4_Preprocess_HPC.py</a>: regresses out confounds found from fmriprep 1.5.6, labels anterior and posterior hippocampus, and saves data in h5 file for Hippocampus (one per subject).</li>
 </ul>
 </li>
