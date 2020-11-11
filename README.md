@@ -1,15 +1,15 @@
 # Code for analyses used in Cohen & Baldassano (2020). Title TBD.
 ## System specifications:
-Python version 3.6.6
-conda version 4.8.5
-All code was run within a conda envirnoment specified in: environment.yml
-T1 scans were manually checked using FSL 5.0.11's fsleyes (see 2_RA_rating.py for details)
+<p>Python version 3.6.6</p>
+<p>conda version 4.8.5</p>
+<p>All code was run within a conda envirnoment specified in: environment.yml</p>
+<p>T1 scans were manually checked using FSL 5.0.11's fsleyes (see 2_RA_rating.py for details)</p>
 
-You will also need to run:
-pip install awscli --upgrade --user (This installs aws command line tools for your user)
+<p>You will also need to run:</p>
+<p>pip install awscli --upgrade --user (This installs aws command line tools for your user)</p>
 
-The cortical results were made from fMRIPprep 1.1.4, installed in a docker container
-The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity image
+<p>The cortical results were made from fMRIPprep 1.1.4, installed in a docker container</p>
+<p>The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity image</p>
 
 ## Settings files:
 <ol>
