@@ -2,7 +2,7 @@
 ## System specifications:
 <p>Python version 3.6.6</p>
 <p>conda version 4.8.5</p>
-<p>All code was run within a conda envirnoment specified in: environment.yml</p>
+<p>All code was run within a conda envirnoment specified in: <a href="https://github.com/samsydco/HBN/blob/master/environment.yml">environment.yml</a></p>
 <p>T1 scans were manually checked using FSL 5.0.11's fsleyes (see 2_RA_rating.py for details)</p>
 
 <p>You will also need to run:</p>
