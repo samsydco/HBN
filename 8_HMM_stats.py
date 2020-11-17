@@ -42,10 +42,11 @@ for roi_short in ROIl:
 		roidict = {t:{'bin_'+str(b):{} for b in bins} for t in ['DM']}
 		for b in bins:
 			roidict[task]['bin_'+str(b)]['D'] =  dd.io.load(roif, task+'/bin_'+str(b)+'/D')
-		nshuff2 = nshuff
+		nshuff2 = nshuff_ = nshuff
 		shuffl = np.arange(nshuff2+1)
 		p_ll_ = p_auc = 0 #Default = Do the test
-	if (p_ll_<0.05 or p_auc<0.05) or (p_ll_== 0 or p_auc == 0):
+	if ((p_ll_<0.05 or p_auc<0.05) and nshuff_ < nshuff2perm) \
+	or (p_ll_== 0 or p_auc == 0):
 		D = [roidict[task]['bin_'+str(b)]['D'] for b in bins]
 		if not os.path.exists(savedir+roi_short+'.h5'):
 			tune_ll = np.zeros((nbins,nsplit,len(k_list)))
