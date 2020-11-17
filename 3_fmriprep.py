@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# Documentation for fmriprep version 1.1.4:
+# https://fmriprep.org/en/1.1.4/usage.html
+
 import subprocess as sp 
 import glob
 import pandas as pd
@@ -11,8 +14,6 @@ from settings import *
 	
 #site = 'Site-CBIC'
 site = 'Site-RU'
-output_space = 'MNI152NLin2009cAsym' # 'template'
-#output space = 'fsaverage6' 
 
 compcsv = TRratingdr+'compT1_'+site+'.csv'
 compdf = pd.read_csv(compcsv)
@@ -40,9 +41,9 @@ if __name__ == "__main__":
 			f = open("%sfmriprep_cmdoutput/%s_%s_%s.txt"%(path,task,date,pstr.replace(" ","_")), "w")
 			# "-t" in docker instead of "-it" :)
 			if site =='Site-RU':
-				command = ('docker run --rm -t -u 14128:13110 -v                         /usr/local/freesurfer/license.txt:/opt/freesurfer/license.txt:ro -v '+path+':/data:ro -v '+outputdr+':/out -v '+tmpdr+':/scratch poldracklab/fmriprep:1.1.4 /data /out participant --ignore=slicetiming --output-space '+output_space+' --participant_label '+pstr+' -t movie'+task+' -w /scratch').split()
+				command = ('docker run --rm -t -u 14128:13110 -v                         /usr/local/freesurfer/license.txt:/opt/freesurfer/license.txt:ro -v '+path+':/data:ro -v '+outputdr+':/out -v '+tmpdr+':/scratch poldracklab/fmriprep:1.1.4 /data /out participant --ignore=slicetiming --output-space fsaverage6 --participant_label '+pstr+' -t movie'+task+' -w /scratch').split()
 			else:
-				command = ('docker run --rm -t -u 14128:13110 -v                         /usr/local/freesurfer/license.txt:/opt/freesurfer/license.txt:ro -v '+path+site+'/:/data:ro -v '+outputdr+':/out -v '+tmpdr+':/scratch poldracklab/fmriprep:1.1.4 /data /out participant --ignore=slicetiming --output-space '+output_space+' --participant_label '+pstr+' -t movie'+task+' -w /scratch').split()
+				command = ('docker run --rm -t -u 14128:13110 -v                         /usr/local/freesurfer/license.txt:/opt/freesurfer/license.txt:ro -v '+path+site+'/:/data:ro -v '+outputdr+':/out -v '+tmpdr+':/scratch poldracklab/fmriprep:1.1.4 /data /out participant --ignore=slicetiming --output-space fsaverage6 --participant_label '+pstr+' -t movie'+task+' -w /scratch').split()
 			p = sp.Popen(['sudo', '-S'] + command, stdin=sp.PIPE, stderr=sp.PIPE,
 			  universal_newlines=True,stdout=f)
 			p.communicate(password + '\n')[1]

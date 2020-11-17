@@ -13,20 +13,19 @@ path_tmp = path+site+'/'
 
 for chunk in tqdm(pchunk):
 	pstr = ' '.join([c[4:] for c in chunk])
-	for task in ['DM','TP']:
+	for task in ['DM']:
 		date = str(datetime.datetime.now())[0:19].replace(' ','_')
 		f = open("%sfmriprep_cmdoutput/%s_%s_%s.txt"%(path,task,date,pstr.replace(" ","_")), "w")
 		command = ('singularity run --cleanenv \
 		-B '+path_tmp+':/data \
 		-B '+outputdr+':/out \
 		-B '+tmpdr+':/work \
-		/data/Loci/fmriprep-1.5.6.simg \
+		'+path+codedr+'HBN_fmriprep_code/fmriprep-1.1.4.simg \
 		/data /out \
 		participant \
 		--ignore=slicetiming \
-		--use-syn-sdc --ignore fieldmaps \
+		--fs-no-reconall \
 		--fs-license-file=/data/fs_license.txt \
-		--output-spaces '+output_space+' \
 		-w /work/ \
 		--participant-label '+pstr+' -t movie'+task).split()
 		p = sp.Popen(command,\
