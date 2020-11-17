@@ -62,6 +62,7 @@ def ISC_w_calc(D,n_vox,n_time,nsub,subh):
 
 for roi in tqdm.tqdm(glob.glob(roidir+'*.h5')):
 	roi_short = roi.split('/')[-1][:-3]
+	print(roi_short)
 	if os.path.exists(savedir+roi_short+'.h5'):
 		roidict = dd.io.load(savedir+roi_short+'.h5')
 	else:
@@ -69,7 +70,7 @@ for roi in tqdm.tqdm(glob.glob(roidir+'*.h5')):
 	vall = dd.io.load(roi,'/vall')
 	n_vox = len(vall)
 	D,Age,Sex = load_D(roi,task,bins)
-	shuffl = [0]
+	shuffl = []
 	if os.path.exists(savedir+roi_short+'.h5'):
 		e_p,nshuff_ = p_calc(roidict[task]['ISC_e'],'e')
 		g_p,nshuff_ = p_calc(roidict[task]['ISC_g'],'g')
@@ -103,7 +104,8 @@ for roi in tqdm.tqdm(glob.glob(roidir+'*.h5')):
 				np.sqrt(roidict[task]['ISC_w'][shuff,1])
 		roidict[task]['ISC_g_time'][shuff] = np.sum(ISC_b_time, axis=0)/4/np.tile(denom,(n_time,1)).T
 		roidict[task]['ISC_g'][shuff] = np.sum(roidict[task]['ISC_b'][shuff], axis=0)/4/denom
-	dd.io.save(savedir+roi_short+'.h5',roidict)
+	if len(shuffl)>0:
+		dd.io.save(savedir+roi_short+'.h5',roidict)
 
 														 
 														 

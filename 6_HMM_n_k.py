@@ -21,11 +21,13 @@ if os.path.exists(nkh5):
 
 for roi in tqdm.tqdm(glob.glob(roidir+'*h5')):
 	roi_short = roi.split('/')[-1][:-3]
-	if (os.path.exists(nkh5) and (pdict[roi_short]['k_diff_p'] <= 0.05 or \
-								  pdict[roi_short]['k_diff_p'] == 0)) or \
-	not os.path.exists(nkh5):
+	if (os.path.exists(nkh5) and \
+	   (len(pdict[roi_short]['shuff'])<nshuff2perm and \
+		    pdict[roi_short]['k_diff_p'] <= 0.05) or \
+		    pdict[roi_short]['k_diff_p'] == 0) \
+	or not os.path.exists(nkh5):
 		if os.path.exists(nkh5):
-			roidict = dd.io.load(nkdir+roi+'.h5')
+			roidict = dd.io.load(nkdir+roi_short+'.h5')
 			nshuff_ = len(roidict['0']['best_k'])-1
 			Dall = [roidict['0']['D'],roidict['4']['D']]
 			nshuff2 = nshuff2perm + nshuff_
