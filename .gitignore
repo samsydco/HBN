@@ -2,3 +2,4 @@ __pycache__/
 old_code/
 videos/
 .ipynb_checkpoints/
+fmriprep*
