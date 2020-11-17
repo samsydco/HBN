@@ -7,6 +7,7 @@ import glob
 import tqdm
 import numpy as np
 import deepdish as dd
+from scipy.stats import pearsonr
 from HMM_settings import *
 
 task= 'DM'
@@ -59,18 +60,25 @@ fig.savefig(figurepath+'HMM/ll/'+comp+'_'+str(ll_thresh)+'.png', bbox_inches='ti
 roidict=dd.io.load(nkh5)
 df = pd.DataFrame(roidict).T.merge(pd.DataFrame(lldict).T, left_index=True, right_index=True, how='inner')
 df=df[((df['0_2k_diff']>ll_thresh) | (df['4_2k_diff']>ll_thresh))]
+df['0'] = np.array(df['0'], dtype = float)
+df['4'] = np.array(df['4'], dtype = float)
 df['k_diff_q'] = FDR_p(df['k_diff_p'])
+nodiffdf = df[df['k_diff_q']>0.05]
+diffdf = df[df['k_diff_q']<0.05]
+r,p = pearsonr(nodiffdf['0'],nodiffdf['4'])
 
-from scipy.stats import pearsonr
 import seaborn as sns
 grey=211/256
 xticks = [str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))+' y.o.' for b in bins]
 sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
 fig,ax=plt.subplots(figsize=(7,5))
-sns.regplot(x='0',y='4',data=df,color='#8856a7',scatter_kws={'s':50})
+sns.regplot(x='0',y='4',data=nodiffdf,color='#8856a7',scatter_kws={'s':50},label = 'No Significant Difference')
 ax.grid(False)
 ax.set_xlabel('Number of events in\nYoungest ('+xticks[0]+')')
 ax.set_ylabel('Number of events in\nOldest ('+xticks[1]+')')
-ax.set(xlim=(6, 19),ylim=(6, 27.5))
+if len(diffdf)>0:
+	sns.scatterplot(x='0',y='4',data=diffdf,color='#b3cde3',s=50,edgecolor='#b3cde3',\
+				label = 'Significant Difference',legend=False)
+	fig.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 print('r = '+str(np.round(r,2))+', p = '+str(np.round(p,8)))
 fig.savefig(figurepath+'n_k/'+'k_lim.png',bbox_inches='tight', dpi=300)
