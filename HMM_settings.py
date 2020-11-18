@@ -6,6 +6,7 @@ from settings import *
 from ISC_settings import *
 from event_ratings import ev_conv
 from sklearn.model_selection import KFold
+pd.options.mode.chained_assignment = None
 
 roidir = ISCpath+'Yeo_parcellation/'
 nkdir = HMMpath+'nk_moreshuff_paper/'#'nk/'
@@ -70,7 +71,7 @@ if os.path.exists(llh5):
 	kdict=dd.io.load(nkh5)
 	df = pd.DataFrame(kdict).T.merge(pd.DataFrame(lldict).T, left_index=True, right_index=True, how='inner')
 	df=df[((df['0_2k_diff']>ll_thresh) | (df['4_2k_diff']>ll_thresh))]
-	df['k_diff_q'] = FDR_p(df['k_diff_p'])
+	df.loc[:,'k_diff_q'] = FDR_p(df['k_diff_p'])
 	ROIl = list(df.index)
 
 nsub= 40
