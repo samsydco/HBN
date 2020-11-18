@@ -41,7 +41,7 @@ for roi_short in ROIl:
 	else:
 		roidict = {t:{'bin_'+str(b):{} for b in bins} for t in ['DM']}
 		for b in bins:
-			roidict[task]['bin_'+str(b)]['D'] =  dd.io.load(roif, task+'/bin_'+str(b)+'/D')
+			roidict[task]['bin_'+str(b)]['D'] =  dd.io.load(roif, '/'+task+'/bin_'+str(b)+'/D')
 		nshuff2 = nshuff_ = nshuff
 		shuffl = np.arange(nshuff2+1)
 		p_ll_ = p_auc = 0 #Default = Do the test
