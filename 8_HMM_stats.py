@@ -29,7 +29,7 @@ task = 'DM'
 nTR_ = nTR[0]
 nshuff2perm=1000
 
-for roi_short in ROIl:
+for roi_short in tqdm.tqdm(ROIl):
 	roif = roidir+roi_short+'.h5'
 	if os.path.exists(savedir+roi_short+'.h5'):
 		roidict = dd.io.load(savedir+roi_short+'.h5')
