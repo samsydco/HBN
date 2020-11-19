@@ -60,7 +60,7 @@ def ISC_w_calc(D,n_vox,n_time,nsub,subh):
 		ISC_w[h] = np.sum(np.multiply(groups[h,0],groups[h,1]), axis=1)/(n_time-1)
 	return ISC_w,groups
 
-for roi in tqdm.tqdm(glob.glob(roidir+'*.h5')):
+for roi in glob.glob(roidir+'*.h5'):
 	roi_short = roi.split('/')[-1][:-3]
 	print(roi_short)
 	if os.path.exists(savedir+roi_short+'.h5'):
