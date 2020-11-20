@@ -214,7 +214,7 @@ if __name__ == "__main__":
 		print(t,p)
 		
 	for HPC in ['HPC','aHPC','pHPC']:
-		OLS_model = sm.OLS(tempsize['correlation'],tempsize[HPC]).fit()  # training the model
+		OLS_model = sm.OLS(tempsize['correlation_'+HPC],tempsize[HPC]).fit()  # training the model
 		residual_values = OLS_model.resid # residual values
 		r3,p3 = stats.pearsonr(tempsize['Exact_Age'],tempsize['correlation_'+HPC])
 		
