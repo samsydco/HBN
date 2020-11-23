@@ -30,10 +30,10 @@ for roi in tqdm.tqdm(glob.glob(roidir+'*h5')):
 			
 	if (df.index == roi_short).any():
 		savedict[roi_short]['k_diff'] = {}
-		savedict[roi_short]['k_diff']['val'] = df.loc[roi]['4'] - df.loc[roi]['0']
-		savedict[roi_short]['k_diff']['shuff'] = df.loc[roi]['shuff']
-		savedict[roi_short]['k_diff']['p'] = df.loc[roi]['k_diff_p']
-		savedict[roi_short]['k_diff']['q'] = df.loc[roi]['k_diff_q']
+		savedict[roi_short]['k_diff']['val'] = df.loc[roi_short]['4'] - df.loc[roi_short]['0']
+		savedict[roi_short]['k_diff']['shuff'] = df.loc[roi_short]['shuff']
+		savedict[roi_short]['k_diff']['p'] = df.loc[roi_short]['k_diff_p']
+		savedict[roi_short]['k_diff']['q'] = df.loc[roi_short]['k_diff_q']
 		
 		HMMvals = dd.io.load(HMMdir+roi_short+'.h5','/'+task)
 		for HMMd in ['ll_diff','auc_diff']:
