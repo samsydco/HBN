@@ -51,11 +51,11 @@ for comp in ['ISC_e','ISC_g','ll_diff','auc_diff']:
 		if comp in savedict[roi].keys():
 			ROIl.append(roi)
 			ps.append(savedict[roi][comp]['p'])
-	qs = FDR_p(ps)
+	qs = FDR_p(np.array(ps))
 	for i,roi in enumerate(ROIl):
 		savedict[roi][comp]['q'] = qs[i]
 		
-dd.io.save(ISCpath+'p_vals.h5',savedict)
+dd.io.save(ISCpath+'p_vals_paper.h5',savedict)
 			
 	
 
