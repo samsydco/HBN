@@ -10,8 +10,9 @@ from ISC_settings import *
 
 bins = [0,4]
 nbins = len(bins)
-roidir = ISCpath+'Yeo_parcellation/'
-savedir = ISCpath+'shuff_Yeo_paper/'
+roidir = ISCpath+'Yeo_parcellation_'
+seeds = [f[-1] for f in glob.glob(roidir+'*')]
+savedir = ISCpath+'shuff_Yeo_'
 nsub = 40
 nshuff2perm=1000
 task = 'DM'
@@ -38,7 +39,8 @@ def load_D(roi,task,bins):
 	D = np.concatenate(D)
 	return D,Age,Sex
 
-def shuff_demo(Age,Sex):
+def shuff_demo(shuff,Age,Sex):
+	np.random.seed(shuff) # same random order on same shuffs
 	# Now shuffle Age, and Sex in same order:
 	neword = np.random.permutation(len(Age))
 	Age = [Age[neword[ai]] for ai,a in enumerate(Age)]
@@ -60,52 +62,56 @@ def ISC_w_calc(D,n_vox,n_time,nsub,subh):
 		ISC_w[h] = np.sum(np.multiply(groups[h,0],groups[h,1]), axis=1)/(n_time-1)
 	return ISC_w,groups
 
-for roi in glob.glob(roidir+'*.h5'):
-	roi_short = roi.split('/')[-1][:-3]
-	print(roi_short)
-	if os.path.exists(savedir+roi_short+'.h5'):
-		roidict = dd.io.load(savedir+roi_short+'.h5')
-	else:
-		roidict = {}
-	vall = dd.io.load(roi,'/vall')
-	n_vox = len(vall)
-	D,Age,Sex = load_D(roi,task,bins)
-	shuffl = []
-	if os.path.exists(savedir+roi_short+'.h5'):
-		e_p,nshuff_ = p_calc(roidict[task]['ISC_e'],'e')
-		g_p,nshuff_ = p_calc(roidict[task]['ISC_g'],'g')
-		nshuff2 = nshuff2perm + nshuff_
-		if ((e_p < 0.05 or g_p < 0.05) and nshuff_<nshuff2perm) or (e_p == 0 or g_p == 0):
-			roidict[task]['ISC_w'] = np.append(roidict[task]['ISC_w'], np.zeros((nshuff2-nshuff_,nbins,n_vox)), axis=0)
-			roidict[task]['ISC_e'] = np.append(roidict[task]['ISC_e'], np.zeros((nshuff2-nshuff_,n_vox)), axis=0)
-			roidict[task]['ISC_b'] = np.append(roidict[task]['ISC_b'], np.zeros((nshuff2-nshuff_,4,n_vox)), axis=0)
-			roidict[task]['ISC_g'] = np.append(roidict[task]['ISC_g'], np.zeros((nshuff2-nshuff_,n_vox)), axis=0)
-			roidict[task]['ISC_g_time'] = np.append(roidict[task]['ISC_g_time'], np.zeros((nshuff2-nshuff_,n_vox,n_time)), axis=0)
-			shuffl = np.arange(nshuff_+1,nshuff2+1)
-	else:
-		roidict[task] = {'vall':vall, 'ISC_w':np.zeros((nshuff+1,nbins,n_vox)), 'ISC_b':np.zeros((nshuff+1,4,n_vox)), 'ISC_g_time':np.zeros((nshuff+1,n_vox,n_time)), 'ISC_g':np.zeros((nshuff+1,n_vox)), 'ISC_e':np.zeros((nshuff+1,n_vox))}
-		shuffl = np.arange(nshuff+1)
-	for shuff in shuffl:
-		if shuff !=0:
-			Age,Sex = shuff_demo(Age,Sex)
-		subh = even_out(Age,Sex)
-		roidict[task]['ISC_w'][shuff], groups =\
-			ISC_w_calc(D,n_vox,n_time,nsub,subh)
-		roidict[task]['ISC_e'][shuff] = roidict[task]['ISC_w'][shuff,0] -\
+
+for seed in tqdm.tqdm(seeds):
+	for roi in glob.glob(roidir+seed+'/'+'*.h5'):
+		roi_short = roi.split('/')[-1][:-3]
+		if not os.path.exists(savedir+seed): os.makedirs(savedir+seed)
+		savef = savedir+seed+'/'+roi_short+'.h5'
+		roidict = {task:{}}
+		vall = dd.io.load(roi,'/vall')
+		n_vox = len(vall)
+		D,Age,Sex = load_D(roi,task,bins)
+		shuffl = []
+		if os.path.exists(savef):
+			e_p,nshuff_ = p_calc(dd.io.load(savef,'/'+task+'/ISC_e'),'e')
+			g_p,nshuff_ = p_calc(dd.io.load(savef,'/'+task+'/ISC_g'),'g')
+			nshuff2 = nshuff2perm + nshuff_
+			if ((e_p < 0.05 or g_p < 0.05) and nshuff_<nshuff2perm) or (e_p == 0 or g_p == 0):
+				roidict[task]['ISC_w'] = np.append(dd.io.load(savef,'/'+task+'/ISC_w'), np.zeros((nshuff2-nshuff_,nbins,n_vox)), axis=0)
+				roidict[task]['ISC_e'] = np.append(dd.io.load(savef,'/'+task+'/ISC_e'), np.zeros((nshuff2-nshuff_,n_vox)), axis=0)
+				roidict[task]['ISC_b'] = np.append(dd.io.load(savef,'/'+task+'/ISC_b'), np.zeros((nshuff2-nshuff_,4,n_vox)), axis=0)
+				roidict[task]['ISC_g'] = np.append(dd.io.load(savef,'/'+task+'/ISC_g'), np.zeros((nshuff2-nshuff_,n_vox)), axis=0)
+				# memory errors occur if try to load all at once:
+				ISC_g_time = np.zeros((nshuff_+1,n_vox,n_time),dtype='float16')
+				for shuff in range(nshuff_+1):
+					ISC_g_time[shuff] = dd.io.load(savef,'/'+task+'/ISC_g_time',sel=dd.aslice[shuff,:,:])
+				roidict[task]['ISC_g_time'] = np.append(ISC_g_time, np.zeros((nshuff2-nshuff_,n_vox,n_time),dtype='float16'), axis=0)
+				shuffl = np.arange(nshuff_+1,nshuff2+1)
+		else:
+			roidict[task] = {'vall':vall, 'ISC_w':np.zeros((nshuff+1,nbins,n_vox)), 'ISC_b':np.zeros((nshuff+1,4,n_vox)), 'ISC_g_time':np.zeros((nshuff+1,n_vox,n_time)), 'ISC_g':np.zeros((nshuff+1,n_vox)), 'ISC_e':np.zeros((nshuff+1,n_vox))}
+			shuffl = np.arange(nshuff+1)
+		for shuff in shuffl:
+			if shuff !=0:
+				Age,Sex = shuff_demo(shuff,Age,Sex)
+			subh = even_out(Age,Sex)
+			roidict[task]['ISC_w'][shuff], groups =\
+				ISC_w_calc(D,n_vox,n_time,nsub,subh)
+			roidict[task]['ISC_e'][shuff] = roidict[task]['ISC_w'][shuff,0] -\
 											roidict[task]['ISC_w'][shuff,1]
-		ISC_b_time = []
-		idx = 0
-		for htmp1 in [0,1]:
-			for htmp2 in [0,1]:
-				ISC_b_time.append(np.multiply(groups[0,htmp1], groups[1,htmp2]))
-				roidict[task]['ISC_b'][shuff,idx] = np.sum(ISC_b_time[-1], axis=1)/(n_time-1)
-				idx += 1
-		denom = np.sqrt(roidict[task]['ISC_w'][shuff,0]) * \
-				np.sqrt(roidict[task]['ISC_w'][shuff,1])
-		roidict[task]['ISC_g_time'][shuff] = np.sum(ISC_b_time, axis=0)/4/np.tile(denom,(n_time,1)).T
-		roidict[task]['ISC_g'][shuff] = np.sum(roidict[task]['ISC_b'][shuff], axis=0)/4/denom
-	if len(shuffl)>0:
-		dd.io.save(savedir+roi_short+'.h5',roidict)
+			ISC_b_time = []
+			idx = 0
+			for htmp1 in [0,1]:
+				for htmp2 in [0,1]:
+					ISC_b_time.append(np.multiply(groups[0,htmp1], groups[1,htmp2]))
+					roidict[task]['ISC_b'][shuff,idx] = np.sum(ISC_b_time[-1], axis=1)/(n_time-1)
+					idx += 1
+			denom = np.sqrt(roidict[task]['ISC_w'][shuff,0]) * \
+					np.sqrt(roidict[task]['ISC_w'][shuff,1])
+			roidict[task]['ISC_g_time'][shuff] = np.sum(ISC_b_time, axis=0)/4/np.tile(denom,(n_time,1)).T
+			roidict[task]['ISC_g'][shuff] = np.sum(roidict[task]['ISC_b'][shuff], axis=0)/4/denom
+		if len(shuffl)>0:
+			dd.io.save(savef,roidict)
 
 														 
 														 
