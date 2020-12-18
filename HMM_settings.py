@@ -8,9 +8,10 @@ from event_ratings import ev_conv
 from sklearn.model_selection import KFold
 pd.options.mode.chained_assignment = None
 
-roidir = ISCpath+'Yeo_parcellation/'
-nkdir = HMMpath+'nk_moreshuff_paper/'#'nk/'
-nkh5 = HMMpath+'nk_paper.h5' #formerly nk.h5
+roidir = ISCpath+'Yeo_parcellation_'
+seeds = [f[-1] for f in glob.glob(roidir+'*')]
+nkdir = HMMpath+'nk_moreshuff_'#'nk/'
+nkh5 = HMMpath+'nk_' #formerly nk.h5
 llh5 = HMMpath+'ll_diff_paper.h5' # formerly ll_diff
 
 tasks = ['DM','TP']
