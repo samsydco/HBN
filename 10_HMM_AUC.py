@@ -11,7 +11,7 @@ import brainiak.eventseg.event
 import matplotlib.pyplot as plt
 from HMM_settings import *
 
-HMMdir = HMMpath+'shuff_5bins_train04/'#_paper/'
+HMMdir = HMMpath+'shuff_5bins_train04_paper/'
 figdir = figurepath + 'HMM/Paper/'
 bins = np.arange(nbinseq)
 nbins = len(bins)
@@ -19,16 +19,13 @@ lgd = [str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))+' y.o.' for
 colors = ['#edf8fb','#b3cde3','#8c96c6','#8856a7','#810f7c']
 grey = 211/256 # other options: https://www.rapidtables.com/web/color/gray-color.html
 
-qrois = ['LH_VisCent_ExStr_1',
- 'LH_VisCent_Striate_1',
- 'LH_VisPeri_ExStrInf_1',
- 'RH_DorsAttnA_TempOcc_1']
+q_vals = dd.io.load(ISCpath+'p_vals_paper.h5')
+qrois = []
+for roi in q_vals:
+	if 'auc_diff' in q_vals[roi].keys():
+		if q_vals[roi]['auc_diff']['q'] < 0.05:
+			qrois.append(roi)
 
-#['LH_LimbicA_TempPole_2',
-# 'LH_VisCent_ExStr_1',
-# 'LH_VisCent_Striate_1',
-# 'LH_VisPeri_ExStrInf_1',
-# 'RH_DorsAttnA_TempOcc_1']
 ROIl = [HMMdir+roi+'.h5' for roi in qrois]
 
 task='DM'
@@ -36,10 +33,8 @@ nTR_ = nTR[0]
 time = np.arange(TR,nTR_*TR+1,TR)[:-1]
 for roi in tqdm.tqdm(ROIl):
 	roi_short = roi.split('/')[-1][:-3]
-	p_auc = dd.io.load(ISCpath+'p_vals.h5','/'+roi_short+'/auc_diff/p')
-	HMMtask = dd.io.load(roi,'/'+task)
-	k = HMMtask['best_k']
-	D = [HMMtask['bin_'+str(b)]['D'] for b in bins]
+	k = dd.io.load(roi,'/'+task+'/best_k')
+	D = [dd.io.load(roi,'/'+task+'/bin_'+str(b)+'/D') for b in bins]
 	hmm = brainiak.eventseg.event.EventSegment(n_events=k)
 	bin_tmp = bins if 'all' in HMMdir else [0,4]
 	hmm.fit([np.mean(d,axis=0).T for d in [D[bi] for bi in bin_tmp]])
