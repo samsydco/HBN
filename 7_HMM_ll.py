@@ -14,20 +14,22 @@ task= 'DM'
 nTR = nTR[0]
 
 lldict = {}
-for roi in glob.glob(nkdir+'*.h5'):
-	roi_short = roi.split('/')[-1][:-3]
-	lldict[roi_short] = {}
-	for b in [0,4]:
-		ll_sep = dd.io.load(roi,'/'+str(b)+'/tune_ll')
-		lldict[roi_short][str(b)+'_ll_max'] = np.max(np.mean(ll_sep[0],axis=0))/nTR
-		lldict[roi_short][str(b)+'_ll_min'] = np.min(np.mean(ll_sep[0],axis=0))/nTR
-		lldict[roi_short][str(b)+'_ll_diff'] = \
-		lldict[roi_short][str(b)+'_ll_max'] - \
-		lldict[roi_short][str(b)+'_ll_min']
-		lldict[roi_short][str(b)+'_2k'] = np.mean(ll_sep[0,:,0],axis=0)/nTR
-		lldict[roi_short][str(b)+'_2k_diff'] = \
-		lldict[roi_short][str(b)+'_ll_max'] - \
-		lldict[roi_short][str(b)+'_2k']
+for seed in seeds:
+	lldict[seed] = {}
+	for roi in glob.glob(nkdir+seed+'/'+'*.h5'):
+		roi_short = roi.split('/')[-1][:-3]
+		lldict[roi_short] = {}
+		for b in [0,4]:
+			ll_sep = dd.io.load(roi,'/'+str(b)+'/tune_ll')
+			lldict[roi_short][str(b)+'_ll_max'] = np.max(np.mean(ll_sep[0],axis=0))/nTR
+			lldict[roi_short][str(b)+'_ll_min'] = np.min(np.mean(ll_sep[0],axis=0))/nTR
+			lldict[roi_short][str(b)+'_ll_diff'] = \
+			lldict[roi_short][str(b)+'_ll_max'] - \
+			lldict[roi_short][str(b)+'_ll_min']
+			lldict[roi_short][str(b)+'_2k'] = np.mean(ll_sep[0,:,0],axis=0)/nTR
+			lldict[roi_short][str(b)+'_2k_diff'] = \
+			lldict[roi_short][str(b)+'_ll_max'] - \
+			lldict[roi_short][str(b)+'_2k']
 		
 dd.io.save(llh5,lldict)
 lldict = dd.io.load(llh5)
@@ -38,9 +40,22 @@ import pandas as pd
 import matplotlib.pyplot as plt
 plt.rcParams.update({'font.size': 40})
 
-df=pd.DataFrame(lldict).T
-df=df.drop(columns=['0_ll_diff','4_ll_diff','0_ll_max','4_ll_max','0_2k','4_2k'])
-x = df['0'+comp]; y = df['4'+comp]
+def seeddictstodf(d,drop_cols=None):
+	dfs = {}
+	for seed in seeds:
+		dfs[seed] = pd.DataFrame(d[seed]).T
+		if drop_cols!=None:
+			dfs[seed]=dfs[seed].drop(columns=drop_cols)
+	df = dfs[seed].iloc[0:0,:].copy()
+	for seed in seeds:
+		df = pd.concat([df,dfs[seed]])
+	df=df.groupby(df.index).mean()
+	return df
+
+drop_cols = ['0_ll_diff','4_ll_diff','0_ll_max', '4_ll_max','0_2k', '4_2k']
+lldf = seeddictstodf(lldict,drop_cols)
+
+x = lldf['0'+comp]; y = lldf['4'+comp]
 idx1 = np.intersect1d(np.where(y<ll_thresh)[0],np.where(x<ll_thresh)[0])
 idx2 = np.unique(np.concatenate((np.where(y>ll_thresh)[0],np.where(x>ll_thresh)[0])))
 x1 = x.iloc[idx1]; y1 = y.iloc[idx1]
@@ -52,13 +67,15 @@ ax.set_xlim([np.min(x)-0.005,np.max(x)+0.005])
 ax.set_ylim([np.min(y)-0.005,np.max(y)+0.005])
 ax.set_xlabel('Youngest '+comp[1:])
 ax.set_ylabel('Oldest '+comp[1:])
-ax.set_title('Outlier: '+df.loc[df['4'+comp]==df['4'+comp].max()].index[0])
+ax.set_title('Outlier: '+lldf.loc[lldf['4'+comp]==lldf['4'+comp].max()].index[0])
 fig.savefig(figurepath+'HMM/ll/'+comp+'_'+str(ll_thresh)+'.png', bbox_inches='tight')
 
-
 # In Parcels above minimum ll: is there a difference in number of k's (events)?
-roidict=dd.io.load(nkh5)
-df = pd.DataFrame(roidict).T.merge(pd.DataFrame(lldict).T, left_index=True, right_index=True, how='inner')
+roidict = {}
+for seed in seeds:
+	roidict[seed] = dd.io.load(nkh5+seed+'.h5')
+nkdf = seeddictstodf(roidict)
+df = nkdf.merge(lldf, left_index=True, right_index=True, how='inner')
 df=df[((df['0_2k_diff']>ll_thresh) | (df['4_2k_diff']>ll_thresh))]
 df['0'] = np.array(df['0'], dtype = float)
 df['4'] = np.array(df['4'], dtype = float)
