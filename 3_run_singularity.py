@@ -8,6 +8,14 @@ except AttributeError:
     attrlist = dir (m)
 for attr in attrlist:
     globals()[attr] = getattr (m, attr)
+	
+plist = []
+for index, row in compdf.iterrows():
+	if ((str(row['final']) != "n" and str(row['final'])!='nan') and
+		 os.path.exists(fmripreppath+row['sub']+'/log')):
+		#len(glob.glob(fmripreppath+sub_temp+'/figures/*sdc*'))!=2):
+		plist.append(row['sub'])
+pchunk = [plist[x:x+nchunk] for x in range(0,len(plist),nchunk)]
 
 path_tmp = path+site+'/'
 
@@ -23,9 +31,9 @@ for chunk in tqdm(pchunk):
 		'+path+codedr+'HBN_fmriprep_code/fmriprep-1.1.4.simg \
 		/data /out \
 		participant \
-		--ignore=slicetiming \
+		--ignore slicetiming \
 		--fs-no-reconall \
-		--fs-license-file=/data/fs_license.txt \
+		--fs-license-file /data/fs_license.txt \
 		-w /work/ \
 		--participant-label '+pstr+' -t movie'+task).split()
 		p = sp.Popen(command,\

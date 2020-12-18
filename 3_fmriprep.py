@@ -36,12 +36,12 @@ if __name__ == "__main__":
 	# Delete extra BOLD stuff
 	for chunk in tqdm(pchunk):
 		pstr = ' '.join(chunk)
-		for task in ['DM','TP']:
+		for task in ['DM']:
 			date = str(datetime.datetime.now())[0:19].replace(' ','_')
 			f = open("%sfmriprep_cmdoutput/%s_%s_%s.txt"%(path,task,date,pstr.replace(" ","_")), "w")
 			# "-t" in docker instead of "-it" :)
 			if site =='Site-RU':
-				command = ('docker run --rm -t -u 14128:13110 -v                         /usr/local/freesurfer/license.txt:/opt/freesurfer/license.txt:ro -v '+path+':/data:ro -v '+outputdr+':/out -v '+tmpdr+':/scratch poldracklab/fmriprep:1.1.4 /data /out participant --ignore=slicetiming --output-space fsaverage6 --participant_label '+pstr+' -t movie'+task+' -w /scratch').split()
+				command = ('docker run --rm -t -u 14128:13110 -v                         /usr/local/freesurfer/license.txt:/opt/freesurfer/license.txt:ro -v '+path+site+':/data:ro -v '+outputdr+':/out -v '+tmpdr+':/scratch poldracklab/fmriprep:1.1.4 /data /out participant --ignore slicetiming fieldmaps --use-syn-sdc --fs-no-reconall --output-space template  --participant_label '+pstr+' -t movie'+task+' -w /scratch').split()
 			else:
 				command = ('docker run --rm -t -u 14128:13110 -v                         /usr/local/freesurfer/license.txt:/opt/freesurfer/license.txt:ro -v '+path+site+'/:/data:ro -v '+outputdr+':/out -v '+tmpdr+':/scratch poldracklab/fmriprep:1.1.4 /data /out participant --ignore=slicetiming --output-space fsaverage6 --participant_label '+pstr+' -t movie'+task+' -w /scratch').split()
 			p = sp.Popen(['sudo', '-S'] + command, stdin=sp.PIPE, stderr=sp.PIPE,
