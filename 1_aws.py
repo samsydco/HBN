@@ -111,7 +111,8 @@ for site in ['Site-RU','Site-CBIC']:
 				if '\"IntendedFor\":' not in open(f).read():
 					for line in file:
 						print(line.replace('\"PatientPosition\": \"HFS\"','\"PatientPosition\": \"HFS\",\n    \"IntendedFor\": '+replacement_text),end='')
-	
+		
+
 
                 
  
