@@ -18,51 +18,6 @@ nshuff2perm=1000
 task = 'DM'
 n_time = 750
 
-def p_calc(ISC,ISCtype='e'):
-	nshuff = ISC.shape[0]-1
-	if ISCtype == 'e':
-		p = np.sum(abs(np.nanmean(ISC[0]))<abs(np.nanmean(ISC[1:],axis=1)))/nshuff
-	else:
-		p = np.sum(np.nanmean(ISC[0])>np.nanmean(ISC[1:],axis=1))/nshuff
-	return p,nshuff
-
-def load_D(roi,task,bins):
-	D = []
-	Age = []
-	Sex = []
-	for bi,b in enumerate(bins):
-		bstr = 'bin_'+str(b)
-		subl = dd.io.load(roi,'/'+'/'.join([task,bstr,'subl']))
-		Sex.extend([Phenodf['Sex'][Phenodf['EID'] == shortsub(sub)].iloc[0] for sub in subl])
-		Age.extend([bi]*len(subl))
-		D.append(dd.io.load(roi,'/'+'/'.join([task,bstr,'D'])))
-	D = np.concatenate(D)
-	return D,Age,Sex
-
-def shuff_demo(shuff,Age,Sex):
-	np.random.seed(shuff) # same random order on same shuffs
-	# Now shuffle Age, and Sex in same order:
-	neword = np.random.permutation(len(Age))
-	Age = [Age[neword[ai]] for ai,a in enumerate(Age)]
-	Sex = [Sex[neword[ai]] for ai,a in enumerate(Sex)]
-	return Age,Sex
-	
-def ISC_w_calc(D,n_vox,n_time,nsub,subh):
-	ISC_w = np.zeros((nbins,n_vox))
-	groups = np.zeros((nbins,2,n_vox,n_time),dtype='float16')
-	for h in [0,1]:
-		for htmp in [0,1]:
-			group = np.zeros((n_vox,n_time),dtype='float16')
-			groupn = np.ones((n_vox,n_time),dtype='int')*nsub//2
-			for i in subh[h][htmp]:
-				group = np.nansum(np.stack((group,D[i])),axis=0)
-				nanverts = np.argwhere(np.isnan(D[i,:]))
-				groupn[nanverts[:, 0],nanverts[:,1]] = groupn[nanverts[:,0],nanverts[:,1]]-1
-			groups[h,htmp] = zscore(group/groupn,axis=1)
-		ISC_w[h] = np.sum(np.multiply(groups[h,0],groups[h,1]), axis=1)/(n_time-1)
-	return ISC_w,groups
-
-
 for seed in tqdm.tqdm(seeds):
 	for roi in glob.glob(roidir+seed+'/'+'*.h5'):
 		roi_short = roi.split('/')[-1][:-3]
@@ -77,7 +32,14 @@ for seed in tqdm.tqdm(seeds):
 			e_p,nshuff_ = p_calc(dd.io.load(savef,'/'+task+'/ISC_e'),'e')
 			g_p,nshuff_ = p_calc(dd.io.load(savef,'/'+task+'/ISC_g'),'g')
 			nshuff2 = nshuff2perm + nshuff_
-			if ((e_p < 0.05 or g_p < 0.05) and nshuff_<nshuff2perm) or (e_p == 0 or g_p == 0):
+			nshuff_all = 0
+			e_p_all = g_p_all = 1
+			if os.path.exists(ISCpath+'p_vals_seeds.h5'):
+				nshuff_all = len(dd.io.load(ISCpath+'p_vals_seeds.h5', '/roidict/'+roi_short+'/ISC_e/shuff'))
+				e_p_all = dd.io.load(ISCpath+'p_vals_seeds.h5', '/roidict/'+roi_short+'/ISC_e/p')
+				g_p_all = dd.io.load(ISCpath+'p_vals_seeds.h5', '/roidict/'+roi_short+'/ISC_g/p')
+			#if ((e_p < 0.05 or g_p < 0.05) and nshuff_<nshuff2perm) or (e_p == 0 or g_p == 0) or (nshuff_ < nshuff_all and (e_p_all < 0.05 or g_p_all < 0.05)):
+			if (nshuff_ < nshuff_all and (e_p_all < 0.05 or g_p_all < 0.05)):
 				roidict[task]['ISC_w'] = np.append(dd.io.load(savef,'/'+task+'/ISC_w'), np.zeros((nshuff2-nshuff_,nbins,n_vox)), axis=0)
 				roidict[task]['ISC_e'] = np.append(dd.io.load(savef,'/'+task+'/ISC_e'), np.zeros((nshuff2-nshuff_,n_vox)), axis=0)
 				roidict[task]['ISC_b'] = np.append(dd.io.load(savef,'/'+task+'/ISC_b'), np.zeros((nshuff2-nshuff_,4,n_vox)), axis=0)

@@ -9,56 +9,89 @@ import numpy as np
 import deepdish as dd
 from HMM_settings import *
 
-HMMdir = HMMpath+'shuff_5bins_train04_paper/'
-ISCdir = ISCpath+'shuff_Yeo_paper/'
+HMMdir = HMMpath+'shuff_5bins_train04_'
+ISCdir = ISCpath+'shuff_Yeo_'
 task='DM'
 
 savedict = {}
-for roi in tqdm.tqdm(glob.glob(roidir+'*h5')):
-	roi_short = roi.split('/')[-1][:-3]
-	savedict[roi_short] = {}
-	savedict[roi_short]['vall'] = dd.io.load(roi,'/vall')
-	for isc in ['ISC_e','ISC_g']:
-		ISCvals = dd.io.load(ISCdir+roi_short+'.h5','/'+task+'/'+isc)
-		savedict[roi_short][isc] = {}
-		savedict[roi_short][isc]['val'] = np.nanmean(ISCvals[0])
-		savedict[roi_short][isc]['shuff'] = np.nanmean(ISCvals[1:],axis=1)
-		if 'g' in isc:
-			savedict[roi_short][isc]['p'] = np.sum(abs(savedict[roi_short][isc]['val']) > savedict[roi_short][isc]['shuff'])/len(savedict[roi_short][isc]['shuff'])
-		else:
-			savedict[roi_short][isc]['p'] = np.sum(abs(savedict[roi_short][isc]['val']) < abs(savedict[roi_short][isc]['shuff']))/len(savedict[roi_short][isc]['shuff'])
-			
-	if (df.index == roi_short).any():
-		savedict[roi_short]['k_diff'] = {}
-		savedict[roi_short]['k_diff']['val'] = df.loc[roi_short]['4'] - df.loc[roi_short]['0']
-		savedict[roi_short]['k_diff']['shuff'] = df.loc[roi_short]['shuff']
-		savedict[roi_short]['k_diff']['p'] = df.loc[roi_short]['k_diff_p']
-		savedict[roi_short]['k_diff']['q'] = df.loc[roi_short]['k_diff_q']
-	
-		for HMMd in ['ll_diff','auc_diff']:
-			HMMvals = dd.io.load(HMMdir+roi_short+'.h5','/'+task+'/'+HMMd)
-			savedict[roi_short][HMMd] = {}
-			savedict[roi_short][HMMd]['val'] = HMMvals[0]
-			savedict[roi_short][HMMd]['shuff'] = HMMvals[1:]
-			savedict[roi_short][HMMd]['p'] = np.sum(abs(savedict[roi_short][HMMd]['val'])<\
-				abs(savedict[roi_short][HMMd]['shuff']))/len(savedict[roi_short][HMMd]['shuff'])
-			
-for comp in ['ISC_e','ISC_g','ll_diff','auc_diff']:
-	ROIl = []
-	ps = []
-	qs = []
-	for roi in savedict.keys():
-		if comp in savedict[roi].keys():
-			ROIl.append(roi)
-			if savedict[roi][comp]['p'] == 0:
-				ps.append(1/(len(savedict[roi][comp]['shuff'])+1))
+for seed in tqdm.tqdm(seeds):
+	savedict[seed] = {}
+	df=pd.DataFrame(dd.io.load(nkh5+seed+'.h5')).T
+	df.loc[:,'k_diff_q'] = FDR_p(df['k_diff_p'])
+	for roi in glob.glob(roidir+seed+'/'+'*h5'):
+		roi_short = roi.split('/')[-1][:-3]
+		savedict[seed][roi_short] = {}
+		savedict[seed][roi_short]['vall'] = dd.io.load(roi,'/vall')
+		for isc in ['ISC_w','ISC_e','ISC_g']:
+			ISCvals = dd.io.load(ISCdir+seed+'/'+roi_short+'.h5','/'+task+'/'+isc)
+			savedict[seed][roi_short][isc] = {}
+			if 'w' in isc:
+				savedict[seed][roi_short][isc]['val'] = np.nanmean(ISCvals[1:])
+				savedict[seed][roi_short][isc]['val_'] = np.nanmean(ISCvals[1:])
 			else:
-				ps.append(savedict[roi][comp]['p'])
-	qs = FDR_p(np.array(ps))
-	for i,roi in enumerate(ROIl):
-		savedict[roi][comp]['q'] = qs[i]
+				savedict[seed][roi_short][isc]['val'] = np.nanmean(ISCvals[0])
+				savedict[seed][roi_short][isc]['shuff'] = np.nanmean(ISCvals[1:],axis=1)
+				if 'g' in isc:
+					savedict[seed][roi_short][isc]['p'] = np.sum(abs(savedict[seed][roi_short][isc]['val']) > savedict[seed][roi_short][isc]['shuff'])/len(savedict[seed][roi_short][isc]['shuff'])
+				else:
+					savedict[seed][roi_short][isc]['p'] = np.sum(abs(savedict[seed][roi_short][isc]['val']) < abs(savedict[seed][roi_short][isc]['shuff']))/len(savedict[seed][roi_short][isc]['shuff'])
+			
+		if roi_short in ROIl:
+			savedict[seed][roi_short]['k_diff'] = {}
+			savedict[seed][roi_short]['k_diff']['val'] = df.loc[roi_short]['4'] - df.loc[roi_short]['0']
+			savedict[seed][roi_short]['k_diff']['shuff'] = df.loc[roi_short]['shuff']
+			savedict[seed][roi_short]['k_diff']['p'] = df.loc[roi_short]['k_diff_p']
+			savedict[seed][roi_short]['k_diff']['q'] = df.loc[roi_short]['k_diff_q']
+	
+			for HMMd in ['ll_diff','auc_diff']:
+				HMMvals = dd.io.load(HMMdir+seed+'/'+roi_short+'.h5','/'+HMMd)
+				savedict[seed][roi_short][HMMd] = {}
+				savedict[seed][roi_short][HMMd]['val'] = HMMvals[0]
+				savedict[seed][roi_short][HMMd]['shuff'] = HMMvals[1:]
+				savedict[seed][roi_short][HMMd]['p'] = np.sum(abs(savedict[seed][roi_short][HMMd]['val']) < abs(savedict[seed][roi_short][HMMd]['shuff']))/len(savedict[seed][roi_short][HMMd]['shuff'])
+				
+roidict = {}
+for roi in glob.glob(roidir+seed+'/'+'*h5'):
+	roi_short = roi.split('/')[-1][:-3]
+	roidict[roi_short] = {}
+	for comp in ['ISC_w','ISC_e','ISC_g','k_diff','ll_diff','auc_diff']:
+		if comp in savedict[seed][roi_short].keys():
+			roidict[roi_short][comp] = {}
+			roidict[roi_short][comp]['val'] = np.mean([savedict[seed][roi_short][comp]['val'] for seed in seeds])
+			if 'w' not in comp:
+				arrs = [np.array(savedict[seed][roi_short][comp]['shuff']) for seed in seeds]
+				arr = np.ma.empty((np.max([len(i) for i in arrs]),len(arrs)))
+				arr.mask = True
+				for idx, l in enumerate(arrs):
+					arr[:len(l),idx] = l
+				roidict[roi_short][comp]['shuff'] = arr.mean(axis = -1)
+				if 'g' in comp:
+					roidict[roi_short][comp]['p'] = np.sum(abs(roidict[roi_short][comp]['val']) > roidict[roi_short][comp]['shuff'])/len(roidict[roi_short][comp]['shuff'])
+				else:
+					roidict[roi_short][comp]['p'] = np.sum(abs(roidict[roi_short][comp]['val']) < abs(roidict[roi_short][comp]['shuff']))/len(roidict[roi_short][comp]['shuff'])
+				
+for seed in seeds+['-']:
+	d = roidict if seed == '-' else savedict[seed]
+	for comp in ['ISC_e','ISC_g','ll_diff','auc_diff']:
+		ROIl = []
+		ps = []
+		qs = []
+		for roi in d.keys():
+			if comp in d[roi].keys():
+				ROIl.append(roi)
+				if d[roi][comp]['p'] == 0:
+					ps.append(1/(len(d[roi][comp]['shuff'])+1))
+				else:
+					ps.append(d[roi][comp]['p'])
+		qs = FDR_p(np.array(ps))
+		for i,roi in enumerate(ROIl):
+			if seed == '-':
+				roidict[roi][comp]['q'] = qs[i]
+			else:
+				savedict[seed][roi][comp]['q'] = qs[i]
+		print(seed,comp,np.sum(qs<0.05))
 		
-dd.io.save(ISCpath+'p_vals_paper.h5',savedict)
+dd.io.save(ISCpath+'p_vals_seeds.h5',{'seeddict':savedict,'roidict':roidict})
 			
 	
 
