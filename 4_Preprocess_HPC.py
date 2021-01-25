@@ -13,7 +13,7 @@ from settings import *
 subs = glob.glob('%ssub*.html'%(fmripreppath))
 subs = [s.replace('.html', '').replace(fmripreppath, '') for s in subs]
 subs = [sub for sub in subs if sub not in bad_sub_dict]
-#subs = [sub for sub in subs if not os.path.isfile(hpcprepath + sub + '.h5') and sub not in bad_sub_dict]
+subs = [sub for sub in subs if not os.path.isfile(hpcprepath + sub + '.h5') and sub not in bad_sub_dict]
 
 mask_path = '_space-MNI152NLin2009cAsym_desc-aseg_dseg.nii.gz'
 # Version 1.1.4:
