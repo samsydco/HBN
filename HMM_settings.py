@@ -12,7 +12,8 @@ roidir = ISCpath+'Yeo_parcellation_'
 seeds = [f[-1] for f in glob.glob(roidir+'*')]
 nkdir = HMMpath+'nk_moreshuff_'#'nk/'
 nkh5 = HMMpath+'nk_' #formerly nk.h5
-llh5 = HMMpath+'ll_diff_paper.h5' # formerly ll_diff
+llh5 = HMMpath+'ll_diff_seeds.h5' # formerly ll_diff
+llcsv = HMMpath+'ll_diff_seeds.csv' # formerly ll_diff
 
 tasks = ['DM','TP']
 TR=0.8
@@ -67,12 +68,10 @@ def FDR_p(pvals):
 
     return qvals
 
-if os.path.exists(llh5):
-	lldict = dd.io.load(llh5)
-	kdict=dd.io.load(nkh5)
-	df = pd.DataFrame(kdict).T.merge(pd.DataFrame(lldict).T, left_index=True, right_index=True, how='inner')
+
+if os.path.exists(llcsv):
+	df = pd.read_csv(llcsv, index_col=0)
 	df=df[((df['0_2k_diff']>ll_thresh) | (df['4_2k_diff']>ll_thresh))]
-	df.loc[:,'k_diff_q'] = FDR_p(df['k_diff_p'])
 	ROIl = list(df.index)
 
 nsub= 40

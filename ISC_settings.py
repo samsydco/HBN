@@ -3,6 +3,7 @@
 from settings import *
 from datetime import date,datetime
 from scipy.stats import binned_statistic
+from scipy.stats import zscore
 import glob
 import pandas as pd
 import numpy as np
@@ -103,21 +104,49 @@ for i in np.unique(phenol['sex']):
 		
 nsubbin = [min([agedist[1][0][0][b],agedist[0][0][0][b]]).astype(int) for b in range(nbins)]
 
-nshuff = 100 # for agediff analysis
-def binagesubs(agel,sexl,eqbins,subord):
-	nbinseq = len(eqbins) - 1
-	ageeq = [[[[] for _ in range(nbinseq)] for _ in range(2)] for _ in range(2)]
-	lenageeq = [[] for _ in range(2)]
-	minageeq = []
-	for i in np.unique(sexl):
-		ages = [a for idx,a in enumerate(agel) if sexl[idx]==i]
-		for b in range(nbinseq):
-			ageeq[i][0][b] = [idx for idx,a in enumerate(ages) 
-						   if a>=eqbins[b] and a<eqbins[b+1]]
-			lenageeq[i].append(len(ageeq[i][0][b]))
-		minageeq.append(min(lenageeq[i]))
-		for idx,sub in enumerate([s for idx,s in enumerate(subord) if sexl[idx]==i]):
-			if ages[idx] < eqbins[nbinseq]:
-				ageeq[i][1][[b for b in range(nbinseq) if idx in ageeq[i][0][b]][0]].append(sub)
-	return ageeq,lenageeq,minageeq
+nshuff = 100
 	
+def p_calc(ISC,ISCtype='e'):
+	nshuff = ISC.shape[0]-1
+	if ISCtype == 'e':
+		p = np.sum(abs(np.nanmean(ISC[0]))<abs(np.nanmean(ISC[1:],axis=1)))/nshuff
+	else:
+		p = np.sum(np.nanmean(ISC[0])>np.nanmean(ISC[1:],axis=1))/nshuff
+	return p,nshuff
+
+def load_D(roi,task,bins):
+	D = []
+	Age = []
+	Sex = []
+	for bi,b in enumerate(bins):
+		bstr = 'bin_'+str(b)
+		subl = dd.io.load(roi,'/'+'/'.join([task,bstr,'subl']))
+		Sex.extend([Phenodf['Sex'][Phenodf['EID'] == shortsub(sub)].iloc[0] for sub in subl])
+		Age.extend([bi]*len(subl))
+		D.append(dd.io.load(roi,'/'+'/'.join([task,bstr,'D'])))
+	D = np.concatenate(D)
+	return D,Age,Sex
+
+def shuff_demo(shuff,Age,Sex):
+	np.random.seed(shuff) # same random order on same shuffs
+	# Now shuffle Age, and Sex in same order:
+	neword = np.random.permutation(len(Age))
+	Age = [Age[neword[ai]] for ai,a in enumerate(Age)]
+	Sex = [Sex[neword[ai]] for ai,a in enumerate(Sex)]
+	return Age,Sex
+	
+def ISC_w_calc(D,n_vox,n_time,nsub,subh):
+	nbins = len(subh)
+	ISC_w = np.zeros((nbins,n_vox))
+	groups = np.zeros((nbins,2,n_vox,n_time),dtype='float16')
+	for h in range(nbins):
+		for htmp in [0,1]:
+			group = np.zeros((n_vox,n_time),dtype='float16')
+			groupn = np.ones((n_vox,n_time),dtype='int')*nsub//2
+			for i in subh[h][htmp]:
+				group = np.nansum(np.stack((group,D[i])),axis=0)
+				nanverts = np.argwhere(np.isnan(D[i,:]))
+				groupn[nanverts[:, 0],nanverts[:,1]] = groupn[nanverts[:,0],nanverts[:,1]]-1
+			groups[h,htmp] = zscore(group/groupn,axis=1)
+		ISC_w[h] = np.sum(np.multiply(groups[h,0],groups[h,1]), axis=1)/(n_time-1)
+	return ISC_w,groups
