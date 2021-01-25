@@ -12,8 +12,8 @@ from tqdm import tqdm
 import datetime
 from settings import *
 	
-#site = 'Site-CBIC'
-site = 'Site-RU'
+site = 'Site-CBIC'
+#site = 'Site-RU'
 
 compcsv = TRratingdr+'compT1_'+site+'.csv'
 compdf = pd.read_csv(compcsv)
@@ -22,7 +22,7 @@ plist = []
 for index, row in compdf.iterrows():
 	if ((str(row['final']) != "n" and str(row['final'])!='nan') and
 		not os.path.exists(fmripreppath+row['sub']+'.html')):
-		#len(glob.glob(fmripreppath+sub_temp+'/figures/*sdc*'))!=2):
+		#len(glob.glob(fmripreppath+row['sub']+'/figures/*sdc*'))!=2):
 		plist.append(row['sub'])
 plist = plist[:75]
 nchunk = 4 # number of items per chunk (maybe use 10?)
@@ -40,12 +40,15 @@ if __name__ == "__main__":
 			date = str(datetime.datetime.now())[0:19].replace(' ','_')
 			f = open("%sfmriprep_cmdoutput/%s_%s_%s.txt"%(path,task,date,pstr.replace(" ","_")), "w")
 			# "-t" in docker instead of "-it" :)
-			if site =='Site-RU':
-				command = ('docker run --rm -t -u 14128:13110 -v                         /usr/local/freesurfer/license.txt:/opt/freesurfer/license.txt:ro -v '+path+site+':/data:ro -v '+outputdr+':/out -v '+tmpdr+':/scratch poldracklab/fmriprep:1.1.4 /data /out participant --ignore slicetiming fieldmaps --use-syn-sdc --fs-no-reconall --output-space template  --participant_label '+pstr+' -t movie'+task+' -w /scratch').split()
-			else:
-				command = ('docker run --rm -t -u 14128:13110 -v                         /usr/local/freesurfer/license.txt:/opt/freesurfer/license.txt:ro -v '+path+site+'/:/data:ro -v '+outputdr+':/out -v '+tmpdr+':/scratch poldracklab/fmriprep:1.1.4 /data /out participant --ignore=slicetiming --output-space fsaverage6 --participant_label '+pstr+' -t movie'+task+' -w /scratch').split()
+			command = ('docker run --rm -t -u 14128:13110 -v                         /usr/local/freesurfer/license.txt:/opt/freesurfer/license.txt:ro -v '+path+site+':/data:ro -v '+outputdr+':/out -v '+tmpdr+':/scratch poldracklab/fmriprep:1.1.4 /data /out participant --ignore slicetiming fieldmaps --use-syn-sdc --output-space template fsaverage6  --participant_label '+pstr+' -t movie'+task+' -w /scratch').split()
 			p = sp.Popen(['sudo', '-S'] + command, stdin=sp.PIPE, stderr=sp.PIPE,
 			  universal_newlines=True,stdout=f)
 			p.communicate(password + '\n')[1]
+			
+			
+
+			
+			
+			
     
 
