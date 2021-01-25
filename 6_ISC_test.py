@@ -23,7 +23,7 @@ n_subj = len(subord)
 n_vox = 5
 ISCversions = ['Loo','SH','Pair']
 
-# Some math to conver between correlation values
+# Some math to convert between correlation values
 def corr_convert(r,N,corrtype='SH'):
 	if corrtype == 'SH':
 		f = 2*r/(N*(1-r))
