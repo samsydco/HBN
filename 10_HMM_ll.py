@@ -42,7 +42,7 @@ for roi in tqdm.tqdm(roi_short_list):
 				hmm = brainiak.eventseg.event.EventSegment(n_events=k)
 				hmm.fit(Dtrain)
 				for b in bins:
-					_, tune_ll[b,seed,split,ki] = hmm.find_events(Dtest[b])
+					_, tune_ll[b,si,split,ki] = hmm.find_events(Dtest[b])
 	tune_ll = np.mean(tune_ll,axis=1)
 	
 	fig,ax = plt.subplots(figsize=(19,7))
