@@ -34,24 +34,24 @@ for seed in tqdm.tqdm(seeds):
 	seedsavedir = savedir+seed
 	if not os.path.exists(seedsavedir): os.makedirs(seedsavedir)
 	for roi_short in tqdm.tqdm(ROIl):
-		roif = roidir+seed+'/'+roi_short+'.h5'
 		if os.path.exists(seedsavedir+'/'+roi_short+'.h5'):
 			roidict = dd.io.load(seedsavedir+'/'+roi_short+'.h5')
 			nshuff_ = len(roidict['ll_diff'][1:])
 			p_ll_ = np.sum(abs(roidict['ll_diff'][0])<abs(roidict['ll_diff'][1:]) )/nshuff_
 			p_auc = np.sum(abs(roidict['auc_diff'][0])<abs(roidict['auc_diff'][1:]) )/nshuff_
 			nshuff2 = nshuff2perm + nshuff_
-			shuffl = np.arange(nshuff_+1,nshuff2+1)
 			nshuff_all = 0
 			p_ll_all = p_aucall = 1
 			if os.path.exists(ISCpath+'p_vals_seeds.h5'):
 				nshuff_all = len(dd.io.load(ISCpath+'p_vals_seeds.h5', '/roidict/'+roi_short+'/auc_diff/shuff'))
 				p_ll_all = dd.io.load(ISCpath+'p_vals_seeds.h5', '/roidict/'+roi_short+'/ll_diff/p')
 				p_aucall = dd.io.load(ISCpath+'p_vals_seeds.h5', '/roidict/'+roi_short+'/auc_diff/p')
+				if nshuff_all > nshuff2: nshuff2 = nshuff_all
+			shuffl = np.arange(nshuff_+1,nshuff2+1)
 		else:
 			roidict = {'bin_'+str(b):{} for b in bins}
 			for b in bins:
-				roidict['bin_'+str(b)]['D'] =  dd.io.load(roif, '/DM/bin_'+str(b)+'/D')
+				roidict['bin_'+str(b)]['D'] =  dd.io.load(roidir+seed+'/'+roi_short+'.h5', '/DM/bin_'+str(b)+'/D')
 			nshuff2 = nshuff_ = nshuff
 			shuffl = np.arange(nshuff2+1)
 			p_ll_ = p_auc = 0 #Default = Do the test
