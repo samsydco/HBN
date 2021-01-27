@@ -50,9 +50,9 @@ for roi in tqdm.tqdm(roi_short_list):
 	ax.set_ylabel('Log likelihood',fontsize=30)
 	for b in bins:
 		lab = 'Ages '+str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))
-		y = np.mean(tune_ll[b],0)/nTR_
+		y_ = np.mean(tune_ll[b],0)/nTR_
 		yerr = np.std(HMMtask['tune_ll'][b],0)/nTR_
-		ax.errorbar(x_list, y, yerr=yerr,color=colors[b],label=lab)
+		ax.errorbar(x_list, y_, yerr=yerr,color=colors[b],label=lab)
 	ax.set_facecolor((grey,grey,grey))
 	ax.set_xticks(x_list[::2])
 	ax.set_xticklabels(x_list[::2],rotation=45)
