@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from settings import *
-from datetime import date,datetime
 from scipy.stats import binned_statistic
 from scipy.stats import zscore
 import glob
