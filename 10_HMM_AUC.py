@@ -3,7 +3,10 @@
 # Make Caroline plots in Yeo ROIs
 # Make example plots
 
-import glob
+import matplotlib
+# Force matplotlib to not use any Xwindows backend.
+matplotlib.use('Agg')
+
 import tqdm
 import numpy as np
 import deepdish as dd
@@ -11,33 +14,31 @@ import brainiak.eventseg.event
 import matplotlib.pyplot as plt
 from HMM_settings import *
 
-HMMdir = HMMpath+'shuff_5bins_train04_paper/'
-figdir = figurepath + 'HMM/Paper/'
+HMMdir = HMMpath+'shuff_5bins_train04_'
+figdir = figurepath + 'HMM/Paper_auc/'
 bins = np.arange(nbinseq)
 nbins = len(bins)
 lgd = [str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))+' y.o.' for b in bins]
 colors = ['#edf8fb','#b3cde3','#8c96c6','#8856a7','#810f7c']
 grey = 211/256 # other options: https://www.rapidtables.com/web/color/gray-color.html
 
-q_vals = dd.io.load(ISCpath+'p_vals_paper.h5')
-qrois = []
-for roi in q_vals:
-	if 'auc_diff' in q_vals[roi].keys():
-		if q_vals[roi]['auc_diff']['q'] < 0.05:
-			qrois.append(roi)
+pvals = dd.io.load(ISCpath+'p_vals_seeds.h5')
+ROIl = []
+for roi in pvals['roidict'].keys():
+	if 'auc_diff' in pvals['roidict'][roi].keys():
+		if pvals['roidict'][roi]['auc_diff']['q'] < 0.05:
+			vallist = [abs(pvals['seeddict'][seed][roi]['auc_diff']['val']) for seed in seeds]
+			seed = seeds[np.argmax(vallist)]
+			ROIl.append(HMMdir+seed+'/'+roi+'.h5')
 
-ROIl = [HMMdir+roi+'.h5' for roi in qrois]
-
-task='DM'
 nTR_ = nTR[0]
 time = np.arange(TR,nTR_*TR+1,TR)[:-1]
 for roi in tqdm.tqdm(ROIl):
 	roi_short = roi.split('/')[-1][:-3]
-	k = dd.io.load(roi,'/'+task+'/best_k')
-	D = [dd.io.load(roi,'/'+task+'/bin_'+str(b)+'/D') for b in bins]
+	k = dd.io.load(roi,'/best_k')
+	D = [dd.io.load(roi,'/bin_'+str(b)+'/D') for b in bins]
 	hmm = brainiak.eventseg.event.EventSegment(n_events=k)
-	bin_tmp = bins if 'all' in HMMdir else [0,4]
-	hmm.fit([np.mean(d,axis=0).T for d in [D[bi] for bi in bin_tmp]])
+	hmm.fit([np.mean(d,axis=0).T for d in [D[bi] for bi in [0,4]]])
 	kl = np.arange(k)+1
 	klax = kl if k < 25 else kl[4::5]
 	# start figure plotting:
