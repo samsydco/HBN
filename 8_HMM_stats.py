@@ -55,9 +55,8 @@ for seed in tqdm.tqdm(seeds):
 			nshuff2 = nshuff_ = nshuff
 			shuffl = np.arange(nshuff2+1)
 			p_ll_ = p_auc = 0 #Default = Do the test
-		#if ((p_ll_<0.05 or p_auc<0.05) and nshuff_ < nshuff2perm) \
-		#or (p_ll_== 0 or p_auc == 0) or (nshuff_ < nshuff_all and (p_ll_all < 0.05 or p_aucall < 0.05)):
-		if (nshuff_ < nshuff_all and (p_ll_all < 0.05 or p_aucall < 0.05)):
+		if ((p_ll_<0.05 or p_auc<0.05) and nshuff_ < nshuff2perm) \
+		or (p_ll_== 0 or p_auc == 0) or (nshuff_ < nshuff_all and (p_ll_all < 0.05 or p_aucall < 0.05)):
 			D = [roidict['bin_'+str(b)]['D'] for b in bins]
 			if not os.path.exists(seedsavedir+'/'+roi_short+'.h5'):
 				tune_ll = np.zeros((nbins,nsplit,len(k_list)))
