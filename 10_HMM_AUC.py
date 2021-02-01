@@ -19,8 +19,7 @@ figdir = figurepath + 'HMM/Paper_auc/'
 bins = np.arange(nbinseq)
 nbins = len(bins)
 lgd = [str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))+' y.o.' for b in bins]
-colors = ['#edf8fb','#b3cde3','#8c96c6','#8856a7','#810f7c']
-grey = 211/256 # other options: https://www.rapidtables.com/web/color/gray-color.html
+colors = ['#FCC3A1','#F08B63','#D02941','#70215D','#311638']
 
 pvals = dd.io.load(ISCpath+'p_vals_seeds.h5')
 ROIl = []
@@ -55,9 +54,8 @@ for roi in tqdm.tqdm(ROIl):
 		seg, _ = hmm.find_events(np.mean(D[bi],axis=0).T)
 		E_k.append(np.dot(seg, kl))
 		auc.append(round(E_k[bi].sum(), 2))
-		ax.plot(time, E_k[bi], linewidth=5.5, alpha=0.5, color=colors[bi],label=lgd[bi])
+		ax.plot(time, E_k[bi], linewidth=5.5, color=colors[bi],label=lgd[bi])
 	legend = ax.legend(prop={'size': 30},bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.,edgecolor='black')
-	ax.set_facecolor((grey,grey,grey))
 	plt.savefig(figdir+roi_short+'.png', bbox_extra_artists=(legend,), bbox_inches='tight')
 	#zoomed figure
 	for z in [0,200,400]:
@@ -71,8 +69,7 @@ for roi in tqdm.tqdm(ROIl):
 		ax.set_yticklabels(klax,fontsize=30)
 		ax.set_ylabel('Events', fontsize=45)
 		for bi in range(len(bins)):
-			ax.plot(timez, E_k[bi][ztw], linewidth=5.5, alpha=0.5, color=colors[bi],label=lgd[bi])
-		ax.set_facecolor((grey,grey,grey))
+			ax.plot(timez, E_k[bi][ztw], linewidth=5.5,color=colors[bi],label=lgd[bi])
 		plt.savefig(figdir+roi_short+'_'+str(z)+'_zoom.png', bbox_inches='tight')
 			
 #roi_example
@@ -93,8 +90,7 @@ for win in [10,50]:
 	ax.set_yticks(klax)
 	ax.set_yticklabels(klax,fontsize=45)
 	ax.set_ylabel('Events', fontsize=45,labelpad=20)
-	ax.set_facecolor((grey,grey,grey))
-	ax.plot(inbet_ll, linewidth=9, alpha=0.5, color=colors[3])
+	ax.plot(inbet_ll, linewidth=9,color=colors[3])
 	plt.savefig(figdir+'_'.join([str(k),str(win)])+'.png', bbox_inches='tight')
 	
 
@@ -107,15 +103,14 @@ klax = kl if k < 25 else kl[4::5]
 ax.set_yticks(klax)
 ax.set_yticklabels(klax,fontsize=45)
 ax.set_ylabel('Events', fontsize=45,labelpad=20)
-ax.set_facecolor((grey,grey,grey))
 Ek = []
 win=10
 for bi,b in enumerate([4,0]):
 	delay = b*10
 	inbet_ll = np.concatenate([good_ll_fit[:win],np.convolve(good_ll_fit, np.blackman(win)/np.sum(np.blackman(win)), 'same')[win:-win], good_ll_fit[-win:]])
 	Ek = np.concatenate([np.ones(delay+10),inbet_ll[:-delay][10:]]) if delay>0 else inbet_ll
-	ax.plot(Ek, linewidth=9, alpha=0.5, color=colorinv[b],label=labs[bi])
-lgd = ax.legend(loc='upper left',prop={'size':40},facecolor=(grey,grey,grey),frameon = True,edgecolor='k')
+	ax.plot(Ek, linewidth=9,color=colorinv[b],label=labs[bi])
+lgd = ax.legend(loc='upper left',prop={'size':40},frameon = True,edgecolor='k')
 lgd.get_frame().set_linewidth(2)
 plt.savefig(figdir+str(k)+'_delay'+'.png', bbox_inches='tight')
 
