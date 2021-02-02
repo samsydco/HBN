@@ -225,7 +225,7 @@ if __name__ == "__main__":
 		
 	for HPC in ['HPC','aHPC','pHPC']:
 		r,p = stats.pearsonr(tempdf['Exact_Age'],tempdf['correlation_'+HPC])
-		sns.set(font_scale = 2)
+		sns.set(font_scale = 2,style="ticks")
 		fig,ax=plt.subplots(figsize=(7,5))
 		sns.regplot(x='Exact_Age', y="correlation_"+HPC, data=tempdf,color=colors_age[3])#.set_title('Delay = '+str(best_t)+'s\nr = '+str(np.round(r,2))+', p = '+str(np.round(p,2)))
 		ax.set_xlabel('Age')
@@ -250,7 +250,6 @@ if __name__ == "__main__":
 		
 	for HPC in ['HPC','aHPC','pHPC']:
 		# plot all ages together
-		sns.set(font_scale = 2)
 		sns.set_palette(colors_age)
 		fig,ax = plt.subplots(1,1,figsize=(7,7))
 		g = sns.lineplot(x='Time lag [s]', y='correlation_'+HPC, ax=ax, data=dfbumplag, ci=95,color=colors_age[3])
@@ -262,8 +261,6 @@ if __name__ == "__main__":
 	
 	for HPC in ['HPC','aHPC','pHPC']:
 		# plot timecourse of xcorr
-		sns.set(font_scale = 2)
-		sns.set_palette(colors_age)
 		fig,ax = plt.subplots(1,1,figsize=(7,7))
 		g = sns.lineplot(x='Time lag [s]', y='correlation_'+HPC, hue='Age', ax=ax, data=dfbumplag, ci=95)
 		#ax.plot(times[pvals<0.05],[0.090]*len(times[pvals<0.05]),'k*',markersize=15)
