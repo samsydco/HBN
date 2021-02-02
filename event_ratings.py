@@ -260,8 +260,10 @@ if __name__ == "__main__":
 		plt.savefig(figurepath+'HPC/'+HPC+'_bump_all.png', bbox_inches='tight',dpi=300)
 	
 	for HPC in ['HPC','aHPC','pHPC']:
+		sns.set(font_scale = 4,style="ticks")
+		sns.set_palette(colors_age)
 		# plot timecourse of xcorr
-		fig,ax = plt.subplots(1,1,figsize=(7,7))
+		fig,ax = plt.subplots(1,1,figsize=(10,12))
 		g = sns.lineplot(x='Time lag [s]', y='correlation_'+HPC, hue='Age', ax=ax, data=dfbumplag, ci=95)
 		#ax.plot(times[pvals<0.05],[0.090]*len(times[pvals<0.05]),'k*',markersize=15)
 		ax.set_xlim([-10,10])
