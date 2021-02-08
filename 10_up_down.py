@@ -68,7 +68,7 @@ for roi in pvals['roidict'].keys():
 			pc.set_facecolor('k')
 			#pc.set_edgecolor('black')
 			#pc.set_alpha(1)
-		ax.scatter(1,pvals['roidict'][roi]['ISC_e']['val'],color='k',s=80)
+		ax.scatter(1,pvals['roidict'][roi]['ISC_e']['val']*-1,color='k',s=80)
 		ax.set_xticks([])
 		ax.set_ylabel('ISC difference',fontsize=30)
 		fig.savefig(figdir+roi+'_ISC_difference.png', bbox_inches="tight")
