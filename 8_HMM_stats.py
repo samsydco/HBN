@@ -103,7 +103,7 @@ for seed in tqdm.tqdm(seeds):
 				for bi in range(nbins):
 					roidict['E_k'][shuff,bi] = np.dot(np.mean(tune_seg[shuff,bi],axis=0), np.arange(best_k)+1)
 					roidict['auc'][shuff,bi] = roidict['E_k'][shuff,bi].sum()
-				roidict['auc_diff'][shuff] = ((roidict['auc'][shuff,-1] -roidict['auc'][shuff,0])/best_k-1)*TR
+				roidict['auc_diff'][shuff] = ((roidict['auc'][shuff,-1] -roidict['auc'][shuff,0])/(best_k-1))*TR
 				roidict['ll_diff'][shuff] = np.mean(tune_ll[shuff,-1] - tune_ll[shuff,0])/nTR_
 			dd.io.save(seedsavedir+'/'+roi_short+'.h5',roidict)
 				
