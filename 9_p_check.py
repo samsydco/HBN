@@ -46,6 +46,10 @@ for seed in tqdm.tqdm(seeds):
 			for HMMd in ['ll_diff','auc_diff']:
 				HMMvals = dd.io.load(HMMdir+seed+'/'+roi_short+'.h5','/'+HMMd)
 				savedict[seed][roi_short][HMMd] = {}
+				# dumb coding error
+				if HMMd == 'auc_diff': 
+					k = dd.io.load(HMMdir+seed+'/'+roi_short+'.h5','/best_k')
+					HMMvals = (HMMvals*k)/(k-1)
 				savedict[seed][roi_short][HMMd]['val'] = HMMvals[0]
 				savedict[seed][roi_short][HMMd]['shuff'] = HMMvals[1:]
 				savedict[seed][roi_short][HMMd]['p'] = np.sum(abs(savedict[seed][roi_short][HMMd]['val']) < abs(savedict[seed][roi_short][HMMd]['shuff']))/len(savedict[seed][roi_short][HMMd]['shuff'])
