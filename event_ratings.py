@@ -227,7 +227,7 @@ if __name__ == "__main__":
 		r,p = stats.pearsonr(tempdf['Exact_Age'],tempdf['correlation_'+HPC])
 		sns.set(font_scale = 2,style="ticks")
 		fig,ax=plt.subplots(figsize=(7,5))
-		sns.scatterplot(x='Exact_Age',y="correlation_"+HPC,hue='Age', data=tempdf,palette=colors_age,ax=ax,linewidth=0,alpha = 0.7,legend=False)
+		sns.scatterplot(x='Exact_Age',y="correlation_"+HPC,hue='Age', data=tempdf,palette=colors_age,ax=ax,linewidth=0,alpha = 0.7,legend=False,s=50)
 		sns.regplot(x='Exact_Age', y="correlation_"+HPC, data=tempdf, scatter=False, ax=ax,color=colors_age[2])
 		ax.set_xlabel('Age')
 		ax.set_ylabel('Hippocampus-to-event\ncorrelation')
