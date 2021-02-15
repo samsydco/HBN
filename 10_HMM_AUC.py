@@ -18,105 +18,41 @@ HMMdir = HMMpath+'shuff_5bins_train04_'
 figdir = figurepath + 'HMM/Paper_auc/'
 bins = np.arange(nbinseq)
 nbins = len(bins)
-lgd = [str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))+' y.o.' for b in bins]
+xticks = [str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))+' y.o.' for b in bins]
 colors = ['#FCC3A1','#F08B63','#D02941','#70215D','#311638']
+plt.rcParams.update({'font.size': 30})
 
 pvals = dd.io.load(ISCpath+'p_vals_seeds.h5')
 ROIl = []
 for roi in pvals['roidict'].keys():
 	if 'auc_diff' in pvals['roidict'][roi].keys():
 		if pvals['roidict'][roi]['auc_diff']['q'] < 0.05:
-			vallist = [abs(pvals['seeddict'][seed][roi]['auc_diff']['val']) for seed in seeds]
-			seed = seeds[np.argmax(vallist)]
-			ROIl.append(HMMdir+seed+'/'+roi+'.h5')
+			ROIl.append(roi)
 
-nTR_ = nTR[0]
-time = np.arange(TR,nTR_*TR+1,TR)[:-1]
-for roi in tqdm.tqdm(ROIl):
-	roi_short = roi.split('/')[-1][:-3]
-	k = dd.io.load(roi,'/best_k')
-	D = [dd.io.load(roi,'/bin_'+str(b)+'/D') for b in bins]
-	hmm = brainiak.eventseg.event.EventSegment(n_events=k)
-	hmm.fit([np.mean(d,axis=0).T for d in [D[bi] for bi in [0,4]]])
-	kl = np.arange(k)+1
-	klax = kl if k < 25 else kl[4::5]
-	# start figure plotting:
-	fig, ax = plt.subplots(figsize=(10, 10))
-	ax.set_xticks(np.append(time[0::nTR_//5],time[-1]))
-	ax.set_xticklabels([str(int(s//60))+':'+str(int(s%60))+'0' for s in time][0::nTR_//5]+['10:00'], fontsize=30)
-	ax.set_xlabel('Time (minutes)', fontsize=35)
-	ax.set_yticks(klax)
-	ax.set_yticklabels(klax,fontsize=30)
-	ax.set_ylabel('Events', fontsize=45)
-	E_k = []
-	auc = []
-	for bi in range(len(bins)):
-		seg, _ = hmm.find_events(np.mean(D[bi],axis=0).T)
-		E_k.append(np.dot(seg, kl))
-		auc.append(round(E_k[bi].sum(), 2))
-		ax.plot(time, E_k[bi], linewidth=5.5, color=colors[bi],label=lgd[bi])
-	legend = ax.legend(prop={'size': 30},bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.,edgecolor='black')
-	plt.savefig(figdir+roi_short+'.png', bbox_extra_artists=(legend,), bbox_inches='tight')
-	#zoomed figure
-	for z in [0,200,400]:
-		ztw = np.arange(z,z+200)
-		timez=time[ztw]
-		fig, ax = plt.subplots(figsize=(10, 10))
-		ax.set_xticks(np.append(timez[0::nTR_//5],time[-1]))
-		ax.set_xticklabels([str(int(s//60))+':'+str(int(s%60)) for s in timez][0::nTR_//5]+['10:00'], fontsize=30)
-		ax.set_xlabel('Time (minutes)', fontsize=35)
-		ax.set_yticks(klax)
-		ax.set_yticklabels(klax,fontsize=30)
-		ax.set_ylabel('Events', fontsize=45)
-		for bi in range(len(bins)):
-			ax.plot(timez, E_k[bi][ztw], linewidth=5.5,color=colors[bi],label=lgd[bi])
-		plt.savefig(figdir+roi_short+'_'+str(z)+'_zoom.png', bbox_inches='tight')
+allauc = np.zeros((len(ROIl),nbins))			
+for ri,roi in enumerate(ROIl):
+	vall = pvals['seeddict']['0'][roi]['vall']
+	AUC = np.zeros((len(seeds),nbins))
+	for si,seed in enumerate(seeds):
+		k = dd.io.load(HMMdir+seed+'/'+roi+'.h5','/best_k')
+		auc = (dd.io.load(HMMdir+seed+'/'+roi+'.h5','/auc')/(k-1))*TR
+		for b in bins:
+			AUC[si,b] = auc[0,b]
+	AUC = np.mean(AUC,axis=0)
+	allauc[ri] = AUC-AUC[0]
+	
+for ri,roi in enumerate(ROIl):	
+	fig,ax = plt.subplots()
+	ax.plot(np.arange(len(xticks)),allauc[ri], linestyle='-', marker='o', color='k')
+	ax.set_xticks(np.arange(len(xticks)))
+	ax.set_xticklabels(xticks,rotation=45, fontsize=20)
+	ax.set_xlabel('Age',fontsize=20)
+	ax.set_ylabel('Average Prediction Difference',fontsize=20)
+	ax.set_ylim([np.min(allauc),np.max(allauc)])
+	plt.show()
+	fig.savefig(figdir+roi+'.png', bbox_inches="tight")
+
 			
-#roi_example
-# display low vs high ll
-# display idealized squiggle plot
-k = 3
-kl = np.arange(k)+1
-#ev_durr = [200,100,175,50,225]
-ev_durr = [75,50,75]
-even = [nTR_//k]*k
-good_ll_fit = np.concatenate([i*np.ones(ev_durr[i-1]) for i in np.arange(1,k+1)],axis=0)
-for win in [10,50]:
-	inbet_ll = np.convolve(good_ll_fit, np.blackman(win)/np.sum(np.blackman(win)))[win:200-win//2]
-	fig, ax = plt.subplots(figsize=(10, 10))
-	ax.set_xticks([])
-	ax.set_xlabel('Time in Movie', fontsize=45,labelpad=20)
-	klax = kl if k < 25 else kl[4::5]
-	ax.set_yticks(klax)
-	ax.set_yticklabels(klax,fontsize=45)
-	ax.set_ylabel('Events', fontsize=45,labelpad=20)
-	ax.plot(inbet_ll, linewidth=9,color=colors[3])
-	plt.savefig(figdir+'_'.join([str(k),str(win)])+'.png', bbox_inches='tight')
-	
-
-colorinv = colors[::-1]
-labs = ['Young','Old']
-fig, ax = plt.subplots(figsize=(10, 10))
-ax.set_xticks([])
-ax.set_xlabel('Time in Movie', fontsize=45,labelpad=20)
-klax = kl if k < 25 else kl[4::5]
-ax.set_yticks(klax)
-ax.set_yticklabels(klax,fontsize=45)
-ax.set_ylabel('Events', fontsize=45,labelpad=20)
-Ek = []
-win=10
-for bi,b in enumerate([4,0]):
-	delay = b*10
-	inbet_ll = np.concatenate([good_ll_fit[:win],np.convolve(good_ll_fit, np.blackman(win)/np.sum(np.blackman(win)), 'same')[win:-win], good_ll_fit[-win:]])
-	Ek = np.concatenate([np.ones(delay+10),inbet_ll[:-delay][10:]]) if delay>0 else inbet_ll
-	ax.plot(Ek, linewidth=9,color=colorinv[b],label=labs[bi])
-lgd = ax.legend(loc='upper left',prop={'size':40},frameon = True,edgecolor='k')
-lgd.get_frame().set_linewidth(2)
-plt.savefig(figdir+str(k)+'_delay'+'.png', bbox_inches='tight')
-
-	
-	
-
 
 
 
