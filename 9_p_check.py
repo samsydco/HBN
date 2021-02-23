@@ -37,6 +37,9 @@ for seed in tqdm.tqdm(seeds):
 					savedict[seed][roi_short][isc]['p'] = np.sum(abs(savedict[seed][roi_short][isc]['val']) < abs(savedict[seed][roi_short][isc]['shuff']))/len(savedict[seed][roi_short][isc]['shuff'])
 			
 		if roi_short in ROIl:
+			for b in ['0','4']:
+				savedict[seed][roi_short]['k'+b] = {}
+				savedict[seed][roi_short]['k'+b]['val'] = np.round(TR*(nTR_/df.loc[roi_short][b]),2)
 			savedict[seed][roi_short]['k_diff'] = {}
 			savedict[seed][roi_short]['k_diff']['val'] = df.loc[roi_short]['4'] - df.loc[roi_short]['0']
 			savedict[seed][roi_short]['k_diff']['shuff'] = df.loc[roi_short]['shuff']
@@ -58,11 +61,11 @@ roidict = {}
 for roi in glob.glob(roidir+seed+'/'+'*h5'):
 	roi_short = roi.split('/')[-1][:-3]
 	roidict[roi_short] = {}
-	for comp in ['ISC_w','ISC_e','ISC_g','k_diff','ll_diff','auc_diff']:
+	for comp in ['ISC_w','ISC_e','ISC_g','k0','k4','k_diff','ll_diff','auc_diff']:
 		if comp in savedict[seed][roi_short].keys():
 			roidict[roi_short][comp] = {}
 			roidict[roi_short][comp]['val'] = np.mean([savedict[seed][roi_short][comp]['val'] for seed in seeds])
-			if 'w' not in comp:
+			if not any(n in comp for n in ['w','0','4']):
 				arrs = [np.array(savedict[seed][roi_short][comp]['shuff']) for seed in seeds]
 				arr = np.ma.empty((np.max([len(i) for i in arrs]),len(arrs)))
 				arr.mask = True
