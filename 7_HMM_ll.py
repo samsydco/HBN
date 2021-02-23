@@ -62,13 +62,17 @@ idx2 = np.unique(np.concatenate((np.where(y>ll_thresh)[0],np.where(x>ll_thresh)[
 x1 = x.iloc[idx1]; y1 = y.iloc[idx1]
 x2 = x.iloc[idx2]; y2 = y.iloc[idx2]
 fig, ax = plt.subplots(figsize=(15,15))
-ax.scatter(x1,y1,s=100,alpha=0.25)
-ax.scatter(x2,y2,s=100,alpha=0.25)
-ax.set_xlim([np.min(x)-0.005,np.max(x)+0.005])
-ax.set_ylim([np.min(y)-0.005,np.max(y)+0.005])
-ax.set_xlabel('Youngest '+comp[1:])
-ax.set_ylabel('Oldest '+comp[1:])
-ax.set_title('Outlier: '+lldf.loc[lldf['4'+comp]==lldf['4'+comp].max()].index[0])
+ax.scatter(x1,y1,c='k',s=100,alpha=0.25)
+ax.scatter(x2,y2,c='k',s=100,alpha=0.25)
+ax.plot([ll_thresh,0],[ll_thresh,ll_thresh], "k--",linewidth=5)
+ax.plot([ll_thresh,ll_thresh],[0,ll_thresh], "k--",linewidth=5)
+ax.set_yscale('log')
+ax.set_xscale('log')
+ax.set_xlim([0,ax.get_xlim()[1]])
+ax.set_ylim([0,ax.get_ylim()[1]])
+ax.set_xlabel('Youngest Model-Fit difference')
+ax.set_ylabel('Oldest Model-Fit difference')
+#ax.set_title('Outlier: '+lldf.loc[lldf['4'+comp]==lldf['4'+comp].max()].index[0])
 fig.savefig(figurepath+'HMM/ll/'+comp+'_'+str(ll_thresh)+'.png', bbox_inches='tight')
 
 # In Parcels above minimum ll: is there a difference in number of k's (events)?
