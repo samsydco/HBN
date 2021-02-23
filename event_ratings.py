@@ -179,10 +179,6 @@ if __name__ == "__main__":
 	dfbumplag = pd.DataFrame(data=bumplagdict)
 	dfbumplag = dfbumplag[abs(dfbumplag['Time lag [s]'])<20]
 	
-	# Test for interaction between aHPC and pHPC correlation with ev_conv:
-	result = sm2.ols(formula='Exact_Age ~ correlation_aHPC + correlation_pHPC + correlation_aHPC * correlation_pHPC', data=dfbumplag).fit()
-	print(result.summary()) #no interaction!
-	
 	# Which time points post-0 are significantly different from zero?
 	dfpost = dfbumplag[dfbumplag['Time lag [s]']>=0]
 	dfpost=dfbumplag
@@ -211,6 +207,10 @@ if __name__ == "__main__":
 				 ' for degree '+str(deg)+'.')
 		t,p = stats.ttest_rel(sse[0],sse[1])
 		print(t,p)
+	# Test for interaction between aHPC and pHPC correlation with ev_conv:
+	result = sm2.ols(formula='Exact_Age ~ correlation_aHPC + correlation_pHPC + correlation_aHPC * correlation_pHPC', data=tempdf).fit()
+	print(result.summary()) #no interaction!
+		
 		
 	for HPC in ['HPC','aHPC','pHPC']:
 		OLS_model = sm.OLS(tempsize['correlation_'+HPC],tempsize[HPC]).fit()  # training the model
