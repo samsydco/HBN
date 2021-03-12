@@ -44,6 +44,7 @@ for csv in glob.glob(segpath+'*csv'):
 nsubj = len(eventdict['timing'])
 
 sexl=['DA:F','SB:F','AR:F','FBM:M','TM:F','MT:F','MJ:F','TK:M','NR:M','CG:F','MN:M','EG:F','HC:F','HDZ:F', 'MB:M', 'SJ:F', 'MCK:F', 'FF:F', 'AS:M', 'DS:F', 'TC:F']
+#agedict = {'DA:F':31,'SB:F','AR:F':23,'FBM:M','TM:F','MT:F','MJ:F':29,'TK:M','NR:M':27,'CG:F','MN:M','EG:F':32,'HC:F','HDZ:F':33, 'MB:M', 'SJ:F':20, 'MCK:F', 'FF:F', 'AS:M', 'DS:F', 'TC:F'}
 
 nevent = []
 ev_annot = []
@@ -191,6 +192,11 @@ if __name__ == "__main__":
 	best_t_i = times[np.argmin(pvals)]
 	best_t = 0 # Set from whole HPC
 	tempdf = dfpost[dfpost['Time lag [s]']==best_t]
+	t2 = np.zeros((3,len(xticks)))
+	p2 = np.zeros((3,len(xticks)))
+	for hi,HPC in enumerate(['HPC','aHPC','pHPC']):
+		for ai,age in enumerate(xticks):
+			t2[hi,ai],p2[hi,ai] = stats.ttest_1samp(tempdf[tempdf['Age']==age]['correlation_'+HPC],0)
 	tempsize = tempdf.merge(sizedf, on='Subj')
 	# test for linear vs polynomial fit of Age vs event_correlation:
 	# both line and U fit equally well!
