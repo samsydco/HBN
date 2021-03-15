@@ -101,7 +101,7 @@
 ## Code Relevant for Hippocampus:
 <ol>
 <li><a href="https://github.com/samsydco/HBN/blob/master/HPC.py">HPC.py</a>: Gets average hippocampus trace for each subject (in both anterior and posterior hippocampus)</li>
-<li><a href="https://github.com/samsydco/HBN/blob/master/event_ratings.py">event_ratings.py</a>: Calculates event timecourse from behavioral raters and compares to hippocampus timecourse.</li>
+<li><a href="https://github.com/samsydco/HBN/blob/master/event_ratings.py">event_ratings.py</a>: Calculates event timecourse from behavioral raters and compares to hippocampus timecourse. Behavioral annotations found in "video_segmentation" folder.</li>
 </ol>
 
 ## Other code:
