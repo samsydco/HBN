@@ -1,5 +1,7 @@
-# Code for analyses used in Cohen & Baldassano (2020). Title TBD.
-## System specifications:
+# Code for analyses used in:
+# <i>"Development changes story evoked responses in the neocortex and hippocampus"</i>
+## Samantha S. Cohen & Christopher Baldassano
+### System specifications:
 <p>Python version 3.6.6</p>
 <p>conda version 4.8.5</p>
 <p>All code was run within a conda envirnoment specified in: <a href="https://github.com/samsydco/HBN/blob/master/environment.yml">environment.yml</a></p>
@@ -12,7 +14,7 @@
 <p>The cortical results were made from fMRIPprep 1.1.4, installed in a docker container</p>
 <p>The hippocampal results were made from fMRIprep 1.5.6, and run via a singularity image</p>
 
-## Settings files:
+### Settings files:
 <ol>
 <li><a href="https://github.com/samsydco/HBN/blob/master/settings.py">settings.py</a>: 
 <ul>
@@ -35,7 +37,7 @@
 </li>
 </ol>
 
-## Order of code is as follows:
+### Order of code is as follows:
 <ol>
 <li><a href="https://github.com/samsydco/HBN/blob/master/1_aws.py">1_aws.py</a>: 
 <ul>
@@ -98,13 +100,13 @@
 </li>
 </ol>
 
-## Code Relevant for Hippocampus:
+### Code Relevant for Hippocampus:
 <ol>
 <li><a href="https://github.com/samsydco/HBN/blob/master/HPC.py">HPC.py</a>: Gets average hippocampus trace for each subject (in both anterior and posterior hippocampus)</li>
 <li><a href="https://github.com/samsydco/HBN/blob/master/event_ratings.py">event_ratings.py</a>: Calculates event timecourse from behavioral raters and compares to hippocampus timecourse. Behavioral annotations found in <a href="https://github.com/samsydco/HBN/tree/master/video_segmentation">"video_segmentation"</a> folder.</li>
 </ol>
 
-## Other code:
+### Other code:
 <ul>
 <li><a href="https://github.com/samsydco/HBN/blob/master/6_ISC_test.py">6_ISC_test.py</a>: Demonstrates that split-half ISC calculates ISC faster than Pairwise ISC or Leave-one-out ISC</li>
 <li><a href="https://github.com/samsydco/HBN/blob/master/1__pheno.py">1__pheno.py</a>: Calculates various phenotypic information for sample such as how many subjects were eliminated at various pre-processing steps.</li>
