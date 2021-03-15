@@ -6,7 +6,7 @@ import deepdish as dd
 import matplotlib.pyplot as plt
 from settings import *
 
-segpath = path + 'video_segmentation/'
+segpath = codedr + 'HBN_fmriprep_code/video_segmentation/'
 ev_figpath = figurepath+'event_annotations/'
 
 nTR = 750
@@ -42,9 +42,6 @@ for csv in glob.glob(segpath+'*csv'):
 	eventdict['annotation'][initials] = list(df['Segment details'])
 
 nsubj = len(eventdict['timing'])
-
-sexl=['DA:F','SB:F','AR:F','FBM:M','TM:F','MT:F','MJ:F','TK:M','NR:M','CG:F','MN:M','EG:F','HC:F','HDZ:F', 'MB:M', 'SJ:F', 'MCK:F', 'FF:F', 'AS:M', 'DS:F', 'TC:F']
-#agedict = {'DA:F':31,'SB:F','AR:F':23,'FBM:M','TM:F','MT:F','MJ:F':29,'TK:M','NR:M':27,'CG:F','MN:M','EG:F':32,'HC:F','HDZ:F':33, 'MB:M', 'SJ:F':20, 'MCK:F', 'FF:F', 'AS:M', 'DS:F', 'TC:F'}
 
 nevent = []
 ev_annot = []
