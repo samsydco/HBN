@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
 path = '/data/HBN/test2/'
-codedr = 'fmriprep_code/'#HBN_fmriprep_code/'
-TRratingdr = path + codedr +'T1_rating/'
+codedr = path+'fmriprep_code/'#HBN_fmriprep_code/'
+TRratingdr = codedr +'T1_rating/'
 outputdr_old = path + 'fmriprep_output/'
 outputdr = path + 'fmriprep_output_2/'
 outputdrHPC = path + 'fmriprep_output/fmriprep/'
 tmpdr = path+'scratch/'
-Missingcsv = path + codedr + 'Missing'
-T1file = path + codedr + 'T1.csv'
+Missingcsv = codedr + 'Missing'
+T1file = codedr + 'T1.csv'
 fmripreppath = outputdr + 'fmriprep/'
 fmripreppath_old = path + 'derivatives/'
 prepath = path + 'Preprocessed/'
@@ -18,7 +18,7 @@ HMMpath = path + 'HMM/'
 phenopath = path + 'pheno_data/'
 assesspath = path + 'assessment_data/rel_6/'
 metaphenopath = path + 'pheno_meta_data/'
-videopath = path+codedr+'HBN_fmriprep_code/videos/'
+videopath = codedr+'HBN_fmriprep_code/videos/'
 figurepath = path+'Figures/'
 
 # bad subjects for very unique reasons:
