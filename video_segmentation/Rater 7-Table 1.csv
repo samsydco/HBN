@@ -1,0 +1,187 @@
+Segment Number,Scene Title ,Start Time 2,Start Time (s) , End Time (s) ,Start TR,"Segment Details - dialogue, movement",Shot Details - camera cut,Scene Details - setting,Space-In/Outdoor,Name - All,Name - Focus,Name - Speaking,Location,Camera Angle,Words on Screen ,Music Presence ,Arousal,valence
+1,Bed time story,0,0,4,0,"girls are playing the bedroom while Gru tries to make them go to bed. Gru lifts up Agnes and says: ""Come on now. It's bedtime.""",Shot 1,"1. Bed time - Gru tries to prepare the girsl to go to bed, but the girls ask for bed time story",Indoor,"Gru, Agnes, Edith, Margo","Gru, Agnes, Edith, Margo",Gru,Bedroom,Long,,Yes,5,+
+2,,4,4,6,5,"Gru tells Agnes: ""Did you brush your teeth? Let me smell. Let me smell""",Shot 2,,Indoor,"Gru, Agnes","Gru, Agnes",Gru,Bedroom,Medium,,Yes,2,+
+3,,6,6,7,8,Agnes breathes into Gru's nose., ,,Indoor,"Gru, Agnes",not apply,not apply,Bedroom,Medium,,Yes,2,+
+4,,7,7,8,9,"Gru says to Anges: ""You did not.""", ,,Indoor,"Gru, Agnes",not apply,Gru,Bedroom,Medium,,Yes,3,+
+5,,8,8,9,10,Edith jumps onto Gru's face. , ,,Indoor,"Gru, Agnes, Edith",Gru,not apply,Bedroom,Medium,,Yes,4,+
+6,,9,9,10,11,"Gru falls down onto the ground, and Edith jumps on Gru's body",Shot 3,,Indoor,"Gru, Edith",not apply,not apply,Bedroom,Long,,Yes,4,+
+7,,10,10,12,13,"Gru gets up and lifts Edith's leg. He says: ""Put on your pajamas""",Shot 4,,Indoor,"Gru, Agnes, Edith","Gru, Edith",Gru,Bedroom,Long,,Yes,2,+
+8,,12,12,18,15,"Gru puts Edith down on the bed while she's still laughing: ""Okay seriously, seriously. This is, this is very bad. Right now. I'm not kidding around. I mean it.""",Shot 5,,Indoor,"Gru, Agnes, Edith, Margo","Gru, Edith",Gru,Bedroom,Medium,,Yes,2,+
+9,,18,18,20,23,"Edith tells Gru: ""But we're not tired.""Anges is jumping on the bed. Margo is walking around. Gru walks away saying: ""Well I am tired.""",,,Indoor,"Gru, Agnes, Edith","Gru, Edith","Gru, Edith",Bedroom,Medium,,Yes,3,+
+10,,20,20,22,25,"Agnes pulls out a book from under her pillow: ""Will you read us a bedtime story?""",Shot 6,,Indoor,Agnes,Agnes,Agnes,Bedroom,Medium,,Yes,2,+
+11,,22,22,23,28, Gru truns to face the camera with an unhappy face,Shot 7,,Indoor,Gru,Gru,not apply,Bedroom,Close Up,,Yes,2,-
+12,,23,23,25,29,Agnes holds the book and expect Gru to read the book.,Shot 8,,Indoor,Agnes,Agnes,not apply,Bedroom,Close Up,,Yes,1,+
+13,,25,25,27,31,"Gru turns lights off and says: ""No.""",Shot 9,,Indoor,Gru,Gru,Gru,Bedroom,Close Up,,No,2,-
+14,,27,27,29,34,"Anges begs Gru: ""Pretty please.""",Shot 10,,Indoor,Agnes,Agnes,Agnes,Bedroom,Close Up,,No,1,+
+15,,29,29,33,36,"Gru stands in the doorway and says ""The physical appearance of the please makes no difference"" Edith jumps out of her bed.",Shot 11,,Indoor,"Gru, Agnes, Edith, Margo",Gru,Gru,Bedroom,Long,,No,2,-
+16,,33,33,35,41,"Gru starts to close the door: ""It is still no, so go to sleep.""",Shot 12,,Indoor,Gru,Gru,Gru,Bedroom,Medium,,Yes,2,+
+17,,35,35,37,44,"Edith stands next to the door: ""But we can't. We're all hyper.""", ,,Indoor,"Gru, Edith",Edith,Edith,Bedroom,Medium,,Yes,3,+
+18,,37,37,43,46,"Margo jumps out of the bed with a pillow: ""And without a bedtime story, we'll just keep getting up and bugging you. All night long."" Agnes nods. ",Shot 13,,Indoor,"Gru, Agnes, Margo",Margo,Margo,Bedroom,Close up,,Yes,2,+
+19,,43,43,45,54,"Gru says: ""Fine""",Shot 14,,Indoor,Gru,Gru,Gru,Bedroom,Close Up,,Yes,2,-
+20,-reading time,45,45,47,56,Gru walks to the bed area,shot 15,2.in the bedroom--reading time,Indoor,"Gru, Agnes, Margo",Gru,not apply,Bedroom,long,,yes,1,+
+21,,47,47,52,59,"Gru sits down:""All right, all right. Sleepy Kittens."" Three girls sit around him",shot 16,,Indoor,"Gru, Agnes, Edith, Margo",Gru,Gru,Bedroom,medium,,yes,2,+
+22,,52,52,53,65,"A close display of the book. Gru:""What are these?"" Agnes: ""Puppets.""",shot 17,,Indoor,not apply,not apply,not apply,Bedroom,close up,,no,2,+
+23,,53,53,01:01,66,"Agnes:""You use them when you tell the story."" Then Gru checks the book cover again, and puts his fingers into puppets",shot 18,,Indoor,"Gru, Agnes","Gru, Agnes",Agnes,Bedroom,"Over the shoulder, Medium",,no,2,+
+24,,61,01:01,01:03,76,A close looks of puppets after Gru wears on them,shot 19,,Indoor,not apply,not apply,not apply,Bedroom,close up,,no,1,+
+25,,63,01:03,01:05,79,"Reverse shot of Gru:""Okay, let's get this over with.""",shot 20,,Indoor,"Gru, Agnes","Gru, Agnes",Gru,Bedroom,"Over the shoulder, Medium",,no,2,-
+26,,66,01:06,01:11,83,"A close display of the book Gru:"" Three little kittens loved to play, they had fun in the sun all day.""",shot 21,,Indoor,not apply,not apply,not apply,Bedroom,close up,,no,2,+
+27,,71,01:11,01:15,89,"A close display of the book Gru:""Then their mother came out and said,'Time for kittens to go to bed.' """,shot 22,,Indoor,not apply,not apply,not apply,Bedroom,close up,,no,2,+
+28,,75,01:15,01:20,94,"Gru looks at the girls and points to the book:"" Wow! This is garbage. You actually like this?""",shot 23,,Indoor,"Gru, Agnes, Edith, Margo",Gru,Gru,Bedroom,medium,,no,2,-
+29,,80,01:20,01:21,100,"Agnes talks to Gru:""Keep reading!""",,,Indoor,"Gru, Agnes, Edith, Margo",Gru,Agnes,Bedroom,medium,,no,3,-
+30,,81,01:21,01:22:50,101,"Edith:"" Come on!""",,,Indoor,"Gru, Agnes, Edith, Margo","Gru, Agnes, Edith, Margo",Edith,Bedroom,medium,,no,3,-
+31,,82.5,01:22:50,01:25,103,"Gru:""All right, all right, all right.""",,,Indoor,"Gru, Agnes, Edith, Margo","Gru, Agnes, Edith, Margo",Gru,Bedroom,medium,,no,2,-
+32,,85,01:25,01:27,106,"The description of the book. Gru:"" ""Three little kittens started to bawl,""",shot 24,,Indoor,not apply,not apply,not apply,Bedroom,close up,,no,1,+
+33,,87,01:27,01:32,109,"Gru is reading:""Mommy, we're not tired at all.Their mother smiled and said with a purr,""",shot 25,,Indoor,"Gru, Agnes","Gru, Agnes",Gru,Bedroom,close up,,no,2,+
+34,,92,01:32,01:36,115,"The description of the book. Gru:"" 'Fine, but at least you should brush your fur.""'",shot 26,,Indoor,not apply,not apply,not apply,Bedroom,close up,,no,1,+
+35,,97,01:37,01:38,121,"Edith talks to Gru:""Now you brush the fur.""",shot 27,,Indoor,"Gru, Edith","Gru, Edith",Edith,Bedroom,close up,,no,1,+
+36,,98,01:38,01:41,123,"Gru holds the brush and bruhes the puppets:""This is literature?""",,,Indoor,"Gru, Edith","Gru, Edith",Gru,Bedroom,close up,,no,2,-
+37,,101,01:41,01:44,126,"Gru looks at the book:""A 2-year-old could have written this. All right.""",,,Indoor,"Gru, Edith","Gru, Edith",Gru,Bedroom,close up,,no,2,-
+38,,104,01:44,01:47,130,"Gru is reading:""""Three little kittens with fur all brushed""",shot 28,,Indoor,"Gru, Agnes, Edith, Margo","Gru, Agnes, Edith, Margo",Gru,Bedroom,long,,no,1,+
+39,,107,01:47,01:50,134,"Gru is reading:""said, 'We can't sleep, we feel too rushed! ' ""
+",,,Indoor,"Gru, Agnes, Edith, Margo","Gru, Agnes, Edith, Margo",Gru,Bedroom,long,,no,1,+
+40,,110,01:50,01:54,138,"Gru is reading:"" ""Their mother replied, with a voice like silk,""",,,Indoor,"Gru, Agnes, Edith, Margo","Gru, Agnes, Edith, Margo",Gru,Bedroom,long,,no,1,+
+41,,114,01:54,01:57,143,"Gru is reading:"" 'Fine, but at least you should drink your milk.' """,,,Indoor,"Gru, Agnes, Edith, Margo","Gru, Agnes, Edith, Margo",Gru,Bedroom,long,,no,1,+
+42,,118,01:58,02:00,148,"Agnes talks to Gru:"" Now make them drink the milk.""",shot 29,,Indoor,"Gru, Agnes","Gru, Agnes",Agnes,Bedroom,close up,,no,2,+
+43,,121,02:01,02:05,151,A close shot of the puppets. Grus makes them to drink the milk,shot 30,,Indoor,not apply,not apply,not apply,Bedroom,close up,,yes,1,+
+44,,125,02:05,02:08,156,"Gru:""I don't like this book.This is going on forever.""",shot 31,,Indoor,"Gru, Agnes, Edith, Margo","Gru, Agnes, Edith, Margo",Gru,Bedroom,long,,no,1,+
+45,,128,02:08,02:20,160,"Gru keeps reading:""""Three little kittens, with milk all gone, rubbed their eyes and started to yawn."" All of the girls starts to yawn",,,Indoor,"Gru, Agnes, Edith, Margo","Gru, Agnes, Edith, Margo",Gru,Bedroom,long,,yes,1,+
+46,,141,02:21,02:27,176,"Gru keeps reading:"" ""'We can't sleep, we can't even try' Then their mother sang a lullaby.""",,,Indoor,"Gru, Agnes, Edith, Margo","Gru, Agnes, Edith, Margo",Gru,Bedroom,long,,yes,1,+
+47,,147,02:27,02:34,184,"A closer shot of Gru, Anges, and Edith:""""'Good night kittens, close your eyes. Sleep in peace until you rise.""",,,Indoor,"Gru Agnes, Edith",Gru,Gru,Bedroom,medium,,no,2,+
+48,,154,02:34,02:36,193,"A closer shot of Gru, Anges, and Edith:""""'Though while you sleep, we are apart,""",,,Indoor,"Gru Agnes, Edith",Gru,Gru,Bedroom,medium,,no,1,+
+49,,156,02:36,02:44,195,"A closer shot of Gru, Anges, and Edith:"" 'your mommy loves you with all her heart.""",,,Indoor,"Gru Agnes, Edith",Gru,Gru,Bedroom,medium,,no,1,+
+50,ask Gru to kiss them,165,02:45,02:49,206,"Gru closes the book and stands up to walk out of the shot:"" the end. Okay, good night.""",Shot 32,3. in the bedroom--ask Gru to kiss them,Indoor,"Gru Agnes, Edith",Gru,Gru,Bedroom,long,,no,3,+
+51,,169,02:49,02:50,211,"Agnes looks at Gru:"" Wait!""",,,Indoor,"Gru Agnes, Edith",Agnes,Agnes,Bedroom,long,,no,3,-
+52,,170,02:50,02:51,213,"Gru truns to the camera:"" What?""",shot 33,,Indoor,Gru,Gru,Gru,Bedroom,medium,,no,2,-
+53,,172,02:52,02:53,215,"Agnes:""what about good night kisses?""",shot 34,,Indoor,Agnes,Agnes,Agnes,Bedroom,medium,,no,3,-
+54,,174,02:54,02:55,218,"Gru truns his face to the door:""No, no.""",shot 35,,Indoor,"Gru, Agnes, Edith, Margo",Gru,Gru,Bedroom,medium,,yes,2,-
+55,,176,02:56,02:59,220,"Gru goes out and closes the door:""There will be no kissing or hugging or kissing.""",shot 36,,Indoor,Gru,Gru,Gru,Bedroom,medium,,yes,2,-
+56,talking about Gru and sleep,180,03:00,03:01:40,225,Girls kumps out of the bed,shot 37,4. in the bedroom--talking about Gru and sleep,Indoor,"Anges, Edith, Margo","Anges, Edith, Margo",not apply,Bedroom,long,,yes,1,-
+57,,181.5,03:01:55,03:04,227,"Margo lies down and closes the lamp:""He is not gonna kiss us good night, Agnes.""",shot 38,,Indoor,Margo,Margo,Margo,Bedroom,close up,,yes,1,-
+58,,184,03:04,03:07,230,"Anges rubs her eyes:""I like him. He's nice.""",shot 39,,Indoor,Agnes,Agnes,Agnes,Bedroom,close up,,yes,2,+
+59,,188,03:08,03:08:50,235,"Edith closes her lamp:"" But scary.""",shot 40,,Indoor,Edith,Edith,Edith,Bedroom,close up,,yes,1,-
+60,,189,03:09,03:11,236,"Anges:"" Like Santa!""",shot 41,,Indoor,Agnes,Agnes,Agnes,Bedroom,close up,,yes,2,+
+61,,191,03:11,03:14,239,Anges closes her lamp and sleep,shot 42,,Indoor,"Anges, Edith, Margo",Agnes,not apply,Bedroom,long,,yes,1,+
+62,talking with Dr. Nefario,195,03:15,03:21,244,Gru walks in the hall way,shot 43,5. talking with Dr. Nefario in the hallway,Indoor,Gru,Gru,not apply,hallway,long,,yes,2,-
+63,,202,03:22,03:27,253,A camera angle shift from top to bottom about the description of the Gru family tree to the drawing of three girls,shot 44,,Indoor,not apply,not apply,not apply,hallway,close up,,yes,1,-
+64,,208,03:28,03:35,260,"Gru picks up the toys. Dr. Neferio cames in:""Only 48 hours till the launch,and all systems are go.""",shot 45,,Indoor,"Gru, Dr. Neferio","Gru, Dr. Neferio",Dr. Neferio,hallway,medium,,no,2,+
+65,,215,03:35,03:36,269,"Gru:"" Ahhhhh""",Shot 46,,Indoor,Gru,Gru,Gru,hallway,medium,,yes,2,-
+66,,217,03:37,03:38,271,"Gru picks up the toys Gru:"" About that...""",shot 47,,Indoor,not apply,not apply,Gru,hallway,close up,,no,1,0
+67,,218,03:38,03:42,273,"Gru talks to Dr. Neferio:""I was thinking that maybe we could move the date of the heist.""",shot 48,,Indoor,"Gru, Dr. Neferio","Gru, Dr. Neferio",Gru,hallway,Medium,,no,2,-
+68,,222,03:42,03:49,278,"Dr. Neferio:""Please tell me this is not as a result of the girls' dance recital, is it?""",,,Indoor,"Gru, Dr. Neferio","Gru, Dr. Neferio",Dr. Neferio,hallway,medium,,no,2,-
+69,,229,03:49,03:50,286,"Gru:""No, no, no!""",,,Indoor,"Gru, Dr. Neferio","Gru, Dr. Neferio",Gru,hallway,Medium,,no,2,-
+70,,230,03:50,03:54,288,"Gru:""The recital? Don't...That's stupid!""",,,Indoor,"Gru, Dr. Neferio","Gru, Dr. Neferio",Gru,hallway,Medium,,no,2,-
+71,,234,03:54,03:59,293,"Gru:""I iust think it's kind of weird to do it on a Saturday.""",,,Indoor,"Gru, Dr. Neferio","Gru, Dr. Neferio",Gru,hallway,Medium,,no,2,-
+72,,239,03:59,04:04,299,"Gru:""I was thinking, maybe a heist is a Tuesday thing, right?""",,,Indoor,"Gru, Dr. Neferio","Gru, Dr. Neferio",Gru,hallway,Medium,,no,2,-
+73,,244,04:04,04:09,305,"Dr. Neferio talks to Gru:""Gru, you and I have been working on this for years.""",shot 49,,Indoor,Dr. Neferio,Dr. Neferio,Dr. Neferio,hallway,close up,,yes,3,-
+74,,249,04:09,04:11,311,"Dr. Neferio talks to Gru:""It's everything we've dreamed of.""",,,Indoor,Dr. Neferio,Dr. Neferio,Dr. Neferio,hallway,close up,,yes,4,-
+75,,251,04:11,04:12,314,"Dr. Neferio talks to Gru:""Your chance to make history,""",,,Indoor,Dr. Neferio,Dr. Neferio,Dr. Neferio,hallway,close up,,yes,5,-
+76,,252,04:12,04:16,315,"Gru holds a doll. Dr Neferio:""become the man who stole the moon!""",shot 50,,Indoor,Gru,Gru,Dr. Neferio,hallway,close up,,yes,5,-
+77,,256,04:16,04:22,320,"Dr. Neferio is angry:""But these girls are becoming a major distraction! They need to go.""",,,Indoor,Dr. Neferio,Dr. Neferio,Dr. Neferio,hallway,close up,,yes,5,-
+78,,262,04:22,04:27,328,"Dr. Neferio talks to Gru(he is holding a doll):""If you don't do something about it, then I will.""",shot 51,,Indoor,"Gru, Dr. Neferio","Gru, Dr. Neferio",Dr. Neferio,hallway,medium,,yes,5,-
+79,,267,04:27,04:32,334,"Gru replys:"" I understand."" Then, he truns away and goes. ",shot 52,,Indoor,"Gru, Dr. Neferio","Gru, Dr. Neferio",Gru,hallway,medium,,yes,4,-
+80,,272,04:32,04:34,340,"a camera shift from close to medium of Dr, Neferio:"" Good""",shot 53,,Indoor,Dr. Neferio,Dr. Neferio,Dr. Neferio,hallway,close up to medium,,yes,3,-
+81,minions are playing with printer,274,04:34,04:44,343,"Stuart and Jerry waits for printing images. When they see the image, they laugh out loud.",shot 54,6. In the lab---minions are playing with printer,Indoor,"Stuart, Jerry","Stuart, Jerry",Stuart and Jerry,lab,medium,,no,3,+
+82,,284,04:44,04:50,355,"Stuart, Jerry and Mark is still laughing at the image, but there is a machine suddenly cames out.",shot 55,,Indoor,"Stuart, Jerry, Mark","Stuart, Jerry, Mark","Stuart and Jerry, Mark",lab,long,,yes,5,-
+83,Gru plays with the kids,290,04:50,04:58,363,"Stuart, Jerry, and Mark pauses their laugh. when the printer print the new image, they start to laugh again",,7. in the living room--Gru plays with the kids,Indoor,"Stuart, Jerry, Mark","Stuart, Jerry, Mark","Stuart and Jerry, Mark",lab,long,,no,4,+
+84,,299,04:59,05:04,374,"camera shift from window to Gru. Gru:""All right. Now, when we put our cups together, we will make the ""clink"" sound with our mouths.""",shot 56,,Indoor,"Gru, Edith, Agnes, Margo,Mark",Gru,Gru,living room,long,,yes,2,+
+85,,304,05:04,05:06,380,"Gru holds a cup and clink with Edith:""Ready? Edith?""",,,Indoor,"Gru, Edith, Agnes, Margo,Mark","Gru, Edith",Gru,living room,long,,yes,2,+
+86,,306,05:06,05:08,383,"Gru clink with Edith:"" Clink.There we go."" Edith:"" Clink.""",,,Indoor,"Gru, Edith, Agnes, Margo,Mark","Gru, Edith","Gru,Edith",living room,long,,yes,2,+
+87,,308,05:08,05:13,385,"Gru clink with Agnes:""And Agnes? Clink."" Agnes:"" Clink."" Gru:""very, good.""",,,Indoor,"Gru, Edith, Agnes, Margo,Mark","Gru, Agnes","Gru,Agnes",living room,long,,yes,2,+
+88,,313.5,05:13:20,05:14,392,The bell rings. Gru stands up,shot 57,,Indoor,"Gru, Edith, Agnes, Margo,Mark",Gru,Gru,living room,long,,no,4,+
+89,,314,05:14,05:16,393,"Gru tells everyone:"" Excuse me girls.""",shot 58,,Indoor,"Gru, Edith, Agnes, Margo,Mark",Gru,Gru,living room,close up,,no,3,+
+90,,317,05:17,05:18,396,"Girls:"" come on""",shot 59,,Indoor,"Edith, Agnes, Margo,Mark","Edith, Agnes, Margo, Mark","Edith, Anges, Margo",living room,medium,,no,2,-
+91,,319,05:19,05:21,399,"Grus cross above Mark:"" Don't worry, I'll be back. Keep clinking.""",shot 60,,Indoor,"Gru, Edith, Agnes, Margo,Mark",Gru,Gru,living room,long,,no,2,-
+92,,321,05:21,05:22,401,"Gru walks to the door. Girls:"" Clink.""",shot 61,,Indoor,Gru,Gru,"Edith, Anges, Margo",living room,medium,,no,2,0
+93,sending the girls away,323,05:23,05:26,404,"Camera shfit between Gru and Miss Hattie. Gru sees the Miss Hattie:"" Miss Hattie, what are you doing here?""",shot 62,8. In the garden--sending the girls away,indoor,"Gru, Miss Hattie",Gru,Gru,door,medium,,no,3,-
+94,,327,05:27,05:30,409,"Miss Hattie:""I'm here for the girls. I received a call that you wanted to return them.""",shot 63,,outdoor,"Gru, Miss Hattie",Miss Hattie,Miss Hattie,door,long,,no,3,-
+95,,331,05:31,05:32,414,Gru's face becomes confused,shot 64,,outdoor,Gru,Gru,not apply,door,close up,,no,4,-
+96,,333,05:33,05:37,416,"Miss Hattie pull up a dictionary:""And also, I did purchase a Spanish dictionary. """,shot 65,,outdoor,"Gru, Miss Hattie",Miss Hattie,Miss Hattie,door,medium,,yes,3,-
+97,,337,05:37,05:41,421,"Miss Hattie uses the dictionary to spank Gru's face.Then, she gives the dictionary to Gru",shot 66,,outdoor,Gru,Gru,not apply,door,close up,,yes,5,-
+98,,342,05:42,05:43,428,"Miss Hattie tells Gru:""I didn't like what you said.""",shot 67,,outdoor,"Gru, Miss Hattie",Miss Hattie,Miss Hattie,door,medium,,yes,3,-
+99,,343,05:43,05:46,429,camera focuses on Dr. Nefario's leg. Gru truns his head to face the camera,shot 68,,indoor,"Gru, Miss Hattie, Dr. Nefario",Gru,not apply,hallway,long,,yes,2,-
+100,,346,05:46,05:47,433,Dr. Nefario nods his head,shot 69,,indoor,Dr. Neferio,Dr. Neferio,not apply,hallway,medium,,yes,2,-
+101,,347,05:47,05:49,434,"Gru truns his face to Miss Hattie:""I will get the girls ready.""",shot 70,,indoor,Gru,Gru,Gru,door,close up,,no,3,-
+102,,349,05:49,06:01,436,Gru take the girls to the car,shot 71,,outdoor,"Gru, Agnes, Edith, Margo, Miss Hattie",Gru,not apply,garden,long,,yes,2,-
+103,,362,06:02,06:06,453,"Margo pull Agnes out from Gru, and they sit on the car. Agnes:""Don't let her take us, Mr Gru!""",shot 72,,outdoor,"Agnes,Margo, Edith","Anges, Edith, Margo",Agnes,car,medium,,yes,3,-
+104,,366,06:06,06:09,458,"Anges watches Gru:""Tell her you wanna keep us.""",,,outdoor,"Agnes,Margo, Edith","Anges, Edith, Margo",Agnes,car,medium,,yes,3,-
+105,,369,06:09,06:11,461,"Miss Hattie holds the car door:""All right, girls.Come on, let's go.",shot 73,,outdoor,"Gru, Miss Hattie",Miss Hattie,Miss Hattie,garden,medium,,no,3,-
+106,,371,06:11,06:14,464,"Margo:""Goodbye, Mr Gru.Thanks for everything.""",shot 74,,outdoor,"Agnes,Margo, Edith","Anges, Edith, Margo",Margo,car,medium,,no,2,-
+107,,374,06:14,06:15,468,Miss Hattie closes the door,shot 75,,outdoor,"Gru, Miss Hattie",Miss Hattie,not apply,garden,medium,,no,3,-
+108,,375,06:15,06:18,469,Margo truns off the car window,shot 76,,outdoor,"Agnes,Margo, Edith",Margo,not apply,car,medium,,yes,2,-
+109,,378,06:18,06:20,473,Miss Hattie gets on the car,shot 77,,outdoor,"Gru, Margo, Edith, Anges, Miss Hattie","Gru, Margo, Edith, Anges, Miss Hattie",not apply,outside,long,,yes,2,-
+110,,381,06:21,06:22,476,Margo looks outside through the window,shot 78,,outdoor,Margo,Margo,not apply,car,medium,,yes,2,-
+111,,383,06:23,06:28,479,Gru stands on the road and see them to leave. Camera angle shifts from close up to medium,shot 79,,outdoor,Gru,Gru,not apply,outside,Medium to long,,yes,2,-
+112,,389,06:29,06:32,486,"Dr. Nefario talks to Gru:""I did it for your own good.''",shot 80,,outdoor,Dr. Neferio,Dr. Neferio,Dr. Neferio,door,medium,,yes,3,-
+113,,392,06:32,06:32,490,"Camera focuses on Gru. Dr. Nefario:""Come on, let's go get that moon.""",shot 81,,outdoor,"Dr. Neferio, Gru",Gru,Dr. Neferio,door,medium,,yes,3,-
+114,,392,06:32,06:38,490,"Gru looks at outside:"" Right.'",shot 82,,outdoor,Gru,Gru,Gru,door,medium,,yes,2,-
+115,,398,06:38,06:45,498,Gru walks in to the door and closes the door. Camera shifts to Mark. Mark is crying,shot 83,,indoor,"Gru, Mark","Gru, Mark",not apply,door,medium to short,,yes,2,-
+116,thinking about the girls,405,06:45,06:47,506,Gru is so depress that he can't eat,shot 84,9. In the house-- Gru is thinking about the girls,indoor,Gru,Gru,not apply,dinning hall,long,,yes,2,-
+117,,408,06:48,06:50,510,Gru is so depress that he can't eat,shot 85,,indoor,Gru,Gru,not apply,dinning hall,medium,,yes,2,-
+118,,411,06:51,06:52,514,Gru walks in the hall way,shot 86,,indoor,Gru,Gru,not apply,hallway,medium,,yes,2,-
+119,,412,06:52,06:54,515,minions are cleaning the drawing on the wall,shot 87,,indoor,minions,minions,not apply,hallway,medium,,yes,2,-
+120,,414,06:54,06:55,518,Gru looks at somthing,shot 88,,indoor,Gru,Gru,not apply,hallway,medium,,yes,2,-
+121,,416,06:56,06:59,520,minions wipes the drawing ,shot 89,,indoor,not apply,not apply,not apply,hallway,close up,,yes,1,0
+122,,419,06:59,07:00,524,Gru thinks up something,shot 90,,indoor,Gru,Gru,not apply,hallway,medium,,yes,1,-
+123,,420,07:00,07:02,525,Margo is covered by a box.,shot 91,,indoor,Margo,Margo,Not apply,outside,close up,,yes,2,-
+124,,422,07:02,07:05,528,all of the girsl stands outside and covered by boxes,shot 92,,indoor,"Margo,Edith, Anges","Margo, Edith, Agnes",Not apply,outside,long,,yes,2,-
+125,,425,07:05,07:08,531,Gru lies on the bed and feel something,shot 93,,indoor,Gru,Gru,not apply,Bedroom,long,,yes,2,-
+126,,428,07:08,07:09,535,Gru sits up,shot 94,,indoor,Gru,Gru,not apply,Bedroom,medium,,yes,3,-
+127,,430,07:10,07:11,538,A toy comes out,shot 95,,indoor,not apply,not apply,not apply,Bedroom,close up,,yes,1,-
+128,,431,07:11,07:13,539,"Gru is surprised by the toy:""Ahhhh""",shot 96,,indoor,Gru,Gru,Gru,Bedroom,Medium,,yes,5,-
+129,,433,07:13,07:14,541,The birds on the roof of Gru's house scared off,shot 97,,outdoor,bird,bird,bird,outside,long,,yes,5,-
+130,Lauching to the moon,434,07:14,07:19,543,minions are working,shot 98,9. to the space--Lauching to the moon,indoor,minions,minions,minions,lab,long,,no,4,+
+131,,439,07:19,07:24,549,Gru comes out from the door,shot 99,,indoor,Gru,Gru,not apply,lab,long to medium,,yes,3,-
+132,,444,07:24,07:32,555,Camera shifts from feet to Gru's head,shot 100,,indoor,Gru,Gru,not apply,lab,close up,,yes,4,-
+133,,452.2,07:32:20,07:32:50,565,A strong light comes out,shot 101,,indoor,not apply,not apply,not apply,lab,close up,,yes,5,+
+134,,453.1,07:33:10,07:33:50,566,the light points to the aircraft,shot 102,,indoor,not apply,not apply,not apply,lab,long,,yes,4,+
+135,,454,07:34,07:40,568,camera shifts from bottom to top of the aircraft,shot 103,,indoor,not apply,not apply,not apply,lab,close up,,yes,4,+
+136,,460,07:40,07:42,575,Little Gru watches the moon,shot 104,,indoor,Gru,Gru,not apply,lab,close up,,yes,3,+
+137,,462,07:42,07:45,578,Gru watch the moon,shot 105,,indoor,Gru,Gru,not apply,lab,close up,,yes,3,+
+138,,465,07:45,07:49,581,"Minions stands on the lifting platform, and the platform starts to rise",shot 106,,indoor,minion,minion,not apply,platform,close up,,yes,2,+
+139,,469,07:49,07:52,586,Platform is rising,shot 107,,indoor,"Gru, Minion","Gru, Minion",not apply,platform,long,,yes,2,+
+140,,472,07:52,07:55,590,minion gives the tickets to Gru,shot 108,,indoor,"Gru, Minion","Gru, Minion",not apply,platform,medium,,yes,2,+
+141,,475,07:55,07:55:40,594,"Grus holds the tickets and ask minion:"" what does the ",shot 109,,indoor,Gru,Gru,Gru,platform,medium,,yes,2,-
+142,,476,07:56,07:57,595,"Minion watches Gru:"" Recital.""",shot 110,,indoor,minion,minion,minion,platform,close up,,yes,2,+
+143,,477,07:57,08:04,596,"Gru throws the ticket away:"" the recital? I am the greatest criminal mind in century. I don't go girls' recital.""",shot 111,,indoor,Gru,Gru,Gru,platform,medium,,yes,3,-
+144,,484,08:04,08:07,605,Minion catches the tickets and put it into Gru's pocket,shot 112,,indoor,minion,minion,not apply,platform,medium,,yes,2,-
+145,,488,08:08,08:09,610,a close shot of the pocket and the ticket,shot 113,,indoor,not apply,not apply,not apply,platform,close up,,yes,1,+
+146,,490,08:10,08:14,613,Gru walk towards in aircraft,shot 114,,indoor,"Gru, minion",Gru,not apply,platform,long,,yes,1,+
+147,,494,08:14,08:19,618,Gru sits on the seat and wears on seat belt,shot 115,,indoor,Gru,Gru,not apply,aircraft,medium,,yes,2,+
+148,,499,08:19,08:19:50,624,a close shot on seat belt,shot 116,,indoor,not apply,not apply,not apply,aricraft,close up,,yes,1,0
+149,,500,08:20,08:20:40,625,Gru closes the cover,shot 117,,indoor,not apply,not apply,not apply,aricraft,long,,yes,1,0
+150,,501,08:21,08:22,626,minion cleans the window of the aircraft,shot 118,,outdoor,minion,minion,not apply,aircraft,close up,,yes,2,+
+151,,502,08:22,08:27,628,Gru turns the video on,shot 119,,indoor,Gru,Gru,not apply,aircraft,medium,,yes,1,+
+152,,507,08:27,08:30,634,"Dr. Nefario tells Gru:""Opening launch bay doors. Commencing launch sequence.""",shot 120,,indoor,Dr. Nefario,Dr. Neferio,Dr. Neferio,aircraft,close up,,yes,2,+
+153,,510,08:30,08:32,638,"Gru opens the gate. Dr. Nefario:""And we are good to go..""",shot 121,,indoor,Gru,Gru,Dr. Neferio,aircraft,medium,,yes,2,+
+154,,512,08:32,08:35,640,The gate opens,shot 122,,indoor,Gru,Gru,not apply,lab,long,,yes,3,+
+155,,515.2,08:35:20,8:36,644,Minions stands on the plaform.,shot 122,,indoor,minion,minion,not apply,lab,long,,yes,2,+
+156,,516,8:36,8:36,645,minions runs away,shot 123,,indoor,minion,minion,not apply,lab,medium,,yes,2,+
+157,,517,08:37,08:43,646,"A shot of the aircraft. Dr. Nefario:""Ten, nine, eight, seven,""",shot 124,,indoor,not apply,not apply,Dr. Neferio,lab,long,,yes,3,+
+158,,523,08:43,08:43,654,"Dr. Nefario pushes a botton:"" six...""",shot 125,,indoor,Dr. Nefario,Dr. Neferio,Dr. Neferio,lab,medium,,yes,2,+
+159,,524,08:44,08:46,655,someone wipes the table and the table starts to shake,shot 126,,outdoor,man,man,not apply,outside,close up,,no,2,-
+160,,527,08:47,08:51,659,camera shift to the man's face and the man tries to find where the shake comes from.,shot 127,,outdoor,man,man,not apply,outside,medium,,no,3,-
+161,,531,08:51,08:52,664,"the man is finding, the shape of the aircraft becomes bigger",shot 128,,outdoor,man,man,not apply,outside,long,,no,4,-
+162,,532,08:52,08:56,665,the man sees the aircraft comes out,shot 129,,outdoor,aircraft,aircraft,not apply,outside,medium,,no,5,+
+163,,536,08:56,08:58,670,"while the man is watching the aircraft, the bad guy comes out",shot 130,,outdoor,"man,bad guy","man, bad guy",not apply,outside,medium,,yes,4,-
+164,,599,09:59,09:02,749,the bad guy shoots an octopus to the aircraft,shot 131,,outdoor,"man,bad guy","man, bad guy",not apply,outside,medium,,yes,3,-
+165,,542,09:02,09:03,678,the octopus stick on the aircraft,shot 132,,outdoor,octopus,octopus,not apply,aircraft,close up,,yes,3,-
+166,,544,09:04,09:05,680,a shot of the aircraft launching,shot 133,,outdoor,aircraft,aircraft,not apply,outside,long,,no,4,-
+167,,546,09:06,09:07,683,a shot of the aircraft launching,shot 134,,outdoor,aircraft,aircraft,not apply,outside,medium to close up,,no,5,+
+168,,547,09:07,09:10,684,the bad guy pulls up by the rope,shot 135,,outdoor,"man,bad guy","man, bad guy",not apply,outside,medium,,yes,4,-
+169,,550,09:10,09:12,688,"the bad guy jumps on the aircraft:"" oh yeah!""",shot 136,,outdoor,bad guy,bad guy,bad guy,aircraft,long to close up,,yes,3,-
+170,,552,09:12,09:15,690,"Gru is driving:""Nice work, Doctor. All systems go.""",shot 137,,outdoor,Gru,Gru,Gru,aircraft,medium,,yes,4,+
+171,,556,09:16,09:16:40,695,"the bad guy jumps on the window:""Boo-ya!""",shot 138,,outdoor,bad guy,bad guy,bad guy,aircraft,medium,,yes,5,-
+172,,557,09:17,09:18,696,Gru is surprised by the bad guy,shot 139,,outdoor,Gru,Gru,Gru,aircraft,medium,,yes,5,-
+173,,558,09:18,09:18:50,698,Gru truns on the electrcity,shot 140,,outdoor,"Gru, bad guy","Gru, bad guy",not apply,aircraft,close up,,yes,4,-
+174,,559,09:19,09:24,699,"the bad guy is shocked by the electricity, so he falls off of the aircraft",shot 141,,outdoor,bad guy,bad guy,not apply,aircraft,medium to long,,yes,4,-
+175,,564,09:24,09:26,705,the bad guy is falling,shot 142,,outdoor,bad guy,bad guy,not apply,sky,long,,yes,3,-
+176,,566,09:26,09:30,708,"the bad guy is falling, so he opens the fight suit:""My flight suit.""",shot 143,,outdoor,bad guy,bad guy,bad guy,sky,medium,,yes,3,-
+177,,570,09:30,09:36,713,"The bad guy flies on the sky until he hit the high-tension busbar:""Oh, yeah! Once again, the mighty.""",shot 144,,outdoor,bad guy,bad guy,bad guy,sky,long to medium,,yes,5,-
+178,,576,09:36,09:38,720,"the bad guy is shocked again, so he fail to the ground:'ahhhh""",shot 145,,outdoor,bad guy,bad guy,bad guy,sky,long,,yes,4,-
+179,,578,09:38,09:40,723,"the aircraft is shaking, and Gru:"" ahhhhh""",shot 146,,outdoor,Gru,Gru,Gru,aircraft,close up,,yes,5,-
+180,,580,09:40,09:46,725,minion is flowing on the sky and he is hitted by the air craft,shot 147,,outdoor,minion,minion,not apply,space,long,,no,4,-
+181,,586,09:46,09:48:55,733,the aircraft keep elevating,shot 148,,outdoor,aircraft,aircraft,not apply,sky,long,,no,3,-
+182,,589,09:49,09:50,736,the lamp is shaking,shot 149,,outdoor,lamp,lamp,not apply,aircraft,close up,,no,4,-
+183,,590,09:50,09:54:50,738,the aircraft keep moving. Then the power is off,shot 150,,outdoor,aircraft,aircraft,not apply,space,medium,,yes,3,-
+184,,595,09:55,09:56,744,Gru is still manipulating the aircraft,shot 151,,outdoor,Gru,Gru,not apply,aircraft,close up,,yes,2,+
+185,,596,09:56,10:00,745,the aircraft separates into parts,shot 152,,outdoor,aircraft,aircraft,not apply,space,medium to close up,,yes,2,+
