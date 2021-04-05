@@ -9,20 +9,19 @@ import brainiak.eventseg.event
 from scipy.fftpack import fft,ifft
 from scipy.stats import zscore, norm, pearsonr
 from HMM_settings import *
+from event_ratings import xcorr
 ev_conv_perm = ev_conv[1:]
 
-ROIdir = HMMpath+'shuff_5bins_train04/'
+savedir = HMMpath+'shuff_5bins_train04_'
 task='DM'
 nTR=750
-bins = np.arange(nbinseq)
 nbins = len(bins)
-ROIl = [roi.split('/')[-1][:-3] for roi in glob.glob(ROIdir+'*')]
 nROI = len(ROIl)
+xcorrx = np.concatenate([np.arange(-nTR+2,0)*TR,np.arange(nTR-1)*TR])
+savefile = HMMpath+'HMM_vs_hand_'
 
-nsub = 41
-
+'''
 circ = False#False#True # Doing circular time shift vs phase shuffle for significant correlation
-savefile = HMMpath+'HMM_vs_hand.h5'
 if circ == True: 
 	savefile = savefile[:-3]+'_circ.h5'
 	print('Circular Time Shuffle')
@@ -65,12 +64,31 @@ def match_z(proposed_bounds, gt_bounds, num_TRs):
         gt_lengths = np.random.permutation(gt_lengths)
     
     return (match[0]-np.mean(match[1:]))/np.std(match[1:])
+'''
 
 dE_k = {key:{key:[] for key in bins} for key in ROIl}
-dE_k_corr = np.zeros((nPerm+1,nROI,nbins))
-dE_k_p = np.zeros((nPerm+1,nROI,nbins))
+dE_k_corr = np.zeros((nROI,nbins))
+bin_corr = np.zeros(nROI)
+#dE_k_p = np.zeros((nPerm+1,nROI,nbins))
 event_bounds = {key:{key:[] for key in bins} for key in ROIl}
 matchz_mat = np.zeros((nROI,nbins))
+
+for seed in tqdm.tqdm(seeds):
+	for r,roi_short in tqdm.tqdm(enumerate(ROIl)):
+		roi=savedir+seed+'/'+roi_short+'.h5'
+		k = dd.io.load(roi,'/best_k')
+		D = [dd.io.load(roidir+seed+'/'+roi_short+'.h5','/'+task+'/bin_'+str(b)+'/D') for b in bins]
+		hmm = brainiak.eventseg.event.EventSegment(n_events=k)
+		hmm.fit([np.mean(d,axis=0).T for d in D])
+		for bi,b in enumerate(bins):
+			dE_k[roi_short][b] = np.diff(np.dot(hmm.segments_[bi], np.arange(k)+1))
+			dE_k_corr[r,bi],_ = pearsonr(dE_k[roi_short][b],ev_conv_perm)
+		bin_corr[r],_ = pearsonr(dE_k[roi_short][0],dE_k[roi_short][4])
+	dd.io.save(savefile+'_'+seed+'.h5',{'dE_k_corr':dE_k_corr, 'dE_k':dE_k, 'bin_corr':bin_corr})
+		
+			
+
+'''
 for ri,roi in tqdm.tqdm(enumerate(ROIl)):
 	roidict = dd.io.load(ROIdir+roi+'.h5','/'+task)
 	best_k = roidict['best_k']
@@ -135,5 +153,5 @@ dd.io.save(savefile,{'ROIl':ROIl,'event_bounds':event_bounds, 'matchz_mat':match
 event_bounds, matchz_mat, dE_k_corr, dE_k_p, sig_corr, dE_k_age_rs, dE_k_age_change, sig_change = dd.io.load(savefile,['/event_bounds', '/matchz_mat', '/dE_k_corr', '/dE_k_p', '/sig_corr', '/dE_k_age_rs', '/dE_k_age_change', '/sig_change'])
 #corrmean = np.mean(dE_k_corr,axis=1)
 
-
+'''
 
