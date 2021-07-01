@@ -108,5 +108,7 @@
 <li><a href="https://github.com/samsydco/HBN/blob/master/1__pheno.py">1__pheno.py</a>: Calculates various phenotypic information for sample such as how many subjects were eliminated at various pre-processing steps.</li>
 <li><a href="https://github.com/samsydco/HBN/blob/master/HMM_vs_hand.py">HMM_vs_hand.py</a>: Compares HMM event timecourses to behavioral event timecourses</li>
 </ul>
+<li><a href="https://github.com/samsydco/HBN/blob/master/motion_check.py">motion_check.py</a>: Compares Framewise Displacement between age groups.</li>
+</ul>
 
 
