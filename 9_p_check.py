@@ -47,27 +47,30 @@ for seed in tqdm.tqdm(seeds):
 			savedict[seed][roi_short]['k_diff']['p'] = df.loc[roi_short]['k_diff_p']
 			savedict[seed][roi_short]['k_diff']['q'] = df.loc[roi_short]['k_diff_q']
 	
-			for HMMd in ['ll_diff','auc_diff']:
+			for HMMd in ['ll_diff','auc_diff','tune_ll_perm']:
 				HMMvals = dd.io.load(HMMdir+seed+'/'+roi_short+'.h5','/'+HMMd)
 				savedict[seed][roi_short][HMMd] = {}
 				# dumb coding error
 				if HMMd == 'auc_diff': 
 					k = dd.io.load(HMMdir+seed+'/'+roi_short+'.h5','/best_k')
 					HMMvals = (HMMvals*k)/(k-1)
-				savedict[seed][roi_short][HMMd]['val'] = HMMvals[0]
-				savedict[seed][roi_short][HMMd]['shuff'] = HMMvals[1:]
-				savedict[seed][roi_short][HMMd]['p'] = np.sum(abs(savedict[seed][roi_short][HMMd]['val']) < abs(savedict[seed][roi_short][HMMd]['shuff']))/len(savedict[seed][roi_short][HMMd]['shuff'])
+				if 'tune_ll' not in HMMd:
+					savedict[seed][roi_short][HMMd]['val'] = HMMvals[0]
+					savedict[seed][roi_short][HMMd]['shuff'] = HMMvals[1:]
+					savedict[seed][roi_short][HMMd]['p'] = np.sum(abs(savedict[seed][roi_short][HMMd]['val']) < abs(savedict[seed][roi_short][HMMd]['shuff']))/len(savedict[seed][roi_short][HMMd]['shuff'])
+				else:
+					savedict[seed][roi_short][HMMd]['val_'] = np.take(np.mean(HMMvals[0],axis=1),[0,-1])/nTR_
 				
 roidict = {}
 for roi in glob.glob(roidir+seed+'/'+'*h5'):
 	roi_short = roi.split('/')[-1][:-3]
 	roidict[roi_short] = {}
-	for comp in ['ISC_w','ISC_e','ISC_g','k0','k4','k_diff','ll_diff','auc_diff']:
+	for comp in ['ISC_w','ISC_e','ISC_g','k0','k4','k_diff','ll_diff','auc_diff','tune_ll_perm']:
 		if comp in savedict[seed][roi_short].keys():
 			roidict[roi_short][comp] = {}
 			roidict[roi_short][comp]['val'] = np.mean([savedict[seed][roi_short][comp]['val'] for seed in seeds])
-			if comp == 'ISC_w':
-				for bi,b in bins:
+			if any(a==comp for a in ['ISC_w','tune_ll_perm']):
+				for bi,b in enumerate(bins):
 					roidict[roi_short][comp][str(b)] = np.mean([savedict[seed][roi_short][comp]['val_'][bi] for seed in seeds])
 			if not any(n in comp for n in ['w','0','4']):
 				arrs = [np.array(savedict[seed][roi_short][comp]['shuff']) for seed in seeds]
