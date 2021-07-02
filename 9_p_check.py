@@ -68,11 +68,12 @@ for roi in glob.glob(roidir+seed+'/'+'*h5'):
 	for comp in ['ISC_w','ISC_e','ISC_g','k0','k4','k_diff','ll_diff','auc_diff','tune_ll_perm']:
 		if comp in savedict[seed][roi_short].keys():
 			roidict[roi_short][comp] = {}
-			roidict[roi_short][comp]['val'] = np.mean([savedict[seed][roi_short][comp]['val_'] for seed in seeds])
+			if comp != 'tune_ll_perm':
+				roidict[roi_short][comp]['val'] = np.mean([savedict[seed][roi_short][comp]['val'] for seed in seeds])
 			if any(a==comp for a in ['ISC_w','tune_ll_perm']):
 				for bi,b in enumerate(bins):
 					roidict[roi_short][comp][str(b)] = np.mean([savedict[seed][roi_short][comp]['val_'][bi] for seed in seeds])
-			if not any(n in comp for n in ['w','0','4']):
+			if not any(n in comp for n in ['w','0','4','perm']):
 				arrs = [np.array(savedict[seed][roi_short][comp]['shuff']) for seed in seeds]
 				arr = np.ma.empty((np.max([len(i) for i in arrs]),len(arrs)))
 				arr.mask = True
