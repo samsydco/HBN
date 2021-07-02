@@ -12,6 +12,7 @@ from HMM_settings import *
 HMMdir = HMMpath+'shuff_5bins_train04_'
 ISCdir = ISCpath+'shuff_Yeo_'
 task='DM'
+nTR_ = 750
 
 savedict = {}
 for seed in tqdm.tqdm(seeds):
@@ -27,7 +28,7 @@ for seed in tqdm.tqdm(seeds):
 			savedict[seed][roi_short][isc] = {}
 			if 'w' in isc:
 				savedict[seed][roi_short][isc]['val'] = np.nanmean(ISCvals[1:])
-				savedict[seed][roi_short][isc]['val_'] = np.nanmean(ISCvals[1:])
+				savedict[seed][roi_short][isc]['val_'] = np.nanmean(ISCvals[0],-1)
 			else:
 				savedict[seed][roi_short][isc]['val'] = np.nanmean(ISCvals[0])
 				savedict[seed][roi_short][isc]['shuff'] = np.nanmean(ISCvals[1:],axis=1)
@@ -65,6 +66,9 @@ for roi in glob.glob(roidir+seed+'/'+'*h5'):
 		if comp in savedict[seed][roi_short].keys():
 			roidict[roi_short][comp] = {}
 			roidict[roi_short][comp]['val'] = np.mean([savedict[seed][roi_short][comp]['val'] for seed in seeds])
+			if comp == 'ISC_w':
+				for bi,b in bins:
+					roidict[roi_short][comp][str(b)] = np.mean([savedict[seed][roi_short][comp]['val_'][bi] for seed in seeds])
 			if not any(n in comp for n in ['w','0','4']):
 				arrs = [np.array(savedict[seed][roi_short][comp]['shuff']) for seed in seeds]
 				arr = np.ma.empty((np.max([len(i) for i in arrs]),len(arrs)))
