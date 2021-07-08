@@ -9,7 +9,6 @@ import brainiak.eventseg.event
 from scipy.fftpack import fft,ifft
 from scipy.stats import zscore, norm, pearsonr
 from HMM_settings import *
-from event_ratings import xcorr
 ev_conv_perm = ev_conv[1:]
 
 savedir = HMMpath+'shuff_5bins_train04_'
