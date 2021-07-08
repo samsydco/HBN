@@ -23,8 +23,11 @@ for seed in tqdm.tqdm(seeds):
 		roi_short = roi.split('/')[-1][:-3]
 		savedict[seed][roi_short] = {}
 		savedict[seed][roi_short]['vall'] = dd.io.load(roi,'/vall')
-		for isc in ['ISC_w','ISC_e','ISC_g']:
-			ISCvals = dd.io.load(ISCdir+seed+'/'+roi_short+'.h5','/'+task+'/'+isc)
+		for isc in ['ISC_w','ISC_e','ISC_g','ISC_yy-yo']:
+			if 'yy' not in isc:
+				ISCvals = dd.io.load(ISCdir+seed+'/'+roi_short+'.h5','/'+task+'/'+isc)
+			else: # Young-Young ISC minus Young-Old ISC:
+				ISCvals = dd.io.load(ISCdir+seed+'/'+roi_short+'.h5','/'+task+'/ISC_w')[:,0] - np.nanmean(dd.io.load(ISCdir+seed+'/'+roi_short+'.h5','/'+task+'/ISC_b'),1)
 			savedict[seed][roi_short][isc] = {}
 			if 'w' in isc:
 				savedict[seed][roi_short][isc]['val'] = np.nanmean(ISCvals[1:])
@@ -36,7 +39,7 @@ for seed in tqdm.tqdm(seeds):
 					savedict[seed][roi_short][isc]['p'] = np.sum(abs(savedict[seed][roi_short][isc]['val']) > savedict[seed][roi_short][isc]['shuff'])/len(savedict[seed][roi_short][isc]['shuff'])
 				else:
 					savedict[seed][roi_short][isc]['p'] = np.sum(abs(savedict[seed][roi_short][isc]['val']) < abs(savedict[seed][roi_short][isc]['shuff']))/len(savedict[seed][roi_short][isc]['shuff'])
-			
+		
 		if roi_short in ROIl:
 			for b in ['0','4']:
 				savedict[seed][roi_short]['k'+b] = {}
@@ -65,7 +68,7 @@ roidict = {}
 for roi in glob.glob(roidir+seed+'/'+'*h5'):
 	roi_short = roi.split('/')[-1][:-3]
 	roidict[roi_short] = {}
-	for comp in ['ISC_w','ISC_e','ISC_g','k0','k4','k_diff','ll_diff','auc_diff','tune_ll_perm']:
+	for comp in ['ISC_w','ISC_e','ISC_g','ISC_yy-yo', 'k0','k4','k_diff','ll_diff','auc_diff','tune_ll_perm']:
 		if comp in savedict[seed][roi_short].keys():
 			roidict[roi_short][comp] = {}
 			if comp != 'tune_ll_perm':
@@ -87,7 +90,7 @@ for roi in glob.glob(roidir+seed+'/'+'*h5'):
 				
 for seed in seeds+['-']:
 	d = roidict if seed == '-' else savedict[seed]
-	for comp in ['ISC_e','ISC_g','ll_diff','auc_diff']:
+	for comp in ['ISC_e','ISC_g','ISC_yy-yo','ll_diff','auc_diff']:
 		ROIl = []
 		ps = []
 		qs = []
