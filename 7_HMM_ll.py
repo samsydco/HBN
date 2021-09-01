@@ -30,6 +30,8 @@ for seed in seeds:
 			lldict[seed][roi_short][str(b)+'_2k_diff'] = \
 			lldict[seed][roi_short][str(b)+'_ll_max'] - \
 			lldict[seed][roi_short][str(b)+'_2k']
+			maxk = np.argmax(np.mean(ll_sep[0],axis=0))
+			
 		
 dd.io.save(llh5,lldict)
 lldict = dd.io.load(llh5)
@@ -102,7 +104,7 @@ ax.set_ylabel('Number of events in\nOldest ('+xticks[1]+')')
 if len(diffdf)>0:
 	sns.scatterplot(x='0',y='4',data=diffdf,color='#b3cde3',s=50,edgecolor='#b3cde3',\
 				label = 'Significant Difference',legend=False)
-	fig.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+fig.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 print('r = '+str(np.round(r,2))+', p = '+str(np.round(p,8)))
 print('RMS difference = '+str(np.round(np.mean(np.sqrt(np.square(df['0']-df['4']))),2)))
 fig.savefig(figurepath+'n_k/'+'k_lim.png',bbox_inches='tight', dpi=300)
