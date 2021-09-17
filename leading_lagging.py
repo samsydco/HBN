@@ -114,11 +114,15 @@ for roi in ROIl:
 			psall.append(1/len(lagsdiff[roi]))
 		else:
 			psall.append(p)
+			
+
 		
 qs = FDR_p(np.array(psall))
 for ri,roi in enumerate(ROIs):
 	if qs[ri] < 0.05:
-		print(roi,'auc diff',roidict[roi]['auc_diff']['val'],'oldest lag',lagsall[roi][0,0],'youngest lag',lagsall[roi][1,0])
+		print(roi,'auc diff',roidict[roi]['auc_diff']['val'],'oldest lag',lagsall[roi][1,0],'youngest lag',lagsall[roi][0,0])
+		
+dd.io.save(HMMpath+'Leading_lagging.h5',{'lags':lags,'ps':ps,'lagsall':lagsall,'psall':psall,'qs':qs,'ROIs':ROIs})
 
 
 # for each seed, for each roi, plot:
