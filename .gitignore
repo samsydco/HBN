@@ -3,3 +3,6 @@ old_code/
 videos/
 .ipynb_checkpoints/
 fmriprep*
+*TPJ_thresholded/
+TPJ_check.py
+data_exp_*
