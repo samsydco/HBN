@@ -17,7 +17,7 @@ D2 = {}
 outliers = {}
 vals2 = {}
 vals3 = {}
-for b in range(5):
+for b in range(nbinseq):
 	subl = np.concatenate([ageeq[i][1][b] for i in [0,1]])
 	D2[b] = np.zeros((len(subl),n_time))
 	for sidx, sub in enumerate(subl):
