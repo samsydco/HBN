@@ -12,7 +12,7 @@ tasks=['DM']
 bins = np.arange(nbinseq)
 
 for seed in np.arange(5):
-	savepath = ISCpath+'Yeo_parcellation_'+str(seed)+'/'
+	savepath = roidir+str(seed)+'/'
 	if not os.path.exists(savepath):
 		os.makedirs(savepath)
 		for hemi in glob.glob(path+'ROIs/annot/*'):
