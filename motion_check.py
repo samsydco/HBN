@@ -14,7 +14,7 @@ task='DM'
 n_time=750
 
 D2 = {}
-outliers = {}
+outliers = []
 vals2 = {}
 vals3 = {}
 for b in range(nbinseq):
@@ -24,7 +24,7 @@ for b in range(nbinseq):
 		D2[b][sidx] = dd.io.load(sub,['/'+task+'/reg'])[0][:,2]
 	vals2[b] = np.median(D2[b],1)
 	vals3[b] = vals2[b][vals2[b] < np.std(vals2[0])*3]
-	outliers[b] = subl[vals2[b] > np.std(vals2[0])*3]
+	outliers.extend(subl[vals2[b] > np.std(vals2[0])*3])
 
 fig, ax = plt.subplots(figsize=(5, 5))	
 histbins=np.histogram(np.hstack((vals2[0],vals2[4])), bins=15)[1]
