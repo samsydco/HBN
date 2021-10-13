@@ -10,9 +10,8 @@ from HMM_settings import *
 
 bins = [0,4]
 nbins = len(bins)
-roidir = ISCpath+'Yeo_parcellation_'
 seeds = [f[-1] for f in glob.glob(roidir+'*')]
-savedir = ISCpath+'shuff_Yeo_'
+savedir = ISCpath+'shuff_Yeo_outlier_'
 nsub = 40
 nshuff2perm=1000
 task = 'DM'

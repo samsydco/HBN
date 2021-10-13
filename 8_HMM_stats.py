@@ -21,7 +21,7 @@ import deepdish as dd
 import brainiak.eventseg.event
 from HMM_settings import *
 
-savedir = HMMpath+'shuff_5bins_train04_'
+savedir = HMMpath+'shuff_5bins_train04_outlier_'
 bins = np.arange(nbinseq)
 nbins = len(bins)
 bin_tmp = [0,4]

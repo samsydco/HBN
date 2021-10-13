@@ -9,8 +9,8 @@ import numpy as np
 import deepdish as dd
 from HMM_settings import *
 
-HMMdir = HMMpath+'shuff_5bins_train04_'
-ISCdir = ISCpath+'shuff_Yeo_'
+HMMdir = HMMpath+'shuff_5bins_train04_outlier_'
+ISCdir = ISCpath+'shuff_Yeo_outlier'
 task='DM'
 nTR_ = 750
 
