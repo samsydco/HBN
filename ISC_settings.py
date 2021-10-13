@@ -72,7 +72,8 @@ for tf1 in [0,1]:
 '''
 
 
-def bin_split(agel,phenol):
+def bin_split(subord):
+	agel,pcl,phenol = make_phenol(subord)
 	nsub = 15 # supposed number of subjects in each bin
 	agespan = np.max(np.diff(np.interp(np.linspace(0, len(agel), len(agel)//nsub + 1),np.arange(len(agel)),np.sort(agel))))
 	nbinseq = ((max(agel)-min(agel))//agespan).astype('int')
