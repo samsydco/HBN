@@ -98,7 +98,7 @@ def bin_split(subord):
 				ageeq[i][1][[b for b in range(nbinseq) if idx in ageeq[i][0][b]][0]].append(sub)
 	return agespan,nbinseq,eqbins,ageeq,lenageeq,minageeq
 
-agespan,nbinseq,eqbins,ageeq,lenageeq,minageeq = bin_split(agel,phenol)
+agespan,nbinseq,eqbins,ageeq,lenageeq,minageeq = bin_split(subord)
 
 nshuff = 100
 	
