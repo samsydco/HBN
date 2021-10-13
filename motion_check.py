@@ -4,8 +4,6 @@ import tqdm
 import random
 import numpy as np
 import deepdish as dd
-import scipy.stats as stats
-import matplotlib.pyplot as plt
 from ISC_settings import *
 
 nsub = 40
@@ -26,12 +24,15 @@ for b in range(nbinseq):
 	vals3[b] = vals2[b][vals2[b] < np.std(vals2[0])*3]
 	outliers.extend(subl[vals2[b] > np.std(vals2[0])*3])
 
-fig, ax = plt.subplots(figsize=(5, 5))	
-histbins=np.histogram(np.hstack((vals2[0],vals2[4])), bins=15)[1]
-for bi,b in enumerate(bins):
-	ax.hist(vals2[b], histbins,color=colors[bi])
-ax.legend(['Young', 'Old'])
-fig.tight_layout()
-stats.ttest_ind(vals2[0],vals2[4])
-	
+if __name__ == "__main__":
+	import scipy.stats as stats
+	import matplotlib.pyplot as plt
+	fig, ax = plt.subplots(figsize=(5, 5))	
+	histbins=np.histogram(np.hstack((vals2[0],vals2[4])), bins=15)[1]
+	for b in bins:
+		ax.hist(vals2[b], histbins)
+	ax.legend(['Young', 'Old'])
+	fig.tight_layout()
+	stats.ttest_ind(vals2[0],vals2[4])
+
 			
