@@ -6,7 +6,7 @@ import tqdm
 import numpy as np
 import deepdish as dd
 from scipy.stats import zscore, pearsonr
-from ISC_settings import *
+from HMM_settings import *
 
 bins = [0,4]
 nbins = len(bins)

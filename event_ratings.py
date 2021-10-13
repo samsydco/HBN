@@ -99,7 +99,7 @@ if __name__ == "__main__":
 	plt.tight_layout()
 	plt.savefig(ev_figpath+'ev_annots_both.png', bbox_inches='tight')
 	
-	from ISC_settings import *
+	from HMM_settings import *
 	D_ = dd.io.load(ISCpath+'HPC.h5',['/D'])[0]
 	D = np.zeros(nTR)
 	nsubj = 0
