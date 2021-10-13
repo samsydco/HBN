@@ -80,7 +80,6 @@ for b in range(nbinseq+1):
 	eqbins.append(min(agel)+agespan*b)
 
 plot = 'off'
-nbins = 19
 bins = np.linspace(min(agel), max(agel), nbins+1)
 agedist = [None]*2
 # make equal width bins, w same # of ages, and consistent sex dist
@@ -90,7 +89,6 @@ minageeq = []
 # Are M and F evenly dist in age
 for i in np.unique(phenol['sex']):
 	ages = [a for idx,a in enumerate(agel) if phenol['sex'][idx]==i]
-	agedist[i] = [binned_statistic(ages,ages,statistic='count',bins=bins),[ [] for i in range(nbins) ]]
 	for b in range(nbinseq):
 		ageeq[i][0][b] = [idx for idx,a in enumerate(ages) 
 					   if a>=eqbins[b] and a<eqbins[b+1]]
@@ -100,8 +98,6 @@ for i in np.unique(phenol['sex']):
 		agedist[i][1][agedist[i][0][2][idx]-1].append(sub)
 		if ages[idx] < eqbins[nbinseq]:
 			ageeq[i][1][[b for b in range(nbinseq) if idx in ageeq[i][0][b]][0]].append(sub)
-		
-nsubbin = [min([agedist[1][0][0][b],agedist[0][0][0][b]]).astype(int) for b in range(nbins)]
 
 nshuff = 100
 	
