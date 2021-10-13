@@ -10,10 +10,10 @@ pd.options.mode.chained_assignment = None
 
 roidir = ISCpath+'Yeo_parcellation_'
 seeds = [f[-1] for f in glob.glob(roidir+'*')]
-nkdir = HMMpath+'nk_moreshuff_'#'nk/'
-nkh5 = HMMpath+'nk_' #formerly nk.h5
-llh5 = HMMpath+'ll_diff_seeds.h5' # formerly ll_diff
-llcsv = HMMpath+'ll_diff_seeds.csv' # formerly ll_diff
+nkdir = HMMpath+'nk_moreshuff_'
+nkh5 = HMMpath+'nk_'
+llh5 = HMMpath+'ll_diff_seeds.h5'
+llcsv = HMMpath+'ll_diff_seeds.csv'
 
 tasks = ['DM','TP']
 TR=0.8
