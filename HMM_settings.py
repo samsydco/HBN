@@ -14,12 +14,12 @@ agel,pcl,phenol = make_phenol(subord2)
 agespan,nbinseq,eqbins,ageeq,lenageeq,minageeq = bin_split(agel,phenol)
 
 
-roidir = ISCpath+'Yeo_parcellation_'
+roidir = ISCpath+'Yeo_parcellation_outlier_'
 seeds = [f[-1] for f in glob.glob(roidir+'*')]
-nkdir = HMMpath+'nk_moreshuff_'
-nkh5 = HMMpath+'nk_'
-llh5 = HMMpath+'ll_diff_seeds.h5'
-llcsv = HMMpath+'ll_diff_seeds.csv'
+nkdir = HMMpath+'nk_moreshuff_outlier_'
+nkh5 = HMMpath+'nk_outlier_'
+llh5 = HMMpath+'ll_diff_seeds_outlier.h5'
+llcsv = HMMpath+'ll_diff_seeds_outlier.csv'
 
 tasks = ['DM','TP']
 TR=0.8
