@@ -71,33 +71,33 @@ for tf1 in [0,1]:
 			d2sum[tf2,tf1,h] = len([idx for idx,p in enumerate(demo2) if idx in subh[tf1][h] and p==tf2])
 '''
 
-# max diff between old/young in hist bins of equal height:
-nsub = 15 # supposed number of subjects in each bin
-agespan = np.max(np.diff(np.interp(np.linspace(0, len(agel), len(agel)//nsub + 1),np.arange(len(agel)),np.sort(agel))))
-nbinseq = ((max(agel)-min(agel))//agespan).astype('int')
-eqbins = []
-for b in range(nbinseq+1):
-	eqbins.append(min(agel)+agespan*b)
 
-plot = 'off'
-bins = np.linspace(min(agel), max(agel), nbins+1)
-agedist = [None]*2
-# make equal width bins, w same # of ages, and consistent sex dist
-ageeq = [[[[] for _ in range(nbinseq)] for _ in range(2)] for _ in range(2)]
-lenageeq = [[] for _ in range(2)]
-minageeq = []
-# Are M and F evenly dist in age
-for i in np.unique(phenol['sex']):
-	ages = [a for idx,a in enumerate(agel) if phenol['sex'][idx]==i]
-	for b in range(nbinseq):
-		ageeq[i][0][b] = [idx for idx,a in enumerate(ages) 
-					   if a>=eqbins[b] and a<eqbins[b+1]]
-		lenageeq[i].append(len(ageeq[i][0][b]))
-	minageeq.append(min(lenageeq[i]))
-	for idx,sub in enumerate([s for idx,s in enumerate(subord) if phenol['sex'][idx]==i]):
-		agedist[i][1][agedist[i][0][2][idx]-1].append(sub)
-		if ages[idx] < eqbins[nbinseq]:
-			ageeq[i][1][[b for b in range(nbinseq) if idx in ageeq[i][0][b]][0]].append(sub)
+def bin_split(agel,phenol):
+	nsub = 15 # supposed number of subjects in each bin
+	agespan = np.max(np.diff(np.interp(np.linspace(0, len(agel), len(agel)//nsub + 1),np.arange(len(agel)),np.sort(agel))))
+	nbinseq = ((max(agel)-min(agel))//agespan).astype('int')
+	eqbins = []
+	for b in range(nbinseq+1):
+		eqbins.append(min(agel)+agespan*b)
+
+	# make equal width bins, w same # of ages, and consistent sex dist
+	ageeq = [[[[] for _ in range(nbinseq)] for _ in range(2)] for _ in range(2)]
+	lenageeq = [[] for _ in range(2)]
+	minageeq = []
+	# Are M and F evenly dist in age
+	for i in np.unique(phenol['sex']):
+		ages = [a for idx,a in enumerate(agel) if phenol['sex'][idx]==i]
+		for b in range(nbinseq):
+			ageeq[i][0][b] = [idx for idx,a in enumerate(ages) 
+						   if a>=eqbins[b] and a<eqbins[b+1]]
+			lenageeq[i].append(len(ageeq[i][0][b]))
+		minageeq.append(min(lenageeq[i]))
+		for idx,sub in enumerate([s for idx,s in enumerate(subord) if phenol['sex'][idx]==i]):
+			if ages[idx] < eqbins[nbinseq]:
+				ageeq[i][1][[b for b in range(nbinseq) if idx in ageeq[i][0][b]][0]].append(sub)
+	return agespan,nbinseq,eqbins,ageeq,lenageeq,minageeq
+
+agespan,nbinseq,eqbins,ageeq,lenageeq,minageeq = bin_split(agel,phenol)
 
 nshuff = 100
 	
