@@ -4,9 +4,15 @@
 import os
 from settings import *
 from ISC_settings import *
+from motion_check import outliers
 from event_ratings import ev_conv
 from sklearn.model_selection import KFold
 pd.options.mode.chained_assignment = None
+
+subord2 = [s for s in subord if s not in outliers]
+agel,pcl,phenol = make_phenol(subord2)
+agespan,nbinseq,eqbins,ageeq,lenageeq,minageeq = bin_split(agel,phenol)
+
 
 roidir = ISCpath+'Yeo_parcellation_'
 seeds = [f[-1] for f in glob.glob(roidir+'*')]
