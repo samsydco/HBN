@@ -5,16 +5,13 @@ import random
 import numpy as np
 import deepdish as dd
 import scipy.stats as stats
-from scipy.stats import ttest_ind
 import matplotlib.pyplot as plt
 from ISC_settings import *
 
-nseed = 5
 nsub = 40
 bins = [0,4]
 task='DM'
 n_time=750
-
 
 D2 = {}
 outliers = {}
@@ -36,11 +33,5 @@ for bi,b in enumerate(bins):
 ax.legend(['Young', 'Old'])
 fig.tight_layout()
 stats.ttest_ind(vals2[0],vals2[4])
-
-p_vals = []
-for i in range(40):
-	_,p = stats.ttest_ind(np.sort(vals2[0])[:len(vals2[0])-i],vals2[4])
-	p_vals.append(p)
-print(p_vals)
 	
 			
