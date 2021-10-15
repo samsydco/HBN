@@ -34,5 +34,6 @@ if __name__ == "__main__":
 	ax.legend(['Young', 'Old'])
 	fig.tight_layout()
 	stats.ttest_ind(vals3[0],vals3[4])
+	df = len(vals3[0])+len(vals3[4])-2
 
 			
