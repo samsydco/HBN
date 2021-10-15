@@ -277,6 +277,6 @@ if __name__ == "__main__":
 		ax.set_ylabel('Hippocampus-to-event\ncorrelation')
 		leg = ax.legend(loc='center', bbox_to_anchor=(0.5, -0.5))
 		for line in leg.get_lines():
-			line.set_linewidth(5)
+			line.set_linewidth(10)
 		ax.margins(x=0)
 		plt.savefig(figurepath+'HPC/'+HPC+'_bump_xcorr_ev_conv.png', bbox_inches='tight',dpi=300)
