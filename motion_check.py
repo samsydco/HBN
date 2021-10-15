@@ -28,11 +28,11 @@ if __name__ == "__main__":
 	import scipy.stats as stats
 	import matplotlib.pyplot as plt
 	fig, ax = plt.subplots(figsize=(5, 5))	
-	histbins=np.histogram(np.hstack((vals2[0],vals2[4])), bins=15)[1]
+	histbins=np.histogram(np.hstack((vals3[0],vals3[4])), bins=15)[1]
 	for b in bins:
-		ax.hist(vals2[b], histbins)
+		ax.hist(vals3[b], histbins)
 	ax.legend(['Young', 'Old'])
 	fig.tight_layout()
-	stats.ttest_ind(vals2[0],vals2[4])
+	stats.ttest_ind(vals3[0],vals3[4])
 
 			
