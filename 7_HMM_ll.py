@@ -21,16 +21,16 @@ for seed in seeds:
 		lldict[seed][roi_short] = {}
 		for b in [0,4]:
 			ll_sep = dd.io.load(roi,'/'+str(b)+'/tune_ll')
-			lldict[seed][roi_short][str(b)+'_ll_max'] = np.max(np.mean(ll_sep[0],axis=0))/nTR
-			lldict[seed][roi_short][str(b)+'_ll_min'] = np.min(np.mean(ll_sep[0],axis=0))/nTR
+			lldict[seed][roi_short][str(b)+'_ll_max'] = np.max(np.mean(ll_sep,axis=0))/nTR
+			lldict[seed][roi_short][str(b)+'_ll_min'] = np.min(np.mean(ll_sep,axis=0))/nTR
 			lldict[seed][roi_short][str(b)+'_ll_diff'] = \
 			lldict[seed][roi_short][str(b)+'_ll_max'] - \
 			lldict[seed][roi_short][str(b)+'_ll_min']
-			lldict[seed][roi_short][str(b)+'_2k'] = np.mean(ll_sep[0,:,0],axis=0)/nTR
+			lldict[seed][roi_short][str(b)+'_2k'] = np.mean(ll_sep[:,0],axis=0)/nTR
 			lldict[seed][roi_short][str(b)+'_2k_diff'] = \
 			lldict[seed][roi_short][str(b)+'_ll_max'] - \
 			lldict[seed][roi_short][str(b)+'_2k']
-			maxk = np.argmax(np.mean(ll_sep[0],axis=0))
+			maxk = np.argmax(np.mean(ll_sep,axis=0))
 			
 		
 dd.io.save(llh5,lldict)
