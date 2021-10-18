@@ -22,7 +22,7 @@ xticks = [str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))+' y.o.' 
 colors = ['#FCC3A1','#F08B63','#D02941','#70215D','#311638']
 plt.rcParams.update({'font.size': 30})
 
-pvals = dd.io.load(ISCpath+'p_vals_seeds.h5')
+pvals = dd.io.load(pvals_file)
 ROIl = []
 for roi in pvals['roidict'].keys():
 	if 'auc_diff' in pvals['roidict'][roi].keys():

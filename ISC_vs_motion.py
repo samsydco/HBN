@@ -20,8 +20,8 @@ import seaborn as sns
 subl = ageeq[0][1][0]+ageeq[1][1][0]
 nsub = len(subl)
 
-roidict = dd.io.load(ISCpath+'p_vals_seeds.h5','/roidict')
-vals = dd.io.load(ISCpath+'p_vals_seeds.h5','/seeddict/0')
+roidict = dd.io.load(pvals_file,'/roidict')
+vals = dd.io.load(pvals_file,'/seeddict/0')
 
 ROIl = []
 for roi in roidict.keys():

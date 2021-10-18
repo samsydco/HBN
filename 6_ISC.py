@@ -33,10 +33,10 @@ for seed in tqdm.tqdm(seeds):
 			nshuff2 = nshuff2perm + nshuff_
 			nshuff_all = 0
 			e_p_all = g_p_all = 1
-			if os.path.exists(ISCpath+'p_vals_seeds.h5'):
-				nshuff_all = len(dd.io.load(ISCpath+'p_vals_seeds.h5', '/roidict/'+roi_short+'/ISC_e/shuff'))
-				e_p_all = dd.io.load(ISCpath+'p_vals_seeds.h5', '/roidict/'+roi_short+'/ISC_e/p')
-				g_p_all = dd.io.load(ISCpath+'p_vals_seeds.h5', '/roidict/'+roi_short+'/ISC_g/p')
+			if os.path.exists(pvals_file):
+				nshuff_all = len(dd.io.load(pvals_file, '/roidict/'+roi_short+'/ISC_e/shuff'))
+				e_p_all = dd.io.load(pvals_file, '/roidict/'+roi_short+'/ISC_e/p')
+				g_p_all = dd.io.load(pvals_file, '/roidict/'+roi_short+'/ISC_g/p')
 				if nshuff_all > nshuff2: nshuff2 = nshuff_all
 			if ((e_p < 0.05 or g_p < 0.05) and nshuff_<nshuff2perm) or (e_p == 0 or g_p == 0) or (nshuff_ < nshuff_all and (e_p_all < 0.05 or g_p_all < 0.05)):
 				roidict[task]['ISC_w'] = np.append(dd.io.load(savef,'/'+task+'/ISC_w'), np.zeros((nshuff2-nshuff_,nbins,n_vox)), axis=0)

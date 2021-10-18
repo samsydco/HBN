@@ -22,7 +22,7 @@ colors = ['#FCC3A1','#F08B63','#D02941','#70215D','#311638']
 plt.rcParams.update({'font.size': 25})
 nTR_=750
 x_list = [np.round(TR*(nTR_/k),2) for k in k_list]
-pvals = dd.io.load(ISCpath+'p_vals_seeds.h5')
+pvals = dd.io.load(pvals_file)
 roi_short_list = {}
 for roi in pvals['roidict'].keys():
 	if 'll_diff' in pvals['roidict'][roi].keys():

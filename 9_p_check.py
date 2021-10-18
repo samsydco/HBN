@@ -109,7 +109,7 @@ for seed in seeds+['-']:
 				savedict[seed][roi][comp]['q'] = qs[i]
 		print(seed,comp,np.sum(qs<0.05))
 		
-dd.io.save(ISCpath+'p_vals_seeds.h5',{'seeddict':savedict,'roidict':roidict})
+dd.io.save(pvals_file,{'seeddict':savedict,'roidict':roidict})
 			
 	
 

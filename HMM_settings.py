@@ -19,6 +19,7 @@ nkdir = HMMpath+'nk_moreshuff_outlier_'
 nkh5 = HMMpath+'nk_outlier_'
 llh5 = HMMpath+'ll_diff_seeds_outlier.h5'
 llcsv = HMMpath+'ll_diff_seeds_outlier.csv'
+pvals_file = ISCpath+'p_vals_seeds_outlier.h5'
 
 tasks = ['DM','TP']
 TR=0.8

@@ -14,7 +14,7 @@ from ISC_settings import *
 roidir = ISCpath+'Yeo_parcellation_'
 ISCdir = ISCpath+'shuff_Yeo_'
 figdir = figurepath+'up_down/'
-pvals = dd.io.load(ISCpath+'p_vals_seeds.h5')
+pvals = dd.io.load(pvals_file)
 
 task = 'DM'
 nsub = 40

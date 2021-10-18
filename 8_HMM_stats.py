@@ -42,10 +42,10 @@ for seed in tqdm.tqdm(seeds):
 			nshuff2 = nshuff2perm + nshuff_
 			nshuff_all = 0
 			p_ll_all = p_aucall = 1
-			if os.path.exists(ISCpath+'p_vals_seeds.h5'):
-				nshuff_all = len(dd.io.load(ISCpath+'p_vals_seeds.h5', '/roidict/'+roi_short+'/auc_diff/shuff'))
-				p_ll_all = dd.io.load(ISCpath+'p_vals_seeds.h5', '/roidict/'+roi_short+'/ll_diff/p')
-				p_aucall = dd.io.load(ISCpath+'p_vals_seeds.h5', '/roidict/'+roi_short+'/auc_diff/p')
+			if os.path.exists(pvals_file):
+				nshuff_all = len(dd.io.load(pvals_file, '/roidict/'+roi_short+'/auc_diff/shuff'))
+				p_ll_all = dd.io.load(pvals_file, '/roidict/'+roi_short+'/ll_diff/p')
+				p_aucall = dd.io.load(pvals_file, '/roidict/'+roi_short+'/auc_diff/p')
 				if nshuff_all > nshuff2: nshuff2 = nshuff_all
 			shuffl = np.arange(nshuff_+1,nshuff2+1)
 		else:

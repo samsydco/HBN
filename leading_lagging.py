@@ -97,7 +97,7 @@ for seed in seeds:
 		ps[seed][roi] = np.sum(abs(lagdiff[0])<abs(lagdiff[1:]))/nshuffle
 dd.io.save(HMMpath+'Leading_lagging.h5',{'lags':lags,'ps':ps})
 
-roidict = dd.io.load(ISCpath+'p_vals_seeds.h5','/roidict')
+roidict = dd.io.load(pvals_file,'/roidict')
 
 lagsall = {}
 lagsdiff = {}
