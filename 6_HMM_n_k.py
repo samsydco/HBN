@@ -24,11 +24,9 @@ for seed in tqdm.tqdm(seeds):
 		for b in bins:
 			roidict[str(b)]['D'] = Ddict[task]['bin_'+str(b)]['D']
 			roidict[str(b)]['tune_ll'] = np.zeros((nsplit,len(k_list)))
-		Dall = [roidict['0']['D'],roidict['4']['D']]
-		for bi,b in enumerate(bins):
 			for split,Ls in enumerate(kf.split(np.arange(nsub),y)):
-				Dtrain = np.mean(Dall[bi][Ls[0]],axis=0).T
-				Dtest  = np.mean(Dall[bi][Ls[1]],axis=0).T
+				Dtrain = np.mean(roidict[str(b)]['D'][Ls[0]],axis=0).T
+				Dtest  = np.mean(roidict[str(b)]['D'][Ls[1]],axis=0).T
 				for ki,k in enumerate(k_list):
 					hmm = brainiak.eventseg.event.EventSegment(n_events=k)
 					hmm.fit(Dtrain)
