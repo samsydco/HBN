@@ -15,7 +15,6 @@ nbins = len(bins)
 task = 'DM'
 
 for seed in tqdm.tqdm(seeds):
-	pdict=dd.io.load(nkh5+seed+'.h5') if os.path.exists(nkh5+seed+'.h5') else None
 	if not os.path.exists(nkdir+seed): os.makedirs(nkdir+seed)
 	for roi in glob.glob(roidir+seed+'/*h5'):
 		roi_short = roi.split('/')[-1][:-3]

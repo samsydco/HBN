@@ -17,8 +17,7 @@ nTR_ = 750
 savedict = {}
 for seed in tqdm.tqdm(seeds):
 	savedict[seed] = {}
-	df=pd.DataFrame(dd.io.load(nkh5+seed+'.h5')).T
-	df.loc[:,'k_diff_q'] = FDR_p(df['k_diff_p'])
+	df=pd.DataFrame(dd.io.load(llh5,'/'+seed)).T
 	for roi in glob.glob(roidir+seed+'/'+'*h5'):
 		roi_short = roi.split('/')[-1][:-3]
 		savedict[seed][roi_short] = {}
@@ -43,12 +42,9 @@ for seed in tqdm.tqdm(seeds):
 		if roi_short in ROIl:
 			for b in ['0','4']:
 				savedict[seed][roi_short]['k'+b] = {}
-				savedict[seed][roi_short]['k'+b]['val'] = np.round(TR*(nTR_/df.loc[roi_short][b]),2)
+				savedict[seed][roi_short]['k'+b]['val'] = np.round(TR*(nTR_/df.loc[roi_short][b+'_k']),2)
 			savedict[seed][roi_short]['k_diff'] = {}
-			savedict[seed][roi_short]['k_diff']['val'] = df.loc[roi_short]['4'] - df.loc[roi_short]['0']
-			savedict[seed][roi_short]['k_diff']['shuff'] = df.loc[roi_short]['shuff']
-			savedict[seed][roi_short]['k_diff']['p'] = df.loc[roi_short]['k_diff_p']
-			savedict[seed][roi_short]['k_diff']['q'] = df.loc[roi_short]['k_diff_q']
+			savedict[seed][roi_short]['k_diff']['val'] = df.loc[roi_short]['4_k'] - df.loc[roi_short]['0_k']
 	
 			for HMMd in ['ll_diff','auc_diff','tune_ll_perm']:
 				HMMvals = dd.io.load(HMMdir+seed+'/'+roi_short+'.h5','/'+HMMd)
