@@ -30,8 +30,7 @@ for seed in seeds:
 			lldict[seed][roi_short][str(b)+'_2k_diff'] = \
 			lldict[seed][roi_short][str(b)+'_ll_max'] - \
 			lldict[seed][roi_short][str(b)+'_2k']
-			maxk = np.argmax(np.mean(ll_sep,axis=0))
-			
+			lldict[seed][roi_short][str(b)+'_k'] = dd.io.load(roi,'/'+str(b)+'/best_k')	
 		
 dd.io.save(llh5,lldict)
 lldict = dd.io.load(llh5)
@@ -76,35 +75,9 @@ ax.set_xticks([0,0.01,0.02,0.03])
 ax.set_yticks([0,0.01,0.02,0.03])
 ax.set_xlabel('Youngest Model-Fit difference')
 ax.set_ylabel('Oldest Model-Fit difference')
-fig.savefig(figurepath+'HMM/ll/'+comp+'_'+str(ll_thresh)+'.png', bbox_inches='tight')
+fig.savefig(figurepath+'HMM/ll/'+comp+'_'+str(ll_thresh)+'_outlier.png', bbox_inches='tight')
 
-# In Parcels above minimum ll: is there a difference in number of k's (events)?
-roidict = {}
-for seed in seeds:
-	roidict[seed] = dd.io.load(nkh5+seed+'.h5')
-nkdf = seeddictstodf(roidict,['shuff'])
-df = nkdf.merge(lldf, left_index=True, right_index=True, how='inner')
-df=df[((df['0_2k_diff']>ll_thresh) | (df['4_2k_diff']>ll_thresh))]
-df['0'] = np.array(df['0'], dtype = float)
-df['4'] = np.array(df['4'], dtype = float)
-df['k_diff_q'] = FDR_p(df['k_diff_p'])
-nodiffdf = df[df['k_diff_q']>0.05]
-diffdf = df[df['k_diff_q']<0.05]
-r,p = pearsonr(nodiffdf['0'],nodiffdf['4'])
-
-import seaborn as sns
-grey=211/256
-xticks = [str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))+' y.o.' for b in bins]
-sns.set(font_scale = 2,rc={'axes.facecolor':(grey,grey,grey)})
-fig,ax=plt.subplots(figsize=(7,5))
-sns.regplot(x='0',y='4',data=nodiffdf,color='#8856a7',scatter_kws={'s':50},label = 'No Significant Difference')
-ax.grid(False)
-ax.set_xlabel('Number of events in\nYoungest ('+xticks[0]+')')
-ax.set_ylabel('Number of events in\nOldest ('+xticks[1]+')')
-if len(diffdf)>0:
-	sns.scatterplot(x='0',y='4',data=diffdf,color='#b3cde3',s=50,edgecolor='#b3cde3',\
-				label = 'Significant Difference',legend=False)
-fig.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-print('r = '+str(np.round(r,2))+', p = '+str(np.round(p,8)))
-print('RMS difference = '+str(np.round(np.mean(np.sqrt(np.square(df['0']-df['4']))),2)))
-fig.savefig(figurepath+'n_k/'+'k_lim.png',bbox_inches='tight', dpi=300)
+r,p = pearsonr(lldf['0_k'].iloc[idx2],lldf['4_k'].iloc[idx2])
+rms_diff = np.sqrt(np.square(lldf['0_k'].iloc[idx2]-lldf['4_k'].iloc[idx2]))
+rms_mean = np.mean(rms_diff)
+rms_std = np.std(rms_diff)
