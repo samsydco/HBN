@@ -75,7 +75,6 @@ def nearest_peak(v):
 	max_x = (-B / (2*A))
 	return min(max(max_x, 0), len(v)-1)
 
-loaddir = HMMpath+'shuff_5bins_train04_'
 bins = [0,4]
 nTR = 750
 max_lag = 25
@@ -85,7 +84,7 @@ lags = {k:{k:[] for k in ROIl} for k in seeds}
 ps   = {k:{k:[] for k in ROIl} for k in seeds}
 for seed in seeds:
 	for roi in tqdm.tqdm(ROIl):
-		dE_k = np.diff(dd.io.load(loaddir+seed+'/'+roi+'.h5','/E_k'))
+		dE_k = np.diff(dd.io.load(HMMsavedir+seed+'/'+roi+'.h5','/E_k'))
 		nshuffle = dE_k.shape[0]
 		lags[seed][roi] = np.zeros((2,nshuffle))
 		for bi,b in enumerate(bins):
@@ -134,9 +133,9 @@ for roi in tqdm.tqdm(ROIs):
 	fig,axs = plt.subplots(3,len(seeds),figsize=(60,20))
 	fig.suptitle(roi)
 	for si,seed in enumerate(seeds):
-		AUC_diff = dd.io.load(HMMpath+'shuff_5bins_train04_'+seed+'/'+roi+'.h5','/'+'auc_diff')[0]
+		AUC_diff = dd.io.load(HMMsavedir+seed+'/'+roi+'.h5','/'+'auc_diff')[0]
 		s = 'Seed '+seed+' '+' AUC diff: '+str(np.round(AUC_diff,2))
-		dE_k = np.diff(dd.io.load(loaddir+seed+'/'+roi+'.h5','/E_k'))[0]
+		dE_k = np.diff(dd.io.load(HMMsavedir+seed+'/'+roi+'.h5','/E_k'))[0]
 		corrs = np.zeros((2,max_lag*2+1))
 		for bi,b in enumerate(bins):
 			corrs[bi] = lag_pearsonr(dE_k[b], ev_conv[1:], max_lag)

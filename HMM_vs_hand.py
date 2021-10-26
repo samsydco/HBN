@@ -11,7 +11,6 @@ from scipy.stats import zscore, norm, pearsonr
 from HMM_settings import *
 ev_conv_perm = ev_conv[1:]
 
-savedir = HMMpath+'shuff_5bins_train04_'
 task='DM'
 nTR=750
 nbins = len(bins)
@@ -28,7 +27,7 @@ matchz_mat = np.zeros((nROI,nbins))
 
 for seed in tqdm.tqdm(seeds):
 	for r,roi_short in tqdm.tqdm(enumerate(ROIl)):
-		roi=savedir+seed+'/'+roi_short+'.h5'
+		roi=HMMsavedir+seed+'/'+roi_short+'.h5'
 		k = dd.io.load(roi,'/best_k')
 		D = [dd.io.load(roidir+seed+'/'+roi_short+'.h5','/'+task+'/bin_'+str(b)+'/D') for b in bins]
 		hmm = brainiak.eventseg.event.EventSegment(n_events=k)

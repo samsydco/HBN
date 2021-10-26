@@ -9,7 +9,6 @@ import numpy as np
 import deepdish as dd
 from HMM_settings import *
 
-HMMdir = HMMpath+'shuff_5bins_train04_outlier_'
 ISCdir = ISCpath+'shuff_Yeo_outlier'
 task='DM'
 nTR_ = 750
@@ -47,11 +46,11 @@ for seed in tqdm.tqdm(seeds):
 			savedict[seed][roi_short]['k_diff']['val'] = df.loc[roi_short]['4_k'] - df.loc[roi_short]['0_k']
 	
 			for HMMd in ['ll_diff','auc_diff','tune_ll_perm']:
-				HMMvals = dd.io.load(HMMdir+seed+'/'+roi_short+'.h5','/'+HMMd)
+				HMMvals = dd.io.load(HMMsavedir+seed+'/'+roi_short+'.h5','/'+HMMd)
 				savedict[seed][roi_short][HMMd] = {}
 				# dumb coding error
 				if HMMd == 'auc_diff': 
-					k = dd.io.load(HMMdir+seed+'/'+roi_short+'.h5','/best_k')
+					k = dd.io.load(HMMsavedir+seed+'/'+roi_short+'.h5','/best_k')
 					HMMvals = (HMMvals*k)/(k-1)
 				if 'tune_ll' not in HMMd:
 					savedict[seed][roi_short][HMMd]['val'] = HMMvals[0]

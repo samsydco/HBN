@@ -14,7 +14,6 @@ import brainiak.eventseg.event
 import matplotlib.pyplot as plt
 from HMM_settings import *
 
-HMMdir = HMMpath+'shuff_5bins_train04_'
 figdir = figurepath + 'HMM/Paper_auc/'
 bins = np.arange(nbinseq)
 nbins = len(bins)
@@ -34,8 +33,8 @@ for ri,roi in enumerate(ROIl):
 	vall = pvals['seeddict']['0'][roi]['vall']
 	AUC = np.zeros((len(seeds),nbins))
 	for si,seed in enumerate(seeds):
-		k = dd.io.load(HMMdir+seed+'/'+roi+'.h5','/best_k')
-		auc = (dd.io.load(HMMdir+seed+'/'+roi+'.h5','/auc')/(k-1))*TR
+		k = dd.io.load(HMMsavedir+seed+'/'+roi+'.h5','/best_k')
+		auc = (dd.io.load(HMMsavedir+seed+'/'+roi+'.h5','/auc')/(k-1))*TR
 		for b in bins:
 			AUC[si,b] = auc[0,b]
 	AUC = np.mean(AUC,axis=0)

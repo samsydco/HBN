@@ -77,7 +77,10 @@ ax.set_xlabel('Youngest Model-Fit difference')
 ax.set_ylabel('Oldest Model-Fit difference')
 fig.savefig(figurepath+'HMM/ll/'+comp+'_'+str(ll_thresh)+'_outlier.png', bbox_inches='tight')
 
+
+np.round(TR*(nTR/lldf['0_k'].iloc[idx2]),2)
+
 r,p = pearsonr(lldf['0_k'].iloc[idx2],lldf['4_k'].iloc[idx2])
-rms_diff = np.sqrt(np.square(lldf['0_k'].iloc[idx2]-lldf['4_k'].iloc[idx2]))
+rms_diff = np.sqrt(np.square(np.round(TR*(nTR/lldf['0_k'].iloc[idx2]),2) - np.round(TR*(nTR/lldf['4_k'].iloc[idx2]),2)))
 rms_mean = np.mean(rms_diff)
 rms_std = np.std(rms_diff)

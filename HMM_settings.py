@@ -12,13 +12,13 @@ subord2 = [s for s in subord if s not in outliers]
 agel,pcl,phenol = make_phenol(subord2)
 agespan,nbinseq,eqbins,ageeq,lenageeq,minageeq = bin_split(subord2)
 
-
 roidir = ISCpath+'Yeo_parcellation_outlier_'
 seeds = [f[-1] for f in glob.glob(roidir+'*')]
 nkdir = HMMpath+'nk_moreshuff_outlier_'
 llh5 = HMMpath+'ll_diff_seeds_outlier.h5'
 llcsv = HMMpath+'ll_diff_seeds_outlier.csv'
 pvals_file = ISCpath+'p_vals_seeds_outlier.h5'
+HMMsavedir = HMMpath+'shuff_5bins_train04_outlier_'
 
 tasks = ['DM','TP']
 TR=0.8

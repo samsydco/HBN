@@ -21,7 +21,6 @@ import deepdish as dd
 import brainiak.eventseg.event
 from HMM_settings import *
 
-savedir = HMMpath+'shuff_5bins_train04_outlier_'
 bins = np.arange(nbinseq)
 nbins = len(bins)
 bin_tmp = [0,4]
@@ -31,7 +30,7 @@ nshuff2perm=1000
 
 
 for seed in tqdm.tqdm(seeds):
-	seedsavedir = savedir+seed
+	seedsavedir = HMMsavedir+seed
 	if not os.path.exists(seedsavedir): os.makedirs(seedsavedir)
 	for roi_short in tqdm.tqdm(ROIl):
 		if os.path.exists(seedsavedir+'/'+roi_short+'.h5'):
