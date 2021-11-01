@@ -9,7 +9,7 @@ import numpy as np
 import deepdish as dd
 from HMM_settings import *
 
-ISCdir = ISCpath+'shuff_Yeo_outlier'
+ISCdir = ISCpath+'shuff_Yeo_outlier_'
 task='DM'
 nTR_ = 750
 
