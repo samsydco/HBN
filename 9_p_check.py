@@ -71,7 +71,7 @@ for roi in glob.glob(roidir+seed+'/'+'*h5'):
 			if any(a==comp for a in ['ISC_w','tune_ll_perm']):
 				for bi,b in enumerate(bins):
 					roidict[roi_short][comp][str(b)] = np.mean([savedict[seed][roi_short][comp]['val_'][bi] for seed in seeds])
-			if not any(n in comp for n in ['w','0','4','perm']):
+			if not any(n in comp for n in ['w','k','perm']):
 				arrs = [np.array(savedict[seed][roi_short][comp]['shuff']) for seed in seeds]
 				arr = np.ma.empty((np.max([len(i) for i in arrs]),len(arrs)))
 				arr.mask = True
