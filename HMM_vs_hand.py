@@ -16,7 +16,7 @@ nTR=750
 nbins = len(bins)
 nROI = len(ROIl)
 xcorrx = np.concatenate([np.arange(-nTR+2,0)*TR,np.arange(nTR-1)*TR])
-savefile = HMMpath+'HMM_vs_hand_'
+savefile = HMMpath+'HMM_vs_hand_outlier_'
 
 dE_k = {key:{key:[] for key in bins} for key in ROIl}
 dE_k_corr = np.zeros((nROI,nbins))
