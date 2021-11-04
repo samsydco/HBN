@@ -5,6 +5,8 @@ from HMM_settings import *
 from scipy.stats import pearsonr
 import matplotlib.pyplot as plt
 
+lead_lag_file = 'Leading_lagging_outlier.h5'
+
 def lag_pearsonr(x, y, max_lags):
     """Compute lag correlation between x and y, up to max_lags
     Parameters
@@ -94,7 +96,7 @@ for seed in seeds:
 		lagdiff = lags[seed][roi][1] - lags[seed][roi][0]
 		lagdiff = (lags[seed][roi][1] - lags[seed][roi][0])*TR
 		ps[seed][roi] = np.sum(abs(lagdiff[0])<abs(lagdiff[1:]))/nshuffle
-dd.io.save(HMMpath+'Leading_lagging.h5',{'lags':lags,'ps':ps})
+dd.io.save(HMMpath+lead_lag_file,{'lags':lags,'ps':ps})
 
 roidict = dd.io.load(pvals_file,'/roidict')
 
@@ -121,7 +123,7 @@ for ri,roi in enumerate(ROIs):
 	if qs[ri] < 0.05:
 		print(roi,'auc diff',roidict[roi]['auc_diff']['val'],'oldest lag',lagsall[roi][1,0],'youngest lag',lagsall[roi][0,0])
 		
-dd.io.save(HMMpath+'Leading_lagging.h5',{'lags':lags,'ps':ps,'lagsall':lagsall,'psall':psall,'qs':qs,'ROIs':ROIs})
+dd.io.save(HMMpath+lead_lag_file,{'lags':lags,'ps':ps,'lagsall':lagsall,'psall':psall,'qs':qs,'ROIs':ROIs})
 
 
 # for each seed, for each roi, plot:
