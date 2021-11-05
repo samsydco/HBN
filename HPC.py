@@ -9,7 +9,7 @@ from HMM_settings import *
 
 # Remove subjects over max(eqbins) age:
 incl_idx = [a<eqbins[-1] for a in agel]
-subord = [s for si,s in enumerate(subord) if incl_idx[si]]
+subord = [s for si,s in enumerate(subord2) if incl_idx[si]]
 agel,pcl,phenol = make_phenol(subord)
 task = 'DM'
 n_time=750
