@@ -9,19 +9,16 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import deepdish as dd
-from ISC_settings import *
+from HMM_settings import *
 
-roidir = ISCpath+'Yeo_parcellation_'
-ISCdir = ISCpath+'shuff_Yeo_'
-figdir = figurepath+'up_down/'
+ISCdir = ISCpath+'shuff_Yeo_outlier_'
+figdir = figurepath+'up_down_outlier/'
 pvals = dd.io.load(pvals_file)
 
 task = 'DM'
-nsub = 40
 n_time = 750
 bins = np.arange(nbinseq)
 nbins = len(bins)
-seeds = pvals['seeddict'].keys()
 subh = [[[],[]]]
 subh[0][0] = np.concatenate((np.arange(0,minageeq[0]//2),
 						  minageeq[0]+np.arange(0,minageeq[1]//2)))
@@ -59,7 +56,6 @@ for roi in pvals['roidict'].keys():
 		ax.set_ylabel('ISC',fontsize=20)
 		plt.show()
 		fig.savefig(figdir+roi+'.png', bbox_inches="tight")
-		#fig.figure.savefig(figdir+roi_short+sig+'.eps')
 		
 		plt.rcParams.update({'font.size': 20})
 		fig,ax = plt.subplots(figsize=(2, 4))

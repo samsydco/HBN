@@ -13,7 +13,7 @@ import brainiak.eventseg.event
 import matplotlib.pyplot as plt
 from HMM_settings import *
 
-figdir = figurepath + 'HMM/Paper_ll/'
+figdir = figurepath + 'HMM/Paper_ll_outlier/'
 bins = np.arange(nbinseq)
 nbins = len(bins)
 lgd = [str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))+' y.o.' for b in bins]
@@ -71,7 +71,7 @@ for roi,seed in tqdm.tqdm(roi_short_list.items()):
 	for legobj in leg.legendHandles:
 		legobj.set_linewidth(10.0)
 	fig.tight_layout()
-	fig.savefig(figdir+roi+'.png', bbox_extra_artists=(legend,), bbox_inches='tight')
+	fig.savefig(figdir+roi+'.png', bbox_extra_artists=(leg,), bbox_inches='tight')
 	
 dd.io.save(figdir+'savedict.h5',savedict)
 			

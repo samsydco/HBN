@@ -14,7 +14,7 @@ import brainiak.eventseg.event
 import matplotlib.pyplot as plt
 from HMM_settings import *
 
-figdir = figurepath + 'HMM/Paper_auc/'
+figdir = figurepath + 'HMM/Paper_auc_outlier/'
 bins = np.arange(nbinseq)
 nbins = len(bins)
 xticks = [str(int(round(eqbins[b])))+' - '+str(int(round(eqbins[b+1])))+' y.o.' for b in bins]
