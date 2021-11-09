@@ -17,6 +17,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from settings import *
+from motion_check import outliers
 
 sites = ['Site-RU','Site-CBIC']
 SID = 343 # From staten Island (no movies)
@@ -80,6 +81,9 @@ for p in phenodata:
 # Females' 1.0 == True
 df['Total'] = df.isin([True]).sum(1).subtract(df['Sex']) 
 
+for o in outliers:
+	df.loc[df['sub'] == o.split('/')[-1][:-3],'goodbad']='badsubs'
+
 df.to_csv(metaphenopath+'allphenoaccnt.csv', index=False)
 
 df = pd.read_csv(metaphenopath+'allphenoaccnt.csv')
@@ -95,8 +99,7 @@ for key in ['goodsubs','badsubs']:
 	fig = gbhist.get_figure()
 	fig.savefig(figurepath+key+"_Pheno_hist.png")
 
-from ISC_settings import agel, eqbins
-med = np.median(agel)
+from HMM_settings import eqbins
 gooddf = df.loc[df['goodbad'] == 'goodsubs']
 import seaborn as sns
 plt.rcParams.update({'font.size': 15})
@@ -104,7 +107,6 @@ for i,s in enumerate(['Male','Female']):
 	goodhist = sns.distplot(gooddf.loc[gooddf['Sex'] == i]['Age'],bins=eqbins, kde=False,label=s)
 goodhist.legend()
 goodhist.set_ylabel("Count")
-#goodhist.axvline(x=med,color=[0.5,0.5,0.5],linestyle='--')
 plt.tight_layout()
 plt.show()
 goodhist.get_figure().savefig(figurepath+'FLUX_2020/Age_hist.png')
