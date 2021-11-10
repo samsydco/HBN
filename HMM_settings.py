@@ -4,7 +4,7 @@
 import os
 from ISC_settings import *
 from motion_check import outliers
-from event_comp import ev_conv
+from event_comp import ev_conv, Pro_ev_conv, child_ev_conv
 from sklearn.model_selection import KFold
 pd.options.mode.chained_assignment = None
 

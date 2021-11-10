@@ -4,6 +4,7 @@
 
 import numpy as np
 import pandas as pd
+from settings import *
 
 def get_boundaries(df,agedf):
 	PartIDs = np.array(df.loc[df['Screen Name'] == 'Desc_Me']['Participant Public ID'].value_counts()[df.loc[df['Screen Name'] == 'Desc_Me']['Participant Public ID'].value_counts()>1].index)
