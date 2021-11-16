@@ -102,3 +102,4 @@ if __name__ == "__main__":
 	plt.plot(xcorrx[idx],crosscorr[idx])
 	plt.xlabel('Time')
 	plt.ylabel('Correlation')
+	plt.show()
