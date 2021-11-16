@@ -5,7 +5,9 @@ import pandas as pd
 import deepdish as dd
 import matplotlib.pyplot as plt
 from settings import *
-from event_comp import ev_annot, ev_conv, child_ev_conv, Pro_ev_conv, nTR, TR, hrf, xcorr
+from event_comp import *
+
+ev_conv = Pro_ev_conv
 
 segpath = codedr + 'HBN_fmriprep_code/video_segmentation/'
 ev_figpath = figurepath+'event_annotations/'
@@ -111,9 +113,9 @@ colors_age = ['#FCC3A1','#F08B63','#D02941','#70215D','#311638']
 xticks = [str(int(round(eqbins[i])))+\
 	  ' - '+str(int(round(eqbins[i+1])))+' y.o.' for i in range(len(eqbins)-1)]
 xcorrx = np.concatenate([np.arange(-nTR+1,0)*TR,np.arange(nTR)*TR])
-nsub = 415
+nsub = nsubj
 nsplit = 20
-y = [0]*int(np.floor(nsub/nsplit))*(nsplit-1)+[1]*int(np.floor(nsub/nsplit)+15)
+y = [0]*int(np.floor(nsub/nsplit))*(nsplit-1)+[1]*int(np.floor(nsub/nsplit)+14)
 kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
 Dall = {}
 bumplagdict = {'Age':[],'Time lag [s]':[],'Subj':[],'Exact_Age':[]}
