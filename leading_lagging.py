@@ -5,7 +5,9 @@ from HMM_settings import *
 from scipy.stats import pearsonr
 import matplotlib.pyplot as plt
 
-lead_lag_file = 'Leading_lagging_outlier.h5'
+ev_conv = Pro_ev_conv
+
+lead_lag_file = 'Leading_lagging_outlier_Pro.h5'
 
 def lag_pearsonr(x, y, max_lags):
     """Compute lag correlation between x and y, up to max_lags
@@ -105,20 +107,20 @@ lagsdiff = {}
 psall = []
 ROIs = []
 for roi in ROIl:
-	if roidict[roi]['auc_diff']['q'] < 0.05:
-		ROIs.append(roi)
-		arrs = [np.array(lags[seed][roi]) for seed in seeds]
-		arr = np.ma.empty((2,np.max([i.shape[1] for i in arrs]),len(arrs)))
-		arr.mask = True
-		for idx, l in enumerate(arrs):
-			arr[:,:l.shape[1],idx] = l
-		lagsall[roi] = arr.mean(axis = -1)
-		lagsdiff[roi] = (lagsall[roi][1] - lagsall[roi][0])*TR
-		p = np.sum(abs(lagsdiff[roi][0])<abs(lagsdiff[roi][1:]))/len(lagsdiff[roi])
-		if p == 0:
-			psall.append(1/len(lagsdiff[roi]))
-		else:
-			psall.append(p)
+	#if roidict[roi]['auc_diff']['q'] < 0.05:
+	ROIs.append(roi)
+	arrs = [np.array(lags[seed][roi]) for seed in seeds]
+	arr = np.ma.empty((2,np.max([i.shape[1] for i in arrs]),len(arrs)))
+	arr.mask = True
+	for idx, l in enumerate(arrs):
+		arr[:,:l.shape[1],idx] = l
+	lagsall[roi] = arr.mean(axis = -1)
+	lagsdiff[roi] = (lagsall[roi][1] - lagsall[roi][0])*TR
+	p = np.sum(abs(lagsdiff[roi][0])<abs(lagsdiff[roi][1:]))/len(lagsdiff[roi])
+	if p == 0:
+		psall.append(1/len(lagsdiff[roi]))
+	else:
+		psall.append(p)
 			
 
 		

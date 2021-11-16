@@ -9,6 +9,9 @@ import brainiak.eventseg.event
 from scipy.fftpack import fft,ifft
 from scipy.stats import zscore, norm, pearsonr
 from HMM_settings import *
+
+ev_conv = Pro_ev_conv
+
 ev_conv_perm = ev_conv[1:]
 
 task='DM'
@@ -16,7 +19,7 @@ nTR=750
 nbins = len(bins)
 nROI = len(ROIl)
 xcorrx = np.concatenate([np.arange(-nTR+2,0)*TR,np.arange(nTR-1)*TR])
-savefile = HMMpath+'HMM_vs_hand_outlier_'
+savefile = HMMpath+'HMM_vs_hand_outlier_Pro_'
 
 dE_k = {key:{key:[] for key in bins} for key in ROIl}
 dE_k_corr = np.zeros((nROI,nbins))
