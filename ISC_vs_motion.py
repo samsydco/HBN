@@ -50,7 +50,7 @@ for roi in tqdm.tqdm(ROIl):
 	FDvsISC[roi]['FD'] = np.median(FD,axis=1)
 	FDvsISC[roi]['ISC'] = ISC
 	
-dd.io.save(ISCpath+'ISC_vs_motion.h5',FDvsISC)
+dd.io.save(ISCpath+'ISC_vs_motion_outlier.h5',FDvsISC)
 
 p_vals = []	
 for roi in ROIl:
