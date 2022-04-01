@@ -4,15 +4,26 @@
 
 import numpy as np
 import pandas as pd
-from settings import *
+import glob
+#from settings import *
 
 def get_boundaries(df,agedf):
 	PartIDs = np.array(df.loc[df['Screen Name'] == 'Desc_Me']['Participant Public ID'].value_counts()[df.loc[df['Screen Name'] == 'Desc_Me']['Participant Public ID'].value_counts()>1].index)
 	df=df[df['Participant Public ID'].isin(PartIDs)]
 	agedf = agedf[agedf['Participant Public ID'].isin(PartIDs)]
-	boundaries = pd.to_numeric(df.loc[df['Screen Name'] == 'Desc_Me']['Reaction Time']).values
-	spike_boundaries = np.round(boundaries/1000/TR,0).astype(int)
-	counts = np.append(np.bincount(spike_boundaries)[:-2],np.bincount(spike_boundaries)[-1])
+
+    # Only use button pushes, not other lines like the end-of-movie log line
+	row_mask = boundaries = (df['Screen Name'] == 'Desc_Me')&(df['Zone Type']=='response_keyboard_single')
+	boundaries = pd.to_numeric(df.loc[row_mask]['Reaction Time']).values
+	row_ids = df['Participant Public ID'][row_mask]
+
+    # Bin to TRs first, then aggregate
+    # This limits each participant to one button push per TR
+	spike_boundaries = np.zeros(0, dtype=int)
+	for p in PartIDs:
+		spike_boundaries = np.append(spike_boundaries, np.unique(np.round(boundaries[row_ids == p]/1000/TR,0).astype(int)))
+
+	counts = np.bincount(spike_boundaries)
 	ev_conv = np.convolve(counts,hrf)[:nTR]
 	# Subject ages:
 	Ages = []
@@ -29,8 +40,8 @@ def xcorr(a,b):
 	c = np.correlate(a, b, 'full')/max(len(a),len(b))
 	return c
 
-segpath = codedr + 'HBN_fmriprep_code/video_segmentation/'
-ev_figpath = figurepath+'event_annotations/'
+segpath = 'video_segmentation/' #codedr + 'HBN_fmriprep_code/video_segmentation/'
+#ev_figpath = figurepath+'event_annotations/'
 
 nTR = 750
 TR = 0.8
@@ -74,8 +85,8 @@ Pro_spike_boundaries,Pro_ev_conv,Pro_Ages,Pro_df,Pro_agedf = get_boundaries(Prol
 
 df4 = pd.read_csv('data_exp_61650-v4/data_exp_61650-v4_task-yi9p.csv')
 agedf4 = pd.read_csv('data_exp_61650-v4/data_exp_61650-v4_questionnaire-pokv.csv')
-df7 = pd.read_csv('data_exp_v7/data_exp_61650-v7_task-bycw.csv')
-agedf7 = pd.read_csv('data_exp_v7/data_exp_61650-v7_questionnaire-vwly.csv')
+df7 = pd.read_csv('data_exp_61650-v7/data_exp_61650-v7_task-bycw.csv')
+agedf7 = pd.read_csv('data_exp_61650-v7/data_exp_61650-v7_questionnaire-vwly.csv')
 df = pd.concat([df4, df7])
 agedf = pd.concat([agedf4, agedf7])
 child_spike_boundaries,child_ev_conv,child_Ages,child_df,child_agedf = get_boundaries(df,agedf)
@@ -88,18 +99,21 @@ lag = time[idx[np.argmax(crosscorr[idx])]]
 
 if __name__ == "__main__":
 	import matplotlib.pyplot as plt
-	fig, (raw_ev_annot) = plt.subplots(figsize=(60, 20))
+	fig, (raw_ev_annot) = plt.subplots(figsize=(6,2)) #(60, 20))
 	a = raw_ev_annot.hist(ev_annot, bins=nTR, linewidth=20,color='b')
 	b = raw_ev_annot.hist(child_spike_boundaries, bins=nTR, linewidth=20,color='r')
 	c = raw_ev_annot.hist(Pro_spike_boundaries, bins=nTR, linewidth=20,color='g')
+	raw_ev_annot.legend(['Orig', 'Prolific_Child', 'Prolific_adult'])
 
 
-	fig, (hrf_ann) = plt.subplots(figsize=(60, 20))
+	fig, (hrf_ann) = plt.subplots(figsize=(6,2)) #(60, 20))
 	hrf_ann.plot(np.arange(nTR), ev_conv, linewidth=5,color='b')
 	hrf_ann.plot(np.arange(nTR), child_ev_conv, linewidth=5,color='r')
 	hrf_ann.plot(np.arange(nTR), Pro_ev_conv, linewidth=5,color='g')
+	hrf_ann.legend(['Orig', 'Prolific_Child', 'Prolific_adult'])
 
-	plt.plot(xcorrx[idx],crosscorr[idx])
-	plt.xlabel('Time')
-	plt.ylabel('Correlation')
+	#plt.plot(xcorrx[idx],crosscorr[idx])
+	#plt.xlabel('Time')
+	#plt.ylabel('Correlation')
+
 	plt.show()
