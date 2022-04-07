@@ -2,46 +2,11 @@
 
 import tqdm
 from HMM_settings import *
-from scipy.stats import pearsonr
 import matplotlib.pyplot as plt
 
 ev_conv = Pro_ev_conv
 
 lead_lag_file = 'Leading_lagging_outlier_Pro_allq.h5'
-
-def lag_pearsonr(x, y, max_lags):
-    """Compute lag correlation between x and y, up to max_lags
-    Parameters
-    ----------
-    x : ndarray
-        First array of values
-    y : ndarray
-        Second array of values
-    max_lags: int
-        Largest lag (must be less than half the length of shortest array)
-    Returns
-    -------
-    ndarray
-        Array of 1 + 2*max_lags lag correlations, for x left shifted by
-        max_lags to x right shifted by max_lags
-    """
-
-    assert max_lags < min(len(x), len(y)) / 2, \
-        "max_lags exceeds half the length of shortest array"
-
-    assert len(x) == len(y), "array lengths are not equal"
-
-    lag_corrs = np.full(1 + (max_lags * 2), np.nan)
-
-    for i in range(max_lags + 1):
-
-        # add correlations where x is shifted to the right
-        lag_corrs[max_lags + i] = pearsonr(x[:len(x) - i], y[i:len(y)])[0]
-
-        # add correlations where x is shifted to the left
-        lag_corrs[max_lags - i] = pearsonr(x[i:len(x)], y[:len(y) - i])[0]
-
-    return lag_corrs
 
 def nearest_peak(v):
 	"""Estimates location of local maximum nearest the origin

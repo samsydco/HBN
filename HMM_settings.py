@@ -6,6 +6,7 @@ from ISC_settings import *
 from motion_check import outliers
 from event_comp import ev_conv, Pro_ev_conv, child_ev_conv
 from sklearn.model_selection import KFold
+from scipy.stats import pearsonr
 pd.options.mode.chained_assignment = None
 
 subord2 = [s for s in subord if s not in outliers]
@@ -73,6 +74,39 @@ def FDR_p(pvals):
 
     return qvals
 
+def lag_pearsonr(x, y, max_lags):
+    """Compute lag correlation between x and y, up to max_lags
+    Parameters
+    ----------
+    x : ndarray
+        First array of values
+    y : ndarray
+        Second array of values
+    max_lags: int
+        Largest lag (must be less than half the length of shortest array)
+    Returns
+    -------
+    ndarray
+        Array of 1 + 2*max_lags lag correlations, for x left shifted by
+        max_lags to x right shifted by max_lags
+    """
+
+    assert max_lags < min(len(x), len(y)) / 2, \
+        "max_lags exceeds half the length of shortest array"
+
+    assert len(x) == len(y), "array lengths are not equal"
+
+    lag_corrs = np.full(1 + (max_lags * 2), np.nan)
+
+    for i in range(max_lags + 1):
+
+        # add correlations where x is shifted to the right
+        lag_corrs[max_lags + i] = pearsonr(x[:len(x) - i], y[i:len(y)])[0]
+
+        # add correlations where x is shifted to the left
+        lag_corrs[max_lags - i] = pearsonr(x[i:len(x)], y[:len(y) - i])[0]
+
+    return lag_corrs
 
 if os.path.exists(llcsv):
 	df = pd.read_csv(llcsv, index_col=0)
