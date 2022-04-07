@@ -6,17 +6,16 @@ import deepdish as dd
 import matplotlib.pyplot as plt
 from settings import *
 from event_comp import *
+from HMM_settings import lag_pearsonr
 
-ev_conv = Pro_ev_conv
+ev_conv = child_ev_conv
 
-segpath = codedr + 'HBN_fmriprep_code/video_segmentation/'
 ev_figpath = figurepath+'event_annotations/'
 	
 # Tally of annotations at each time point
 time = np.arange(0,nTR)
 fig, (raw_ev_annot) = plt.subplots(figsize=(60, 20))
 raw_ev_annot.hist(ev_annot, bins=nTR, linewidth=20,color='k')
-
 yticks = list(np.arange(0, max(counts)+1, 2))
 raw_ev_annot.spines['right'].set_color('none')
 raw_ev_annot.spines['top'].set_color('none')
@@ -112,11 +111,9 @@ from sklearn.model_selection import KFold
 colors_age = ['#FCC3A1','#F08B63','#D02941','#70215D','#311638']
 xticks = [str(int(round(eqbins[i])))+\
 	  ' - '+str(int(round(eqbins[i+1])))+' y.o.' for i in range(len(eqbins)-1)]
-xcorrx = np.concatenate([np.arange(-nTR+1,0)*TR,np.arange(nTR)*TR])
+maxlag = 10
+xcorrx = np.concatenate([np.arange(-maxlag,0)*TR,np.arange(maxlag+1)*TR])
 nsub = nsubj
-nsplit = 20
-y = [0]*int(np.floor(nsub/nsplit))*(nsplit-1)+[1]*int(np.floor(nsub/nsplit)+14)
-kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
 Dall = {}
 bumplagdict = {'Age':[],'Time lag [s]':[],'Subj':[],'Exact_Age':[]}
 for HPC in ['HPC','aHPC','pHPC']:
@@ -130,23 +127,20 @@ for b in range(nbinseq):
 		bumplagdict['Age'].extend([xticks[b]]*len(xcorrx))
 		bumplagdict['Exact_Age'].extend([Phenodf['Age'][Phenodf['EID'] == subj.split('/')[-1].split('.')[0].split('-')[1]].values[0]]*len(xcorrx))
 		for HPC in ['HPC','aHPC','pHPC']:
-			bumplagdict['correlation_'+HPC].extend(xcorr(Dall[HPC][b][subj],ev_conv))
+			bumplagdict['correlation_'+HPC].extend(lag_pearsonr(Dall[HPC][b][subj],ev_conv,maxlag))
 		bumplagdict['Time lag [s]'].extend(xcorrx)
 dfbumplag = pd.DataFrame(data=bumplagdict)
-dfbumplag = dfbumplag[abs(dfbumplag['Time lag [s]'])<20]
 
 # Which time points post-0 are significantly different from zero?
-dfpost = dfbumplag[dfbumplag['Time lag [s]']>=0]
-dfpost=dfbumplag
-times = dfpost['Time lag [s]'].unique()#[1:]
+times = dfbumplag['Time lag [s]'].unique()
 tvals = np.zeros(len(times))
 pvals = np.zeros(len(times))
 for ti,tp in enumerate(times):
-	tvals[ti],pvals[ti] = stats.ttest_1samp(dfpost[dfpost['Time lag [s]']==tp]['correlation_HPC'],0)
+	tvals[ti],pvals[ti] = stats.ttest_1samp(dfbumplag[dfbumplag['Time lag [s]']==tp]['correlation_HPC'],0)
 pvals = pvals*len(pvals) # Bonferroni correction
 best_t_i = times[np.argmin(pvals)]
 best_t = 0 # Set from whole HPC
-tempdf = dfpost[dfpost['Time lag [s]']==best_t]
+tempdf = dfbumplag[dfbumplag['Time lag [s]']==best_t]
 t2 = np.zeros((3,len(xticks)))
 p2 = np.zeros((3,len(xticks)))
 for hi,HPC in enumerate(['HPC','aHPC','pHPC']):
@@ -155,6 +149,9 @@ for hi,HPC in enumerate(['HPC','aHPC','pHPC']):
 tempsize = tempdf.merge(sizedf, on='Subj')
 # test for linear vs polynomial fit of Age vs event_correlation:
 # both line and U fit equally well!
+nsplit = 20
+y = [0]*int(np.floor(nsub/nsplit))*(nsplit-1)+[1]*int(np.floor(nsub/nsplit)+14)
+kf = KFold(n_splits=nsplit, shuffle=True, random_state=2)
 for HPC in ['HPC','aHPC','pHPC']:
 	sse = np.zeros((2,nsplit))
 	for degi,deg in enumerate([1,2]):
