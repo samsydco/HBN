@@ -5,17 +5,30 @@
 import numpy as np
 import pandas as pd
 import glob
-#from settings import *
+from ISC_settings import eqbins
 
-def get_boundaries(df,agedf):
+def get_boundaries(df,agedf,age_range):
 	PartIDs = np.array(df.loc[df['Screen Name'] == 'Desc_Me']['Participant Public ID'].value_counts()[df.loc[df['Screen Name'] == 'Desc_Me']['Participant Public ID'].value_counts()>1].index)
-	df=df[df['Participant Public ID'].isin(PartIDs)]
-	agedf = agedf[agedf['Participant Public ID'].isin(PartIDs)]
-
+	
     # Only use button pushes, not other lines like the end-of-movie log line
 	row_mask = boundaries = (df['Screen Name'] == 'Desc_Me')&(df['Zone Type']=='response_keyboard_single')
 	boundaries = pd.to_numeric(df.loc[row_mask]['Reaction Time']).values
 	row_ids = df['Participant Public ID'][row_mask]
+	
+	# Eliminate subjects who click boundaries very rapidly
+	# May indicate Bot or didn't understand task
+	# Eliminate subjects who are outside of age_range
+	Bad_PartIDs = []
+	for p in PartIDs:
+		subdf = agedf[agedf['Participant Public ID'].isin([p])]
+		Age = pd.to_numeric(subdf[subdf['Question Key']=='age-year']['Response'].values)[0] + pd.to_numeric(subdf[subdf['Question Key']=='age-month']['Response'].values)[0] / 12
+		if np.median(np.diff(boundaries[row_ids == p])/1000)<1 or \
+		Age < age_range[0] or Age > age_range[1]:
+			Bad_PartIDs.append(p)
+	PartIDs = PartIDs[np.invert(np.in1d(PartIDs, Bad_PartIDs))]
+	
+	df=df[df['Participant Public ID'].isin(PartIDs)]
+	agedf = agedf[agedf['Participant Public ID'].isin(PartIDs)]
 
     # Bin to TRs first, then aggregate
     # This limits each participant to one button push per TR
@@ -27,21 +40,15 @@ def get_boundaries(df,agedf):
 	ev_conv = np.convolve(counts,hrf)[:nTR]
 	# Subject ages:
 	Ages = []
+	Agedict = {}
 	for sub in PartIDs:
 		subdf = agedf[agedf['Participant Public ID'].isin([sub])]
-		Ages.append(pd.to_numeric(subdf[subdf['Question Key']=='age-year']['Response'].values)[0] + pd.to_numeric(subdf[subdf['Question Key']=='age-month']['Response'].values)[0] / 12)
-	return spike_boundaries,ev_conv,Ages,df,agedf
+		age = pd.to_numeric(subdf[subdf['Question Key']=='age-year']['Response'].values)[0] + pd.to_numeric(subdf[subdf['Question Key']=='age-month']['Response'].values)[0] / 12
+		Ages.append(age)
+		Agedict[sub] = age
+	return spike_boundaries,ev_conv,Ages,df,agedf,Agedict
 
-def xcorr(a,b):
-	# This helped convince me I'm doing the right thing:
-	# https://currents.soest.hawaii.edu/ocn_data_analysis/_static/SEM_EDOF.html
-	a = (a - np.mean(a)) / (np.std(a))
-	b = (b - np.mean(b)) / (np.std(b))
-	c = np.correlate(a, b, 'full')/max(len(a),len(b))
-	return c
-
-segpath = 'video_segmentation/' #codedr + 'HBN_fmriprep_code/video_segmentation/'
-#ev_figpath = figurepath+'event_annotations/'
+segpath = 'video_segmentation/'
 
 nTR = 750
 TR = 0.8
@@ -81,7 +88,7 @@ ev_conv = np.convolve(counts,hrf)[:nTR]
 
 Prolificdf = pd.read_csv('data_exp_68194-v4/data_exp_68194-v4_task-1t2b.csv')
 Prolificagedf = pd.read_csv('data_exp_68194-v4/data_exp_68194-v4_questionnaire-xtqr.csv')
-Pro_spike_boundaries,Pro_ev_conv,Pro_Ages,Pro_df,Pro_agedf = get_boundaries(Prolificdf,Prolificagedf)
+Pro_spike_boundaries,Pro_ev_conv,Pro_Ages,Pro_df,Pro_agedf,Pro_agedict = get_boundaries(Prolificdf,Prolificagedf,[eqbins[-1],200])
 
 df4 = pd.read_csv('data_exp_61650-v4/data_exp_61650-v4_task-yi9p.csv')
 agedf4 = pd.read_csv('data_exp_61650-v4/data_exp_61650-v4_questionnaire-pokv.csv')
@@ -89,31 +96,21 @@ df7 = pd.read_csv('data_exp_61650-v7/data_exp_61650-v7_task-bycw.csv')
 agedf7 = pd.read_csv('data_exp_61650-v7/data_exp_61650-v7_questionnaire-vwly.csv')
 df = pd.concat([df4, df7])
 agedf = pd.concat([agedf4, agedf7])
-child_spike_boundaries,child_ev_conv,child_Ages,child_df,child_agedf = get_boundaries(df,agedf)
-
-# cross correlation between old-adults ratings and Prolific-adult ratings:
-time = np.concatenate([np.arange(-nTR+1,0)*TR,np.arange(nTR)*TR])
-idx = np.where(abs(time)<5)[0]
-crosscorr = xcorr(ev_conv,Pro_ev_conv)
-lag = time[idx[np.argmax(crosscorr[idx])]]
+child_spike_boundaries,child_ev_conv,child_Ages,child_df,child_agedf,child_agedict = get_boundaries(df,agedf,[eqbins[0],eqbins[-1]])
 
 if __name__ == "__main__":
 	import matplotlib.pyplot as plt
-	fig, (raw_ev_annot) = plt.subplots(figsize=(6,2)) #(60, 20))
+	fig, (raw_ev_annot) = plt.subplots(figsize=(6,2))
 	a = raw_ev_annot.hist(ev_annot, bins=nTR, linewidth=20,color='b')
 	b = raw_ev_annot.hist(child_spike_boundaries, bins=nTR, linewidth=20,color='r')
 	c = raw_ev_annot.hist(Pro_spike_boundaries, bins=nTR, linewidth=20,color='g')
 	raw_ev_annot.legend(['Orig', 'Prolific_Child', 'Prolific_adult'])
 
 
-	fig, (hrf_ann) = plt.subplots(figsize=(6,2)) #(60, 20))
+	fig, (hrf_ann) = plt.subplots(figsize=(6,2))
 	hrf_ann.plot(np.arange(nTR), ev_conv, linewidth=5,color='b')
 	hrf_ann.plot(np.arange(nTR), child_ev_conv, linewidth=5,color='r')
 	hrf_ann.plot(np.arange(nTR), Pro_ev_conv, linewidth=5,color='g')
 	hrf_ann.legend(['Orig', 'Prolific_Child', 'Prolific_adult'])
-
-	#plt.plot(xcorrx[idx],crosscorr[idx])
-	#plt.xlabel('Time')
-	#plt.ylabel('Correlation')
 
 	plt.show()
