@@ -224,9 +224,7 @@ for HPC in ['HPC','aHPC','pHPC']:
 	# plot timecourse of xcorr
 	fig,ax = plt.subplots(1,1,figsize=(10,12))
 	g = sns.lineplot(x='Time lag [s]', y='correlation_'+HPC, hue='Age', ax=ax, data=dfbumplag, ci=95,linewidth = 5)
-	#ax.plot(times[pvals<0.05],[0.090]*len(times[pvals<0.05]),'k*',markersize=15)
-	ax.set_xlim([-10,10])
-	#ax.set_xticks([-20,-10,-5,0,5,10,20])
+	#ax.set_xlim([-10,10])
 	ax.set_xlabel('Time (seconds)')
 	ax.set_ylabel('Hippocampus-to-event\ncorrelation')
 	leg = ax.legend(loc='center', bbox_to_anchor=(0.5, -0.5))
