@@ -4,7 +4,7 @@ import tqdm
 from HMM_settings import *
 import matplotlib.pyplot as plt
 
-ev_conv = Pro_ev_conv
+ev_conv = child_ev_conv
 
 lead_lag_file = 'Leading_lagging_outlier_Pro_allq.h5'
 
@@ -47,7 +47,6 @@ def nearest_peak(v):
 bins = [0,4]
 nTR = 750
 max_lag = 25
-#xcorrx = np.concatenate([np.arange(-nTR+2,0)*TR,np.arange(nTR-1)*TR])#[725:775]
 
 lags = {k:{k:[] for k in ROIl} for k in seeds}
 ps   = {k:{k:[] for k in ROIl} for k in seeds}
