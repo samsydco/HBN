@@ -48,8 +48,6 @@ def get_boundaries(df,agedf,age_range):
 		Agedict[sub] = age
 	return spike_boundaries,ev_conv,Ages,df,agedf,Agedict
 
-segpath = 'video_segmentation/'
-
 nTR = 750
 TR = 0.8
 
@@ -60,7 +58,7 @@ q = 0.547
 hrf = np.power(dt / (p * q), p) * np.exp(p - dt / q)
 
 eventdict = {key:{} for key in ['timing','annotation']}
-for csv in glob.glob(segpath+'*csv'):
+for csv in glob.glob('video_segmentation/*csv'):
 	initials = csv.split('/')[-1].split('-')[0]
 	df = pd.read_csv(csv)
 	if not any('TR' in c for c in df.columns):
@@ -97,6 +95,17 @@ agedf7 = pd.read_csv('data_exp_61650-v7/data_exp_61650-v7_questionnaire-vwly.csv
 df = pd.concat([df4, df7])
 agedf = pd.concat([agedf4, agedf7])
 child_spike_boundaries,child_ev_conv,child_Ages,child_df,child_agedf,child_agedict = get_boundaries(df,agedf,[eqbins[0],eqbins[-1]])
+
+# Median split of children data to compare "Young" vs "Old" event timing:
+median_age = np.median(child_Ages)
+old_subjs = {k: v for k, v in child_agedict.items() if v > median_age}
+young_subjs = {k: v for k, v in child_agedict.items() if v < median_age}
+old_df      = child_df.loc   [child_df   ['Participant Public ID'].isin(old_subjs.keys())]
+old_agedf   = child_agedf.loc[child_agedf['Participant Public ID'].isin(old_subjs.keys())]
+young_df    = child_df.loc   [child_df   ['Participant Public ID'].isin(young_subjs.keys())]
+young_agedf = child_agedf.loc[child_agedf['Participant Public ID'].isin(young_subjs.keys())]
+old_child_spike_boundaries,old_child_ev_conv,old_child_Ages,old_child_df,old_child_agedf,old_child_agedict = get_boundaries(old_df,old_agedf,[eqbins[0],eqbins[-1]])
+young_child_spike_boundaries,young_child_ev_conv,young_child_Ages,young_child_df,young_child_agedf,young_child_agedict = get_boundaries(young_df,young_agedf,[eqbins[0],eqbins[-1]])
 
 if __name__ == "__main__":
 	import matplotlib.pyplot as plt
