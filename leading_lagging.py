@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 ev_conv = child_ev_conv
 
-lead_lag_file = 'Leading_lagging_outlier_Pro_allq.h5'
+lead_lag_file = 'Leading_lagging_children.h5'
 
 def nearest_peak(v):
 	"""Estimates location of local maximum nearest the origin
