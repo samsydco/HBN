@@ -40,13 +40,17 @@ def get_boundaries(df,agedf,age_range):
 	ev_conv = np.convolve(counts,hrf)[:nTR]
 	# Subject ages:
 	Ages = []
+	Genders = []
 	Agedict = {}
 	for sub in PartIDs:
 		subdf = agedf[agedf['Participant Public ID'].isin([sub])]
 		age = pd.to_numeric(subdf[subdf['Question Key']=='age-year']['Response'].values)[0] + pd.to_numeric(subdf[subdf['Question Key']=='age-month']['Response'].values)[0] / 12
+		gender = subdf[subdf['Question Key']=='gender']['Response'].values[0]
 		Ages.append(age)
+		Genders.append(gender)
 		Agedict[sub] = age
-	return spike_boundaries,ev_conv,Ages,df,agedf,Agedict
+	
+	return spike_boundaries,ev_conv,Ages,df,agedf,Agedict,Genders
 
 nTR = 750
 TR = 0.8
@@ -86,7 +90,7 @@ ev_conv = np.convolve(counts,hrf)[:nTR]
 
 Prolificdf = pd.read_csv('data_exp_68194-v4/data_exp_68194-v4_task-1t2b.csv')
 Prolificagedf = pd.read_csv('data_exp_68194-v4/data_exp_68194-v4_questionnaire-xtqr.csv')
-Pro_spike_boundaries,Pro_ev_conv,Pro_Ages,Pro_df,Pro_agedf,Pro_agedict = get_boundaries(Prolificdf,Prolificagedf,[eqbins[-1],200])
+Pro_spike_boundaries,Pro_ev_conv,Pro_Ages,Pro_df,Pro_agedf,Pro_agedict,Pro_gender = get_boundaries(Prolificdf,Prolificagedf,[eqbins[-1],200])
 
 df4 = pd.read_csv('data_exp_61650-v4/data_exp_61650-v4_task-yi9p.csv')
 agedf4 = pd.read_csv('data_exp_61650-v4/data_exp_61650-v4_questionnaire-pokv.csv')
@@ -94,7 +98,7 @@ df7 = pd.read_csv('data_exp_61650-v7/data_exp_61650-v7_task-bycw.csv')
 agedf7 = pd.read_csv('data_exp_61650-v7/data_exp_61650-v7_questionnaire-vwly.csv')
 df = pd.concat([df4, df7])
 agedf = pd.concat([agedf4, agedf7])
-child_spike_boundaries,child_ev_conv,child_Ages,child_df,child_agedf,child_agedict = get_boundaries(df,agedf,[eqbins[0],eqbins[-1]])
+child_spike_boundaries,child_ev_conv,child_Ages,child_df,child_agedf,child_agedict,child_gender = get_boundaries(df,agedf,[eqbins[0],eqbins[-1]])
 
 # Median split of children data to compare "Young" vs "Old" event timing:
 median_age = np.median(child_Ages)
@@ -106,6 +110,7 @@ young_df    = child_df.loc   [child_df   ['Participant Public ID'].isin(young_su
 young_agedf = child_agedf.loc[child_agedf['Participant Public ID'].isin(young_subjs.keys())]
 old_child_spike_boundaries,old_child_ev_conv,old_child_Ages,old_child_df,old_child_agedf,old_child_agedict = get_boundaries(old_df,old_agedf,[eqbins[0],eqbins[-1]])
 young_child_spike_boundaries,young_child_ev_conv,young_child_Ages,young_child_df,young_child_agedf,young_child_agedict = get_boundaries(young_df,young_agedf,[eqbins[0],eqbins[-1]])
+num_F = test=['F' in g.upper() or 'G' in g.upper() for g in child_gender]
 
 if __name__ == "__main__":
 	import matplotlib.pyplot as plt
