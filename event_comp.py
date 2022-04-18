@@ -91,6 +91,9 @@ ev_conv = np.convolve(counts,hrf)[:nTR]
 Prolificdf = pd.read_csv('data_exp_68194-v4/data_exp_68194-v4_task-1t2b.csv')
 Prolificagedf = pd.read_csv('data_exp_68194-v4/data_exp_68194-v4_questionnaire-xtqr.csv')
 Pro_spike_boundaries,Pro_ev_conv,Pro_Ages,Pro_df,Pro_agedf,Pro_agedict,Pro_gender = get_boundaries(Prolificdf,Prolificagedf,[eqbins[-1],200])
+# 14 F, 2 non-binary, 9 M
+num_F_ = ['F' in g.upper() for g in Pro_gender]
+num_B_ = ['B' in g.upper() for g in Pro_gender]
 
 df4 = pd.read_csv('data_exp_61650-v4/data_exp_61650-v4_task-yi9p.csv')
 agedf4 = pd.read_csv('data_exp_61650-v4/data_exp_61650-v4_questionnaire-pokv.csv')
@@ -99,6 +102,9 @@ agedf7 = pd.read_csv('data_exp_61650-v7/data_exp_61650-v7_questionnaire-vwly.csv
 df = pd.concat([df4, df7])
 agedf = pd.concat([agedf4, agedf7])
 child_spike_boundaries,child_ev_conv,child_Ages,child_df,child_agedf,child_agedict,child_gender = get_boundaries(df,agedf,[eqbins[0],eqbins[-1]])
+# 22 F, 5 non-report, 39 M
+num_F = ['F' in g.upper() or 'G' in g.upper() for g in child_gender]
+num_Q = ['F' not in g.upper() and 'G' not in g.upper() and 'M' not in g.upper() for g in child_gender]
 
 # Median split of children data to compare "Young" vs "Old" event timing:
 median_age = np.median(child_Ages)
@@ -108,9 +114,8 @@ old_df      = child_df.loc   [child_df   ['Participant Public ID'].isin(old_subj
 old_agedf   = child_agedf.loc[child_agedf['Participant Public ID'].isin(old_subjs.keys())]
 young_df    = child_df.loc   [child_df   ['Participant Public ID'].isin(young_subjs.keys())]
 young_agedf = child_agedf.loc[child_agedf['Participant Public ID'].isin(young_subjs.keys())]
-old_child_spike_boundaries,old_child_ev_conv,old_child_Ages,old_child_df,old_child_agedf,old_child_agedict = get_boundaries(old_df,old_agedf,[eqbins[0],eqbins[-1]])
-young_child_spike_boundaries,young_child_ev_conv,young_child_Ages,young_child_df,young_child_agedf,young_child_agedict = get_boundaries(young_df,young_agedf,[eqbins[0],eqbins[-1]])
-num_F = test=['F' in g.upper() or 'G' in g.upper() for g in child_gender]
+old_child_spike_boundaries,old_child_ev_conv,old_child_Ages,old_child_df,old_child_agedf,old_child_agedict,old_gender = get_boundaries(old_df,old_agedf,[eqbins[0],eqbins[-1]])
+young_child_spike_boundaries,young_child_ev_conv,young_child_Ages,young_child_df,young_child_agedf,young_child_agedict,young_gender = get_boundaries(young_df,young_agedf,[eqbins[0],eqbins[-1]])
 
 if __name__ == "__main__":
 	import matplotlib.pyplot as plt
