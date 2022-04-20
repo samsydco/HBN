@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import glob
 from ISC_settings import eqbins
+from scipy.stats import pearsonr
 
 def get_boundaries(df,agedf,age_range):
 	PartIDs = np.array(df.loc[df['Screen Name'] == 'Desc_Me']['Participant Public ID'].value_counts()[df.loc[df['Screen Name'] == 'Desc_Me']['Participant Public ID'].value_counts()>1].index)
@@ -184,31 +185,28 @@ corr_o_p = all_corr_up[0:nsubj,nsubj:nsubj+len(Pro_Ages)].flatten()
 corr_o_c = all_corr_up[0:nsubj,nsubj+len(Pro_Ages):-1].flatten()
 corr_p_c = all_corr_up[nsubj:nsubj+len(Pro_Ages),nsubj+len(Pro_Ages):-1].flatten()
 
-import tqdm
-nshuffle = 10000
-corr_list = ['ori','pro','chi','o_p','o_c','p_c']
-corr_lab = ['ori']*len(corr_orig) + \
-		   ['pro']*len(corr_pro) + \
-		   ['chi']*len(corr_chi) + \
-		   ['o_p']*len(corr_o_p) + \
-		   ['o_c']*len(corr_o_c) + \
-		   ['p_c']*len(corr_p_c)
-corr_all = np.concatenate([corr_orig,corr_pro,corr_chi,corr_o_p,corr_o_c,corr_p_c])
-corr_dict = {k:np.zeros(nshuffle+1) for k in corr_list}
-for shuff in tqdm.tqdm(range(nshuffle+1)):
-	for corr in corr_list:
-		idx = [i for i,v in enumerate(corr_lab) if v==corr]
-		corr_dict[corr][shuff] = np.mean(corr_all[idx])
-	np.random.shuffle(corr_lab)
-p_dict = {k:[] for k in corr_list}
-for corr in corr_list:
-	p_dict[corr] = np.sum(corr_dict[corr][0]<corr_dict[corr][1:])/nshuffle
-	
-	
-
-
-
 if __name__ == "__main__":
+	
+	import tqdm
+	nshuffle = 10000
+	corr_list = ['ori','pro','chi','o_p','o_c','p_c']
+	corr_lab = ['ori']*len(corr_orig) + \
+			   ['pro']*len(corr_pro) + \
+			   ['chi']*len(corr_chi) + \
+			   ['o_p']*len(corr_o_p) + \
+			   ['o_c']*len(corr_o_c) + \
+			   ['p_c']*len(corr_p_c)
+	corr_all = np.concatenate([corr_orig,corr_pro,corr_chi,corr_o_p,corr_o_c,corr_p_c])
+	corr_dict = {k:np.zeros(nshuffle+1) for k in corr_list}
+	for shuff in tqdm.tqdm(range(nshuffle+1)):
+		for corr in corr_list:
+			idx = [i for i,v in enumerate(corr_lab) if v==corr]
+			corr_dict[corr][shuff] = np.mean(corr_all[idx])
+		np.random.shuffle(corr_lab)
+	p_dict = {k:[] for k in corr_list}
+	for corr in corr_list:
+		p_dict[corr] = np.sum(corr_dict[corr][0]<corr_dict[corr][1:])/nshuffle
+	
 	import matplotlib.pyplot as plt
 	colors_age = ['#FCC3A1','#F08B63','#D02941','#70215D','#311638']
 
