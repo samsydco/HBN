@@ -172,6 +172,10 @@ orig_bounds = calc_indi_bounds(eventdict['timing'])
 orig_df = pd.DataFrame(orig_bounds)
 pro_df = pd.DataFrame(Pro_e_timing)
 child_df = pd.DataFrame(child_e_timing)
+old_df = pd.DataFrame(old_e_timing)
+young_df = pd.DataFrame(young_e_timing)
+df_dict = {'ori':orig_df,'pro':pro_df,'chi':child_df,'old':old_df,'you':young_df}
+
 df_all = pd.concat([orig_df, pro_df, child_df],axis=1)
 all_corr = np.array(df_all.corr())
 all_corr_up = np.triu(all_corr,1)
@@ -186,6 +190,40 @@ corr_o_c = all_corr_up[0:nsubj,nsubj+len(Pro_Ages):-1].flatten()
 corr_p_c = all_corr_up[nsubj:nsubj+len(Pro_Ages),nsubj+len(Pro_Ages):-1].flatten()
 
 if __name__ == "__main__":
+	
+	# Split-half between-group ISC
+	# Pro-Young, Pro-Old, Young-Old, Orig-Pro, Orig-Kid
+	import tqdm
+	import itertools
+	from ISC_settings import even_out,ISC_w_calc
+	pairs = list(itertools.combinations(df_dict.keys(), 2))
+	ISC_w = {k:np.zeros(nshuffle+1,2) for k in pairs}
+	ISC_g = {k:np.zeros(nshuffle+1) for k in pairs}
+	for p in pairs:
+		ISC_g_time = np.zeros((nshuffle+1,1,nTR))
+		ng1 = len(df_dict[p[0]].columns)
+		ng2 = len(df_dict[p[1]].columns)
+		n = np.min([ng1,ng2])
+		if n%2 == 1: n -= 1
+		for split in range(5):
+			np.random.seed(split)
+			df1 = np.array(df_dict[p[0]][np.random.choice(list(df_dict[p[0]].columns),n,replace=False)])
+			df2 = np.array(df_dict[p[1]][np.random.choice(list(df_dict[p[1]].columns),n,replace=False)])
+			D = np.expand_dims(np.concatenate([df1,df2],axis=1).T,axis=1)
+			dim1 = np.concatenate([np.zeros(n),np.ones(n)])
+			dim2 = np.concatenate([np.zeros(n//2),np.ones(n//2),np.zeros(n//2),np.ones(n//2)])
+			subh = even_out(dim1,dim2)
+			ISC_w[p][shuff], groups = ISC_w_calc(D,1,nTR,n,subh)
+			ISC_b = []
+			for htmp1 in [0,1]:
+				for htmp2 in [0,1]:
+					ISC_b.append(np.sum(np.multiply(groups[0,htmp1], groups[1,htmp2]), axis=1)/(nTR-1))
+			denom = np.sqrt(ISC_w[p][shuff,0]) * np.sqrt(ISC_w[p][shuff,1])
+			ISC_g[p][shuff] = np.sum(ISC_b, axis=0)/4/denom
+			
+	
+	
+	
 	
 	import tqdm
 	nshuffle = 10000
@@ -207,6 +245,8 @@ if __name__ == "__main__":
 	for corr in corr_list:
 		p_dict[corr] = np.sum(corr_dict[corr][0]<corr_dict[corr][1:])/nshuffle
 	
+	
+	# Plot for Supplementary Figure 7:
 	import matplotlib.pyplot as plt
 	colors_age = ['#FCC3A1','#F08B63','#D02941','#70215D','#311638']
 
