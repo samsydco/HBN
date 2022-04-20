@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import glob
 from ISC_settings import eqbins
-from HMM_settings import lag_pearsonr
 
 def get_boundaries(df,agedf,age_range):
 	PartIDs = np.array(df.loc[df['Screen Name'] == 'Desc_Me']['Participant Public ID'].value_counts()[df.loc[df['Screen Name'] == 'Desc_Me']['Participant Public ID'].value_counts()>1].index)
@@ -67,6 +66,40 @@ def calc_indi_bounds(bound_dict):
 			bound_dict[k] = np.concatenate([bound_dict[k], np.zeros(nTR - len(bound_dict[k]))])
 		bound_dict[k] = np.convolve(bound_dict[k],hrf)[:nTR]
 	return bound_dict
+
+def lag_pearsonr(x, y, max_lags):
+    """Compute lag correlation between x and y, up to max_lags
+    Parameters
+    ----------
+    x : ndarray
+        First array of values
+    y : ndarray
+        Second array of values
+    max_lags: int
+        Largest lag (must be less than half the length of shortest array)
+    Returns
+    -------
+    ndarray
+        Array of 1 + 2*max_lags lag correlations, for x left shifted by
+        max_lags to x right shifted by max_lags
+    """
+
+    assert max_lags < min(len(x), len(y)) / 2, \
+        "max_lags exceeds half the length of shortest array"
+
+    assert len(x) == len(y), "array lengths are not equal"
+
+    lag_corrs = np.full(1 + (max_lags * 2), np.nan)
+
+    for i in range(max_lags + 1):
+
+        # add correlations where x is shifted to the right
+        lag_corrs[max_lags + i] = pearsonr(x[:len(x) - i], y[i:len(y)])[0]
+
+        # add correlations where x is shifted to the left
+        lag_corrs[max_lags - i] = pearsonr(x[i:len(x)], y[:len(y) - i])[0]
+
+    return lag_corrs
 
 nTR = 750
 TR = 0.8
@@ -142,14 +175,36 @@ df_all = pd.concat([orig_df, pro_df, child_df],axis=1)
 all_corr = np.array(df_all.corr())
 all_corr_up = np.triu(all_corr,1)
 corr_orig = all_corr_up[0:nsubj,0:nsubj]
-corr_orig2 = corr_orig[np.nonzero(corr_orig)]
+corr_orig = corr_orig[np.nonzero(corr_orig)]
 corr_pro = all_corr_up[nsubj:nsubj+len(Pro_Ages),nsubj:nsubj+len(Pro_Ages)]
-corr_pro2 = corr_pro[np.nonzero(corr_pro)]
+corr_pro = corr_pro[np.nonzero(corr_pro)]
 corr_chi = all_corr_up[nsubj+len(Pro_Ages):-1,nsubj+len(Pro_Ages):-1]
-corr_chi2 = corr_chi[np.nonzero(corr_chi)]
+corr_chi = corr_chi[np.nonzero(corr_chi)]
 corr_o_p = all_corr_up[0:nsubj,nsubj:nsubj+len(Pro_Ages)].flatten()
 corr_o_c = all_corr_up[0:nsubj,nsubj+len(Pro_Ages):-1].flatten()
 corr_p_c = all_corr_up[nsubj:nsubj+len(Pro_Ages),nsubj+len(Pro_Ages):-1].flatten()
+
+import tqdm
+nshuffle = 10000
+corr_list = ['ori','pro','chi','o_p','o_c','p_c']
+corr_lab = ['ori']*len(corr_orig) + \
+		   ['pro']*len(corr_pro) + \
+		   ['chi']*len(corr_chi) + \
+		   ['o_p']*len(corr_o_p) + \
+		   ['o_c']*len(corr_o_c) + \
+		   ['p_c']*len(corr_p_c)
+corr_all = np.concatenate([corr_orig,corr_pro,corr_chi,corr_o_p,corr_o_c,corr_p_c])
+corr_dict = {k:np.zeros(nshuffle+1) for k in corr_list}
+for shuff in tqdm.tqdm(range(nshuffle+1)):
+	for corr in corr_list:
+		idx = [i for i,v in enumerate(corr_lab) if v==corr]
+		corr_dict[corr][shuff] = np.mean(corr_all[idx])
+	np.random.shuffle(corr_lab)
+p_dict = {k:[] for k in corr_list}
+for corr in corr_list:
+	p_dict[corr] = np.sum(corr_dict[corr][0]<corr_dict[corr][1:])/nshuffle
+	
+	
 
 
 
