@@ -9,6 +9,7 @@ import brainiak.eventseg.event
 from scipy.fftpack import fft,ifft
 from scipy.stats import zscore, norm, pearsonr
 from HMM_settings import *
+from event_comp import ev_conv, Pro_ev_conv, child_ev_conv
 
 ev_conv = child_ev_conv
 
