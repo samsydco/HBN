@@ -6,7 +6,6 @@ import deepdish as dd
 import matplotlib.pyplot as plt
 from settings import *
 from event_comp import *
-from HMM_settings import lag_pearsonr
 
 ev_conv = child_ev_conv
 
@@ -120,6 +119,7 @@ for HPC in ['HPC','aHPC','pHPC']:
 	D = dd.io.load(ISCpath+HPC+'.h5','/D')
 	Dall[HPC] = D
 	bumplagdict['correlation_'+HPC] = []
+	
 
 for b in range(nbinseq):
 	for subj in Dall['HPC'][b].keys():
