@@ -8,42 +8,6 @@ ev_conv = child_ev_conv
 
 lead_lag_file = 'Leading_lagging_children.h5'
 
-def nearest_peak(v):
-	"""Estimates location of local maximum nearest the origin
-    Starting at the origin, we follow the local gradient until reaching a
-    local maximum. A quadratic function is then fit to the maximum and its
-    two surrounding points, and the peak of this function is used as a
-    continuous-valued estimate of the location of the maximum.
-    Parameters
-    ----------
-    v : ndarray
-        Array of values from [-max_lag, max_lag] inclusive
-    Returns
-    -------
-    float
-        Location of peak of quadratic fit
-    """
-	lag = (len(v)-1)//2
-	# Find local maximum
-	while 2 <= lag <= (len(v) - 3):
-		win = v[(lag-1):(lag+2)]
-		if (win[1] > win[0]) and (win[1] > win[2]):
-			break
-		if win[0] > win[2]:
-			lag -= 1
-		else:
-			lag += 1
-	# Quadratic fit
-	x = [lag-1, lag, lag+1]
-	y = v[(lag-1):(lag+2)]
-	denom = (x[0] - x[1]) * (x[0] - x[2]) * (x[1] - x[2])
-	A = (x[2] * (y[1] - y[0]) + x[1] * \
-			 (y[0] - y[2]) + x[0] * (y[2] - y[1])) / denom
-	B = (x[2]*x[2] * (y[0] - y[1]) + x[1]*x[1] * (y[2] - y[0]) + \
-	x[0]*x[0] * (y[1] - y[2])) / denom
-	max_x = (-B / (2*A))
-	return min(max(max_x, 0), len(v)-1)
-
 bins = [0,4]
 nTR = 750
 max_lag = 25
