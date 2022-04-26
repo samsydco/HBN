@@ -127,7 +127,7 @@ for b in range(nbinseq):
 		bumplagdict['Age'].extend([xticks[b]]*len(xcorrx))
 		bumplagdict['Exact_Age'].extend([Phenodf['Age'][Phenodf['EID'] == subj.split('/')[-1].split('.')[0].split('-')[1]].values[0]]*len(xcorrx))
 		for HPC in ['HPC','aHPC','pHPC']:
-			bumplagdict['correlation_'+HPC].extend(lag_pearsonr(Dall[HPC][b][subj],ev_conv,maxlag))
+			bumplagdict['correlation_'+HPC].extend(lag_pearsonr(ev_conv,Dall[HPC][b][subj],maxlag))
 		bumplagdict['Time lag [s]'].extend(xcorrx)
 dfbumplag = pd.DataFrame(data=bumplagdict)
 
