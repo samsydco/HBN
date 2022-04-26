@@ -2,6 +2,7 @@
 
 import tqdm
 from HMM_settings import *
+from event_comp import ev_conv, Pro_ev_conv, child_ev_conv
 import matplotlib.pyplot as plt
 
 ev_conv = child_ev_conv
