@@ -22,7 +22,7 @@ for seed in seeds:
 		lags[seed][roi] = np.zeros((2,nshuffle))
 		for bi,b in enumerate(bins):
 			for shuffle in range(nshuffle):
-				corr = lag_pearsonr(dE_k[shuffle,b], ev_conv[1:], max_lag)
+				corr = lag_pearsonr(ev_conv[1:], dE_k[shuffle,b], max_lag)
 				lags[seed][roi][bi,shuffle] = TR*(max_lag - nearest_peak(corr))
 		lagdiff = lags[seed][roi][1] - lags[seed][roi][0]
 		lagdiff = (lags[seed][roi][1] - lags[seed][roi][0])*TR
@@ -75,7 +75,7 @@ for roi in tqdm.tqdm(ROIs):
 		dE_k = np.diff(dd.io.load(HMMsavedir+seed+'/'+roi+'.h5','/E_k'))[0]
 		corrs = np.zeros((2,max_lag*2+1))
 		for bi,b in enumerate(bins):
-			corrs[bi] = lag_pearsonr(dE_k[b], ev_conv[1:], max_lag)
+			corrs[bi] = lag_pearsonr(ev_conv[1:], dE_k[b], max_lag)
 		lagdiff = (lags[seed][roi][1] - lags[seed][roi][0])*TR
 		
 		# Plot dE_k for oldest/youngest + event annotations
