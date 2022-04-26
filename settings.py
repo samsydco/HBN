@@ -20,6 +20,7 @@ assesspath = path + 'assessment_data/rel_6/'
 metaphenopath = path + 'pheno_meta_data/'
 videopath = codedr+'HBN_fmriprep_code/videos/'
 figurepath = path+'Figures/'
+ev_figpath = figurepath+'event_annotations/'
 
 # bad subjects for very unique reasons:
 bad_sub_dict = {'sub-NDARHR140GMB':'TP BOLD scan is cut off, no motion params','sub-NDARYD546HCB':'TP BOLD scan is cut off, no motion params','sub-NDARJF517HC8':'*VNav_T1w.nii.gz damaged'}
