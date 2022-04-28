@@ -230,7 +230,6 @@ if __name__ == "__main__":
 	for e in event_times:
 		peaks.append(e+np.argmax(rel_ev[e:e+10]))
 		
-	print(thresh,len(event_times))
 	
 	
 	# Plot for "New" Figure 3:
@@ -274,7 +273,7 @@ if __name__ == "__main__":
 	for line in leg.get_lines():
 		line.set_linewidth(10)
 	ax.margins(x=0)
-	plt.savefig(ev_figpath+'b_boundary_correlation.png', bbox_inches='tight',dpi=300)
+	plt.savefig(ev_figpath+'b_boundary_correlation.png', bbox_inches='tight',dpi=600)
 	
 	# Note: in lead lag function, "leading" signal goes into second argument
 	fig,ax = plt.subplots(1,1,figsize=(7,7))
