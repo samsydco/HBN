@@ -5,4 +5,9 @@ videos/
 fmriprep*
 *TPJ_thresholded/
 TPJ_check.py
+._event_comp.py
 data_exp_*
+*DS*
+*.ipynb
+*.npy
+
