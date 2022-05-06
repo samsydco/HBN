@@ -241,14 +241,18 @@ if __name__ == "__main__":
 	colors_age = ['#FCC3A1','#F08B63','#D02941','#70215D','#311638']
 	#A:
 	fig, (hrf_ann) = plt.subplots(figsize=(12,4))
-	hrf_ann.plot(np.arange(nTR)*TR, Pro_ev_conv/len(Pro_Ages), linewidth=1, color=colors_age[4])
-	hrf_ann.plot(np.arange(nTR)*TR, old_child_ev_conv/len(old_child_Ages), linewidth=1, color=colors_age[2])
-	hrf_ann.plot(np.arange(nTR)*TR, young_child_ev_conv/len(young_child_Ages), linewidth=1, color=colors_age[1])
+	hrf_ann.plot(np.arange(nTR)*TR, Pro_ev_conv/len(Pro_Ages), linewidth=2, color=colors_age[4])
+	hrf_ann.plot(np.arange(nTR)*TR, old_child_ev_conv/len(old_child_Ages), linewidth=2, color=colors_age[2])
+	hrf_ann.plot(np.arange(nTR)*TR, young_child_ev_conv/len(young_child_Ages), linewidth=2, color=colors_age[1])
 	for p in peaks:
-		hrf_ann.plot([p*TR,p*TR],[1,1],'k*')
+		hrf_ann.plot([p*TR,p*TR],[1.25,1.25],'k*')
+		
+	# Hide the right and top spines
+	hrf_ann.spines['right'].set_visible(False)
+	hrf_ann.spines['top'].set_visible(False)
 	hrf_ann.legend(['Adults','Older Children','Younger Children'], fontsize=15)
 	plt.xlim([0,600])
-	plt.xlabel('Time [s]', fontsize=15)
+	plt.xlabel('Time (seconds)', fontsize=15)
 	plt.ylabel('Boundary density', fontsize=15)
 	plt.savefig(ev_figpath+'a_boundary_density.png', bbox_inches='tight',dpi=300)
 	#B:
