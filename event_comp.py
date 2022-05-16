@@ -138,17 +138,17 @@ ev_annot = np.asarray(ev_annot, dtype=int)
 counts = np.append(np.bincount(ev_annot)[:-2],np.bincount(ev_annot)[-1])
 ev_conv = np.convolve(counts,hrf)[:nTR]
 
-Prolificdf = pd.read_csv('data_exp_68194-v4/data_exp_68194-v4_task-1t2b.csv')
-Prolificagedf = pd.read_csv('data_exp_68194-v4/data_exp_68194-v4_questionnaire-xtqr.csv')
+Prolificdf = pd.read_csv('Prolific_adult_data/event_data.csv')
+Prolificagedf = pd.read_csv('Prolific_adult_data/age_data.csv')
 Pro_spike_boundaries,Pro_ev_conv,Pro_Ages,Pro_df,Pro_agedf,Pro_agedict,Pro_gender,Pro_e_timing = get_boundaries(Prolificdf,Prolificagedf,[eqbins[-1],200])
 # 14 F, 2 non-binary, 9 M
 num_F_ = ['F' in g.upper() for g in Pro_gender]
 num_B_ = ['B' in g.upper() for g in Pro_gender]
 
-df4 = pd.read_csv('data_exp_61650-v4/data_exp_61650-v4_task-yi9p.csv')
-agedf4 = pd.read_csv('data_exp_61650-v4/data_exp_61650-v4_questionnaire-pokv.csv')
-df7 = pd.read_csv('data_exp_61650-v7/data_exp_61650-v7_task-bycw.csv')
-agedf7 = pd.read_csv('data_exp_61650-v7/data_exp_61650-v7_questionnaire-vwly.csv')
+df4 = pd.read_csv('Children_data/Event_data_1.csv')
+agedf4 = pd.read_csv('Children_data/age_data_1.csv')
+df7 = pd.read_csv('Children_data/Event_data_2.csv')
+agedf7 = pd.read_csv('Children_data/age_data_2.csv')
 df = pd.concat([df4, df7])
 agedf = pd.concat([agedf4, agedf7])
 child_spike_boundaries,child_ev_conv,child_Ages,child_df,child_agedf,child_agedict,child_gender,child_e_timing = get_boundaries(df,agedf,[eqbins[0],eqbins[-1]])
