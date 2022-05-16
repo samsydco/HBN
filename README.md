@@ -109,8 +109,15 @@
 <li><a href="https://github.com/samsydco/HBN/blob/master/HMM_vs_hand.py">HMM_vs_hand.py</a>: Compares HMM event timecourses to behavioral event timecourses</li>
 <li><a href="https://github.com/samsydco/HBN/blob/master/motion_check.py">motion_check.py</a>: Compares Framewise Displacement between age groups.</li>
 <li><a href="https://github.com/samsydco/HBN/blob/master/ISC_vs_motion.py">ISC_vs_motion.py</a>: Correlates Framewise Displacement with ISC.</li>
-<li><a href="https://github.com/samsydco/HBN/blob/master/event_comp.py">event_comp.py</a>: Compares behavioral event boundary ratings between children and adults. These boundaries come from: <a href="https://github.com/samsydco/HBN/tree/master/video_segmentation">"video_segmentation"</a> (adult reference group), <a href="https://github.com/samsydco/HBN/tree/master/video_segmentation">"video_segmentation"</a> (online adult data), and <a href="https://github.com/samsydco/HBN/tree/master/video_segmentation">"video_segmentation"</a> (children data). </li>
+<li><a href="https://github.com/samsydco/HBN/blob/master/event_comp.py">event_comp.py</a>: Compares behavioral event boundary ratings between children and adults. These boundaries come from: <a href="https://github.com/samsydco/HBN/tree/master/video_segmentation">"video_segmentation"</a> (reference group for events in Figure 3), <a href="https://github.com/samsydco/HBN/tree/master/Prolific_adult_data">"Prolific_adult_data"</a> (online adult data), and <a href="https://github.com/samsydco/HBN/tree/master/Children_data ">"Children_data"</a> (children data). </li>
 <li><a href="https://github.com/samsydco/HBN/blob/master/TPJ_check.py">TPJ_check.py</a>: Assesses the extent of the overlap between each parcel and the TPJ as defined by <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0075468">Dufour and colleagues (2013)</a>.</li>
+</ul>
+
+### Behavioral event segmentation data folders:
+<ul>
+<li><a href="https://github.com/samsydco/HBN/tree/master/video_segmentation">"video_segmentation"</a>: Reference group for events in Figure 3</li>
+<li><a href="https://github.com/samsydco/HBN/tree/master/Prolific_adult_data">"Prolific_adult_data"</a>: Online adult data</li>
+<li><a href="https://github.com/samsydco/HBN/tree/master/Children_data ">"Children_data"</a>: Age-matched children data</li>
 </ul>
 
 
